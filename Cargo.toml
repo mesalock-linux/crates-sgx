@@ -28,6 +28,7 @@ sgx_ucrypto                    = { git = "https://github.com/baidu/rust-sgx-sdk"
 sgx_unwind                     = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 sgx_urts                       = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 
+serde_cbor         = { git = "https://github.com/mesalock-linux/cbor-sgx" }
 http         = { git = "https://github.com/mesalock-linux/http-sgx" }
 serde        = { git = "https://github.com/mesalock-linux/serde-sgx" }
 serde_derive = { git = "https://github.com/mesalock-linux/serde-sgx" }
