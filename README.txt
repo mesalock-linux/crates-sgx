@@ -1,0 +1,10 @@
+byteorder 1.3.1
+bytes 0.5.0
+fnv 1.0.6
+http 0.1.17
+iovec 0.2.0
+itoa 0.4.4
+log 0.4.6
+serde 1.0.92
+serde_derive 1.0.92
+serde_json 1.0.39

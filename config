@@ -1,0 +1,60 @@
+[source.crates-io]
+replace-with = "vendored-sources"
+
+[source."https://github.com/baidu/rust-sgx-sdk"]
+git = "https://github.com/baidu/rust-sgx-sdk"
+rev = "v1.0.8"
+replace-with = "vendored-sources"
+
+[source."https://github.com/baidu/rust-sgx-sdk.git"]
+git = "https://github.com/baidu/rust-sgx-sdk.git"
+rev = "v1.0.8"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/byteorder-sgx"]
+git = "https://github.com/mesalock-linux/byteorder-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/bytes-sgx"]
+git = "https://github.com/mesalock-linux/bytes-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/http-sgx"]
+git = "https://github.com/mesalock-linux/http-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/iovec-sgx"]
+git = "https://github.com/mesalock-linux/iovec-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/itoa-sgx"]
+git = "https://github.com/mesalock-linux/itoa-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/log-sgx"]
+git = "https://github.com/mesalock-linux/log-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/rust-fnv-sgx"]
+git = "https://github.com/mesalock-linux/rust-fnv-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/serde-json-sgx"]
+git = "https://github.com/mesalock-linux/serde-json-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/serde-sgx"]
+git = "https://github.com/mesalock-linux/serde-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "vendor"

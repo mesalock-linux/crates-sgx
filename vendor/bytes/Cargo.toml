@@ -1,0 +1,44 @@
+[package]
+
+name          = "bytes"
+# When releasing to crates.io:
+# - Update html_root_url.
+# - Update CHANGELOG.md.
+# - Update doc URL.
+# - Create "v0.4.x" git tag.
+version       = "0.5.0"
+license       = "MIT"
+authors       = ["Carl Lerche <me@carllerche.com>"]
+description   = "Types and traits for working with bytes"
+documentation = "https://docs.rs/bytes"
+repository    = "https://github.com/tokio-rs/bytes"
+readme        = "README.md"
+keywords      = ["buffers", "zero-copy", "io"]
+exclude       = [
+    ".gitignore",
+    ".travis.yml",
+    "deploy.sh",
+    "bench/**/*",
+    "test/**/*"
+]
+categories = ["network-programming", "data-structures"]
+
+publish = false
+
+[package.metadata.docs.rs]
+features = ["i128"]
+
+[dependencies]
+byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
+iovec = { git = "https://github.com/mesalock-linux/iovec-sgx" }
+serde = { version = "1.0", git = "https://github.com/mesalock-linux/serde-sgx", optional = true }
+either = { version = "1.5", default-features = false, optional = true }
+sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+
+[dev-dependencies]
+serde_test = "1.0"
+
+[features]
+default = ["i128", "mesalock_sgx"]
+i128 = ["byteorder/i128"]
+mesalock_sgx = ["sgx_tstd"]

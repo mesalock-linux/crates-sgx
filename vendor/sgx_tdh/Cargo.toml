@@ -1,0 +1,32 @@
+[package]
+name = "sgx_tdh"
+version = "1.0.8"
+authors = ["Baidu"]
+repository = "https://github.com/baidu/rust-sgx-sdk"
+license-file = "LICENSE"
+documentation = "https://dingelish.github.io/"
+description = "Rust SGX SDK provides the ability to write Intel SGX applications in Rust Programming Language."
+
+include = [
+    "LICENSE",
+    "Readme.md",
+    "Cargo.toml",
+    "src/dh.rs",
+    "src/ecp.rs",
+    "src/lib.rs",
+]
+
+[lib]
+name = "sgx_tdh"
+crate-type = ["rlib"]
+
+
+[features]
+default = []
+use_lav2 = []
+
+[target.'cfg(not(target_env = "sgx"))'.dependencies]
+sgx_types = { path = "../sgx_types" }
+sgx_trts = { path = "../sgx_trts" }
+sgx_tcrypto = { path = "../sgx_tcrypto" }
+sgx_tse = { path = "../sgx_tse" }

@@ -1,0 +1,28 @@
+[package]
+name = "sgx_tservice"
+version = "1.0.8"
+authors = ["Baidu"]
+repository = "https://github.com/baidu/rust-sgx-sdk"
+license-file = "LICENSE"
+documentation = "https://dingelish.github.io/"
+description = "Rust SGX SDK provides the ability to write Intel SGX applications in Rust Programming Language."
+
+include = [
+    "LICENSE",
+    "Readme.md",
+    "Cargo.toml",
+    "src/tae.rs",
+    "src/sgxtime.rs",
+    "src/sgxcounter.rs",
+    "src/lib.rs",
+]
+
+[lib]
+name = "sgx_tservice"
+crate-type = ["rlib"]
+
+[features]
+default = []
+
+[target.'cfg(not(target_env = "sgx"))'.dependencies]
+sgx_types = { path = "../sgx_types" }

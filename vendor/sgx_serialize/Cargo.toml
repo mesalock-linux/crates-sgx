@@ -1,0 +1,28 @@
+[package]
+name = "sgx_serialize"
+version = "1.0.8"
+authors = ["Baidu"]
+repository = "https://github.com/baidu/rust-sgx-sdk"
+license-file = "LICENSE"
+documentation = "https://dingelish.github.io/"
+description = "Rust SGX SDK provides the ability to write Intel SGX applications in Rust Programming Language."
+
+include = [
+    "LICENSE",
+    "Readme.md",
+    "Cargo.toml",
+    "src/opaque.rs",
+    "src/leb128.rs",
+    "src/serialize.rs",
+    "src/lib.rs",
+]
+
+[lib]
+name = "sgx_serialize"
+crate-type = ["rlib"]
+
+[features]
+default = []
+
+[target.'cfg(not(target_env = "sgx"))'.dependencies]
+sgx_tstd = { path = "../sgx_tstd" }

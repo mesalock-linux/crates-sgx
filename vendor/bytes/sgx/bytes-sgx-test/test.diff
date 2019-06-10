@@ -1,0 +1,54 @@
+diff --git a/src/bytes.rs b/src/bytes.rs
+index 524b276..7a63b37 100644
+--- a/src/bytes.rs
++++ b/src/bytes.rs
+@@ -339,10 +339,10 @@ const KIND_MASK: usize = 0b11;
+ 
+ // The max original capacity value. Any `Bytes` allocated with a greater initial
+ // capacity will default to this.
+-const MAX_ORIGINAL_CAPACITY_WIDTH: usize = 17;
++pub const MAX_ORIGINAL_CAPACITY_WIDTH: usize = 17;
+ // The original capacity algorithm will not take effect unless the originally
+ // allocated capacity was at least 1kb in size.
+-const MIN_ORIGINAL_CAPACITY_WIDTH: usize = 10;
++pub const MIN_ORIGINAL_CAPACITY_WIDTH: usize = 10;
+ // The original capacity is stored in powers of 2 starting at 1kb to a max of
+ // 64kb. Representing it as such requires only 3 bits of storage.
+ const ORIGINAL_CAPACITY_MASK: usize = 0b11100;
+@@ -2670,12 +2670,12 @@ impl Shared {
+     }
+ }
+ 
+-fn original_capacity_to_repr(cap: usize) -> usize {
++pub fn original_capacity_to_repr(cap: usize) -> usize {
+     let width = PTR_WIDTH - ((cap >> MIN_ORIGINAL_CAPACITY_WIDTH).leading_zeros() as usize);
+     cmp::min(width, MAX_ORIGINAL_CAPACITY_WIDTH - MIN_ORIGINAL_CAPACITY_WIDTH)
+ }
+ 
+-fn original_capacity_from_repr(repr: usize) -> usize {
++pub fn original_capacity_from_repr(repr: usize) -> usize {
+     if repr == 0 {
+         return 0;
+     }
+diff --git a/src/lib.rs b/src/lib.rs
+index 8523189..3e910f6 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -68,7 +68,7 @@
+ //! perform a syscall, which has the potential of failing. Operations on `Buf`
+ //! and `BufMut` are infallible.
+ 
+-#![deny(warnings, missing_docs, missing_debug_implementations)]
++#![deny(warnings)]
+ #![doc(html_root_url = "https://docs.rs/bytes/0.5.0")]
+ 
+ #![cfg_attr(all(feature = "mesalock_sgx",
+@@ -89,7 +89,7 @@ pub use buf::{
+     IntoBuf,
+ };
+ 
+-mod bytes;
++pub mod bytes;
+ mod debug;
+ pub use bytes::{Bytes, BytesMut};
+ 
