@@ -1,0 +1,41 @@
+[package]
+name = "bincode"
+version = "1.1.4" # remember to update html_root_url
+authors = ["Ty Overby <ty@pre-alpha.com>", "Francesco Mazzoli <f@mazzo.li>", "David Tolnay <dtolnay@gmail.com>", "Daniel Griffen"]
+exclude = ["logo.png", "tests/*", "examples/*", ".gitignore", ".travis.yml"]
+
+publish =  true
+
+repository = "https://github.com/TyOverby/bincode"
+documentation = "https://docs.rs/bincode"
+readme = "./readme.md"
+categories = ["encoding", "network-programming"]
+keywords = ["binary", "encode", "decode", "serialize", "deserialize"]
+build = "build.rs"
+
+license = "MIT"
+description = "A binary serialization / deserialization strategy that uses Serde for transforming structs into bytes and vice versa!"
+
+[dependencies]
+byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx.git" }
+serde = { git = "https://github.com/mesalock-linux/serde-sgx.git" }
+sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+
+[dev-dependencies]
+serde_bytes = "0.11"
+serde_derive = "1.0.27"
+
+[build-dependencies]
+autocfg = "0.1.2"
+
+[features]
+# This feature is no longer used and is DEPRECATED. This crate now
+# automatically enables i128 support for Rust compilers that support it. The
+# feature will be removed if and when a new major version is released.
+i128 = []
+
+default = ["mesalock_sgx"]
+mesalock_sgx = ["sgx_tstd"]
+
+[badges]
+travis-ci = { repository = "TyOverby/bincode" }

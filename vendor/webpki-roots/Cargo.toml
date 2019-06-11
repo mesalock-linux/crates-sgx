@@ -1,0 +1,19 @@
+[package]
+name = "webpki-roots"
+version = "0.16.0"
+edition = "2018"
+authors = ["Joseph Birr-Pixton <jpixton@gmail.com>"]
+readme = "README.md"
+license = "MPL-2.0"
+description = "Mozilla's CA root certificates for use with webpki"
+homepage = "https://github.com/ctz/webpki-roots"
+repository = "https://github.com/ctz/webpki-roots"
+
+[dependencies]
+untrusted = { git = "https://github.com/briansmith/untrusted", tag = "ring-master"  }
+webpki = { git = "https://github.com/mesalock-linux/webpki", branch = "mesalock_sgx" }
+sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+
+[features]
+default = ["mesalock_sgx"]
+mesalock_sgx = ["sgx_tstd"]

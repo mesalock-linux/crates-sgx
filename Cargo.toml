@@ -5,6 +5,7 @@ authors = ["MesaTEE Authors"]
 edition = "2018"
 
 [dependencies]
+# Rust SGX SDK
 sgx_alloc                      = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 sgx_libc                       = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 sgx_rand                       = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
@@ -24,16 +25,38 @@ sgx_tservice                   = { git = "https://github.com/baidu/rust-sgx-sdk"
 sgx_tstd                       = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 sgx_tunittest                  = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 sgx_types                      = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
-sgx_ucrypto                    = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 sgx_unwind                     = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 sgx_urts                       = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 
-serde_cbor         = { git = "https://github.com/mesalock-linux/cbor-sgx" }
+# SGX crates
+aho-corasick = { git = "https://github.com/mesalock-linux/aho-corasick-sgx" }
+base64       = { git = "https://github.com/mesalock-linux/rust-base64-sgx" }
+bincode      = { git = "https://github.com/mesalock-linux/bincode-sgx" }
+byteorder    = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
+bytes        = { git = "https://github.com/mesalock-linux/bytes-sgx" }
+chrono       = { git = "https://github.com/mesalock-linux/chrono-sgx" }
+heapsize     = { git = "https://github.com/mesalock-linux/heapsize-sgx" }
 http         = { git = "https://github.com/mesalock-linux/http-sgx" }
+iovec        = { git = "https://github.com/mesalock-linux/iovec-sgx" }
+itoa         = { git = "https://github.com/mesalock-linux/itoa-sgx" }
+log          = { git = "https://github.com/mesalock-linux/log-sgx" }
+num-traits   = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
+quick-error  = { git = "https://github.com/mesalock-linux/quick-error-sgx" }
+regex        = { git = "https://github.com/mesalock-linux/regex-sgx" }
+ring         = { git = "https://github.com/mesalock-linux/ring-sgx" }
+rustls       = { git = "https://github.com/mesalock-linux/rustls", branch = "mesalock_sgx" }
+sct          = { git = "https://github.com/mesalock-linux/sct.rs", branch = "mesalock_sgx" }
 serde        = { git = "https://github.com/mesalock-linux/serde-sgx" }
+serde_cbor   = { git = "https://github.com/mesalock-linux/cbor-sgx" }
 serde_derive = { git = "https://github.com/mesalock-linux/serde-sgx" }
 serde_json   = { git = "https://github.com/mesalock-linux/serde-json-sgx" }
-log          = { git = "https://github.com/mesalock-linux/log-sgx" }
+uuid         = { git = "https://github.com/mesalock-linux/uuid-sgx" }
+webpki       = { git = "https://github.com/mesalock-linux/webpki", branch = "mesalock_sgx" }
+webpki-roots = { git = "https://github.com/mesalock-linux/webpki-roots", branch = "mesalock_sgx" }
+yasna        = { git = "https://github.com/mesalock-linux/yasna.rs-sgx" }
 
-itertools    = { version = "0.8", default-features = false }
-cfg-if       = "0.1"
+# no_std crates
+cfg-if       = "0.1.9"
+httparse     = { version = "1.3.2", default-features=false }
+itertools    = { version = "0.8.0", default-features = false }
+lazy_static  = { version = "1.0.2", features = ["spin_no_std"] }
