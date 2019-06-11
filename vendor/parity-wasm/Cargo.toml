@@ -1,0 +1,25 @@
+[package]
+name = "parity-wasm"
+version = "0.31.3"
+authors = ["Nikolay Volf <nikvolf@gmail.com>", "Svyatoslav Nikolsky <svyatonik@yandex.ru>", "Sergey Shulepov <s.pepyakin@gmail.com>"]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/paritytech/parity-wasm"
+homepage = "https://github.com/paritytech/parity-wasm"
+documentation = "https://paritytech.github.io/parity-wasm/parity_wasm/"
+description = "WebAssembly binary format serialization/deserialization/interpreter"
+keywords = ["wasm", "webassembly", "bytecode", "serde", "interpreter"]
+categories = ["wasm", "parser-implementations"]
+exclude = [ "res/*", "spec/*", "sgx/*" ]
+
+[dependencies]
+byteorder = { version = "1.0", default-features = false, git = "https://github.com/mesalock-linux/byteorder-sgx.git" }
+sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+
+[dev-dependencies]
+time = "0.1"
+
+[features]
+default = ["std", "mesalock_sgx"]
+mesalock_sgx = ["std", "sgx_tstd", "byteorder/mesalock_sgx", "byteorder/std"]
+std = []

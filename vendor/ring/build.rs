@@ -391,6 +391,7 @@ fn build_c_code(target: &Target, pregenerated: PathBuf, out_dir: &Path) {
     let perlasm_src_dsts =
         perlasm_src_dsts(asm_dir, target.arch(), Some(target.os()), perlasm_format);
 
+    let use_pregenerated = false;
     if !use_pregenerated {
         perlasm(
             &perlasm_src_dsts[..],

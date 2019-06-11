@@ -41,6 +41,11 @@ git = "https://github.com/mesalock-linux/chrono-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/getrandom-sgx"]
+git = "https://github.com/mesalock-linux/getrandom-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/heapsize-sgx"]
 git = "https://github.com/mesalock-linux/heapsize-sgx"
 branch = "master"
@@ -66,6 +71,11 @@ git = "https://github.com/mesalock-linux/log-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/num-bigint-sgx"]
+git = "https://github.com/mesalock-linux/num-bigint-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/num-integer-sgx"]
 git = "https://github.com/mesalock-linux/num-integer-sgx"
 branch = "master"
@@ -76,8 +86,18 @@ git = "https://github.com/mesalock-linux/num-traits-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/parity-wasm-sgx"]
+git = "https://github.com/mesalock-linux/parity-wasm-sgx"
+branch = "v0.31.3"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/quick-error-sgx"]
 git = "https://github.com/mesalock-linux/quick-error-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/rand-sgx"]
+git = "https://github.com/mesalock-linux/rand-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
@@ -143,6 +163,16 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/uuid-sgx"]
 git = "https://github.com/mesalock-linux/uuid-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/wabt-rs-sgx"]
+git = "https://github.com/mesalock-linux/wabt-rs-sgx"
+branch = "v0.6.0-core"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/wasmi-sgx"]
+git = "https://github.com/mesalock-linux/wasmi-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 

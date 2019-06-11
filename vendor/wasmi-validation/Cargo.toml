@@ -1,0 +1,24 @@
+[package]
+name = "wasmi-validation"
+version = "0.1.0"
+authors = ["Parity Technologies <admin@parity.io>"]
+edition = "2018"
+license = "MIT/Apache-2.0"
+repository = "https://github.com/paritytech/wasmi"
+description = "Wasm code validator"
+
+[dependencies]
+parity-wasm = { git = "https://github.com/mesalock-linux/parity-wasm-sgx.git", default-features = false, branch = "v0.31.3" }
+hashbrown = { version = "0.3", optional = true, features = ["nightly"] }
+sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+
+[dev-dependencies]
+assert_matches = "1.1"
+
+[features]
+default = ["std", "mesalock_sgx" ]
+std = ["parity-wasm/std", "parity-wasm/mesalock_sgx"]
+core = [
+    "hashbrown/nightly"
+]
+mesalock_sgx = ["std", "sgx_tstd", "hashbrown"]
