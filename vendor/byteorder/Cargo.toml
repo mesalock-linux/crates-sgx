@@ -1,6 +1,6 @@
 [package]
 name = "byteorder"
-version = "1.3.1"  #:version
+version = "1.3.2"  #:version
 authors = ["Andrew Gallant <jamslam@gmail.com>"]
 description = "Library for reading/writing numbers in big-endian and little-endian."
 documentation = "https://docs.rs/byteorder"
@@ -10,7 +10,7 @@ readme = "README.md"
 categories = ["encoding", "parsing"]
 keywords = ["byte", "endian", "big-endian", "little-endian", "binary"]
 license = "Unlicense OR MIT"
-exclude = ["/ci/*"]
+exclude = ["/ci/*", "/sgx/*"]
 build = "build.rs"
 
 [lib]

@@ -19,7 +19,8 @@ exclude       = [
     ".travis.yml",
     "deploy.sh",
     "bench/**/*",
-    "test/**/*"
+    "test/**/*",
+    "/sgx/*",
 ]
 categories = ["network-programming", "data-structures"]
 

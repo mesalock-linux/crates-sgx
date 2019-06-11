@@ -20,6 +20,7 @@ A set of types for representing HTTP requests and responses.
 """
 keywords = ["http"]
 categories = ["web-programming"]
+exclude = ["/sgx/*"]
 
 [features]
 default = ["mesalock_sgx"]

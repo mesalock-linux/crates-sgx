@@ -292,6 +292,7 @@
 //! [`serde-json-core`]: https://japaric.github.io/serde-json-core/serde_json_core/
 
 #![doc(html_root_url = "https://docs.rs/serde_json/1.0.39")]
+#![allow(unknown_lints, bare_trait_objects, ellipsis_inclusive_range_patterns)]
 #![cfg_attr(feature = "cargo-clippy", allow(renamed_and_removed_lints))]
 #![cfg_attr(feature = "cargo-clippy", deny(clippy, clippy_pedantic))]
 // Ignored clippy lints
@@ -312,6 +313,7 @@
     use_self,
     zero_prefixed_literal,
     // we support older compilers
+    checked_conversions,
     redundant_field_names,
 ))]
 #![deny(missing_docs)]

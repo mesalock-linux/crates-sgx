@@ -12,6 +12,7 @@ description = """
 Portable buffer type for scatter/gather I/O operations
 """
 categories = ["no-std", "network-programming", "api-bindings"]
+exclude = ["/sgx/*"]
 
 [target.'cfg(unix)'.dependencies]
 sgx_libc   = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git" }

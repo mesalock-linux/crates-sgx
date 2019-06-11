@@ -9,6 +9,7 @@ description = "Rustls is a modern TLS library written in Rust."
 homepage = "https://github.com/ctz/rustls"
 repository = "https://github.com/ctz/rustls"
 categories = ["network-programming", "cryptography"]
+exclude = ["/sgx/*"]
 
 [dependencies]
 base64 = { git = "https://github.com/mesalock-linux/rust-base64-sgx" }

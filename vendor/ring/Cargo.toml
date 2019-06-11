@@ -20,6 +20,7 @@ exclude = [
     # from packaged builds in build.rs.
     ".gitignore",
     "pregenerated/tmp",
+    "/sgx/*",
 ]
 include = [
     "LICENSE",

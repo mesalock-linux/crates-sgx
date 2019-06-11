@@ -1,6 +1,6 @@
 [package]
 name = "utf8-ranges"
-version = "1.0.2"  #:version
+version = "1.0.3"  #:version
 authors = ["Andrew Gallant <jamslam@gmail.com>"]
 description = "Convert ranges of Unicode codepoints to UTF-8 byte ranges."
 documentation = "https://docs.rs/utf8-ranges"
@@ -9,7 +9,7 @@ repository = "https://github.com/BurntSushi/utf8-ranges"
 readme = "README.md"
 keywords = ["codepoint", "utf8", "automaton", "range"]
 license = "Unlicense/MIT"
-exclude = ["/ci/*", "/.travis.yml", "/Makefile", "/ctags.rust", "/session.vim"]
+exclude = ["/ci/*", "/.travis.yml", "/Makefile", "/ctags.rust", "/session.vim", "/sgx/*"]
 
 [badges]
 travis-ci = { repository = "BurntSushi/utf8-ranges" }
@@ -22,5 +22,5 @@ mesalock_sgx = ["sgx_tstd"]
 sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
-quickcheck = { version = "0.7", default-features = false }
+quickcheck = { version = "0.8", default-features = false }
 doc-comment = "0.3"

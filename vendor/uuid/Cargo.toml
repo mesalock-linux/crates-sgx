@@ -18,7 +18,8 @@ exclude = [
     ".github/**",
     ".travis.yml",
     "appveyor.yml",
-    "bors.toml"
+    "bors.toml",
+    "/sgx/*",
 ]
 keywords = [
     "guid",

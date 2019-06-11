@@ -54,6 +54,7 @@ include = [
 
     "third-party/chromium/**/*",
 ]
+exclude = ["/sgx/*"]
 
 [lib]
 name = "webpki"

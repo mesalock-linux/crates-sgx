@@ -104,6 +104,7 @@ done automatically in the `regex` crate.
 */
 
 #![deny(missing_docs)]
+#![allow(ellipsis_inclusive_range_patterns)]
 
 #![cfg_attr(not(target_env = "sgx"), no_std)]
 #![cfg_attr(target_env = "sgx", feature(rustc_private))]

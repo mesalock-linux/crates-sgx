@@ -11,6 +11,7 @@ description = "CBOR support for serde."
 keywords = ["serde", "cbor", "serialization"]
 categories = ["encoding"]
 edition = "2018"
+exclude = ["/sgx/*"]
 
 [badges]
 travis-ci = { repository = "pyfisch/cbor" }

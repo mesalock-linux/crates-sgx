@@ -10,7 +10,7 @@ keywords = ["string", "search", "text", "aho", "multi"]
 license = "Unlicense/MIT"
 categories = ["text-processing"]
 autotests = false
-exclude = ["/aho-corasick-debug", "/bench", "/ci/*", "/.travis.yml"]
+exclude = ["/aho-corasick-debug", "/bench", "/ci/*", "/.travis.yml", "/sgx/*"]
 
 [badges]
 travis-ci = { repository = "BurntSushi/aho-corasick" }

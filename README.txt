@@ -4,7 +4,7 @@ base64 0.10.1
 bincode 1.1.4
 bit-vec 0.6.1
 bitflags 1.1.0
-byteorder 1.3.1
+byteorder 1.3.2
 bytes 0.5.0
 cc 1.0.37
 cfg-if 0.1.9
@@ -39,8 +39,8 @@ rand 0.6.5
 rand_core 0.4.0
 rand_hc 0.1.0
 rand_pcg 0.1.2
-regex 1.1.6
-regex-syntax 0.6.6
+regex 1.1.7
+regex-syntax 0.6.7
 ring 0.14.6
 rustls 0.15.2
 ryu 0.2.8
@@ -57,7 +57,7 @@ thread_local 0.3.6
 ucd-util 0.1.3
 unicode-xid 0.0.4
 unicode-xid 0.1.0
-utf8-ranges 1.0.2
+utf8-ranges 1.0.3
 uuid 0.7.4
 wabt 0.6.0
 wasmi 0.4.5

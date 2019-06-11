@@ -14,6 +14,7 @@ include = [
   "src/**/*.rs",
   "Cargo.toml",
 ]
+exclude = ["/sgx/*"]
 
 [features]
 default = ["mesalock_sgx"]
