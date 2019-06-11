@@ -17,9 +17,9 @@ travis-ci = { repository = "pyfisch/cbor" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-byteorder = { version = "1.0.0", git = "https://github.com/mesalock-linux/byteorder-sgx" }
+byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
 half = "1.2.0"
-serde = { version = "1.0.14", git = "https://github.com/mesalock-linux/serde-sgx" }
+serde = { git = "https://github.com/mesalock-linux/serde-sgx" }
 sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 
 [dev-dependencies]

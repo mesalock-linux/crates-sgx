@@ -57,4 +57,4 @@ branch = "master"
 replace-with = "vendored-sources"
 
 [source.vendored-sources]
-directory = "/home/mssun/crates-sgx/vendor"
+directory = "vendor"
