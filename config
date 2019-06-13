@@ -41,8 +41,18 @@ git = "https://github.com/mesalock-linux/chrono-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/env_logger-sgx"]
+git = "https://github.com/mesalock-linux/env_logger-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/getrandom-sgx"]
 git = "https://github.com/mesalock-linux/getrandom-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/hashes-sgx-fake"]
+git = "https://github.com/mesalock-linux/hashes-sgx-fake"
 branch = "master"
 replace-with = "vendored-sources"
 
@@ -53,6 +63,11 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/http-sgx"]
 git = "https://github.com/mesalock-linux/http-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/humantime-sgx"]
+git = "https://github.com/mesalock-linux/humantime-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
@@ -68,6 +83,11 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/log-sgx"]
 git = "https://github.com/mesalock-linux/log-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/md5-sgx"]
+git = "https://github.com/mesalock-linux/md5-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
@@ -126,6 +146,11 @@ git = "https://github.com/mesalock-linux/rust-memchr-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/rust-sha1-sgx"]
+git = "https://github.com/mesalock-linux/rust-sha1-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/rustls"]
 git = "https://github.com/mesalock-linux/rustls"
 branch = "mesalock_sgx"
@@ -143,6 +168,11 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/serde-sgx"]
 git = "https://github.com/mesalock-linux/serde-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/termcolor-sgx"]
+git = "https://github.com/mesalock-linux/termcolor-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 

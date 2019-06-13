@@ -35,14 +35,17 @@ bincode      = { git = "https://github.com/mesalock-linux/bincode-sgx" }
 byteorder    = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
 bytes        = { git = "https://github.com/mesalock-linux/bytes-sgx" }
 chrono       = { git = "https://github.com/mesalock-linux/chrono-sgx" }
+env_logger   = { git = "https://github.com/mesalock-linux/env_logger-sgx" }
 getrandom    = { git = "https://github.com/mesalock-linux/getrandom-sgx" }
 heapsize     = { git = "https://github.com/mesalock-linux/heapsize-sgx" }
 http         = { git = "https://github.com/mesalock-linux/http-sgx" }
 iovec        = { git = "https://github.com/mesalock-linux/iovec-sgx" }
 itoa         = { git = "https://github.com/mesalock-linux/itoa-sgx" }
 log          = { git = "https://github.com/mesalock-linux/log-sgx" }
+md5          = { git = "https://github.com/mesalock-linux/md5-sgx" }
 num-bigint   = { git = "https://github.com/mesalock-linux/num-bigint-sgx" }
 num-traits   = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
+parity-wasm  = { git = "https://github.com/mesalock-linux/parity-wasm-sgx", branch = "v0.31.3" }
 quick-error  = { git = "https://github.com/mesalock-linux/quick-error-sgx" }
 rand         = { git = "https://github.com/mesalock-linux/rand-sgx" }
 regex        = { git = "https://github.com/mesalock-linux/regex-sgx" }
@@ -53,14 +56,16 @@ serde        = { git = "https://github.com/mesalock-linux/serde-sgx" }
 serde_cbor   = { git = "https://github.com/mesalock-linux/cbor-sgx" }
 serde_derive = { git = "https://github.com/mesalock-linux/serde-sgx" }
 serde_json   = { git = "https://github.com/mesalock-linux/serde-json-sgx" }
+sha-1        = { git = "https://github.com/mesalock-linux/hashes-sgx-fake" }
+sha1         = { git = "https://github.com/mesalock-linux/rust-sha1-sgx" }
+sha2         = { git = "https://github.com/mesalock-linux/hashes-sgx-fake" }
 untrusted    = { git = "https://github.com/briansmith/untrusted", tag = "ring-master" }
 uuid         = { git = "https://github.com/mesalock-linux/uuid-sgx" }
+wabt         = { git = "https://github.com/mesalock-linux/wabt-rs-sgx", branch = "v0.6.0-core" }
+wasmi        = { git = "https://github.com/mesalock-linux/wasmi-sgx" }
 webpki       = { git = "https://github.com/mesalock-linux/webpki", branch = "mesalock_sgx" }
 webpki-roots = { git = "https://github.com/mesalock-linux/webpki-roots", branch = "mesalock_sgx" }
 yasna        = { git = "https://github.com/mesalock-linux/yasna.rs-sgx" }
-wasmi = { git = "https://github.com/mesalock-linux/wasmi-sgx" }
-parity-wasm = { git = "https://github.com/mesalock-linux/parity-wasm-sgx", branch = "v0.31.3" }
-wabt = { git = "https://github.com/mesalock-linux/wabt-rs-sgx", branch = "v0.6.0-core" }
 
 # no_std crates
 bit-vec = { version = "0.6.1", default-feature = false }

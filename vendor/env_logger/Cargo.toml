@@ -1,0 +1,44 @@
+[package]
+name = "env_logger"
+version = "0.6.1" # remember to update html_root_url
+authors = ["The Rust Project Developers"]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/sebasmagri/env_logger/"
+documentation = "https://docs.rs/env_logger"
+description = """
+A logging implementation for `log` which is configured via an environment
+variable.
+"""
+categories = ["development-tools::debugging"]
+keywords = ["logging", "log", "logger"]
+exclude = ["/sgx/*"]
+
+[workspace]
+members = [
+    "ci"
+]
+
+[dependencies]
+log = { version = "0.4", features = ["std"], git = "https://github.com/mesalock-linux/log-sgx" }
+regex = { version = "1.0.3", optional = true, git = "https://github.com/mesalock-linux/regex-sgx" }
+termcolor = { version = "1.0.2", optional = true, git = "https://github.com/mesalock-linux/termcolor-sgx" }
+humantime = { version = "1.1", optional = true, git = "https://github.com/mesalock-linux/humantime-sgx" }
+atty = { version = "0.2.5", optional = true }
+sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+
+[[test]]
+name = "regexp_filter"
+harness = false
+
+[[test]]
+name = "log-in-log"
+harness = false
+
+[[test]]
+name = "init-twice-retains-filter"
+harness = false
+
+[features]
+default = ["termcolor", "atty", "humantime", "regex", "mesalock_sgx"]
+mesalock_sgx = ["sgx_tstd"]

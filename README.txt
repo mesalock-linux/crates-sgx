@@ -1,4 +1,5 @@
 aho-corasick 0.7.3
+atty 0.2.11
 autocfg 0.1.4
 base64 0.10.1
 bincode 1.1.4
@@ -11,6 +12,7 @@ cfg-if 0.1.9
 chrono 0.4.6
 cloudabi 0.0.3
 either 1.5.2
+env_logger 0.6.1
 fnv 1.0.6
 fuchsia-cprng 0.1.1
 getrandom 0.1.3
@@ -19,17 +21,20 @@ hashbrown 0.3.1
 heapsize 0.4.2
 http 0.1.17
 httparse 1.3.3
+humantime 1.2.0
 iovec 0.2.0
 itertools 0.8.0
 itoa 0.4.4
 lazy_static 1.3.0
 libc 0.2.58
 log 0.4.6
+md5 0.6.1
 memchr 2.2.0
 memory_units 0.3.0
 num-bigint 0.2.2
 num-integer 0.1.41
 num-traits 0.2.8
+numtoa 0.1.0
 parity-wasm 0.31.3
 proc-macro2 0.4.30
 quick-error 1.2.2
@@ -39,6 +44,8 @@ rand 0.6.5
 rand_core 0.4.0
 rand_hc 0.1.0
 rand_pcg 0.1.2
+redox_syscall 0.1.54
+redox_termios 0.1.1
 regex 1.1.7
 regex-syntax 0.6.7
 ring 0.14.6
@@ -49,10 +56,15 @@ serde 1.0.92
 serde_cbor 0.9.0
 serde_derive 1.0.92
 serde_json 1.0.39
+sha-1 0.1.0
+sha1 0.6.0
+sha2 0.1.0
 spin 0.5.0
 syn 0.11.11
 syn 0.15.35
 synom 0.11.3
+termcolor 1.0.5
+termion 1.5.3
 thread_local 0.3.6
 ucd-util 0.1.3
 unicode-xid 0.0.4
@@ -66,5 +78,7 @@ webpki 0.19.1
 webpki-roots 0.16.0
 winapi 0.3.7
 winapi-i686-pc-windows-gnu 0.4.0
+winapi-util 0.1.2
 winapi-x86_64-pc-windows-gnu 0.4.0
+wincolor 1.0.1
 yasna 0.3.0
