@@ -57,9 +57,9 @@ serde 1.0.92
 serde_cbor 0.9.0
 serde_derive 1.0.92
 serde_json 1.0.39
-sha-1 0.1.0
+sha-1 0.8.1
 sha1 0.6.0
-sha2 0.1.0
+sha2 0.8.0
 spin 0.5.0
 syn 0.11.11
 syn 0.15.35
