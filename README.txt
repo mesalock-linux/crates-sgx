@@ -19,6 +19,7 @@ getrandom 0.1.3
 half 1.3.0
 hashbrown 0.3.1
 heapsize 0.4.2
+hex 0.3.2
 http 0.1.17
 httparse 1.3.3
 humantime 1.2.0

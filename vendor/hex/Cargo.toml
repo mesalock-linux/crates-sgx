@@ -1,0 +1,17 @@
+[package]
+name = "hex"
+version = "0.3.2"
+authors = ["KokaKiwi <kokakiwi@kokakiwi.net>"]
+description = "Encoding and decoding data into/from hexadecimal representation."
+license = "MIT OR Apache-2.0"
+documentation = "https://docs.rs/hex/"
+repository = "https://github.com/KokaKiwi/rust-hex"
+exclude = ["/sgx/*"]
+
+[features]
+default = ["mesalock_sgx"]
+benchmarks = []
+mesalock_sgx = ["sgx_tstd"]
+
+[dependencies]
+sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }

@@ -141,6 +141,11 @@ git = "https://github.com/mesalock-linux/rust-fnv-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/rust-hex-sgx"]
+git = "https://github.com/mesalock-linux/rust-hex-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/rust-memchr-sgx"]
 git = "https://github.com/mesalock-linux/rust-memchr-sgx"
 branch = "master"

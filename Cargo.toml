@@ -38,6 +38,7 @@ chrono       = { git = "https://github.com/mesalock-linux/chrono-sgx" }
 env_logger   = { git = "https://github.com/mesalock-linux/env_logger-sgx" }
 getrandom    = { git = "https://github.com/mesalock-linux/getrandom-sgx" }
 heapsize     = { git = "https://github.com/mesalock-linux/heapsize-sgx" }
+hex          = { git = "https://github.com/mesalock-linux/rust-hex-sgx" }
 http         = { git = "https://github.com/mesalock-linux/http-sgx" }
 iovec        = { git = "https://github.com/mesalock-linux/iovec-sgx" }
 itoa         = { git = "https://github.com/mesalock-linux/itoa-sgx" }
