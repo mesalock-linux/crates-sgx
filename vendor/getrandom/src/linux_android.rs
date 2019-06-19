@@ -20,7 +20,6 @@ use core::num::NonZeroU32;
 use core::sync::atomic::{AtomicBool, Ordering};
 
 // This flag tells getrandom() to return EAGAIN instead of blocking.
-const GRND_NONBLOCK: libc::c_uint = 0x0001;
 static RNG_INIT: AtomicBool = AtomicBool::new(false);
 
 enum RngSource {
@@ -32,16 +31,20 @@ thread_local!(
     static RNG_SOURCE: RefCell<Option<RngSource>> = RefCell::new(None);
 );
 
-fn syscall_getrandom(dest: &mut [u8], block: bool) -> Result<(), io::Error> {
-    let flags = if block { 0 } else { GRND_NONBLOCK };
+fn syscall_getrandom(dest: &mut [u8], block: bool) -> Result<usize, io::Error> {
+    let flags = if block { 0 } else { libc::GRND_NONBLOCK };
     let ret = unsafe {
         libc::syscall(libc::SYS_getrandom, dest.as_mut_ptr(), dest.len(), flags)
     };
-    if ret < 0 || (ret as usize) != dest.len() {
+    if ret < 0 {
+        let err = io::Error::last_os_error();
+        if err.raw_os_error() == Some(libc::EINTR) {
+            return Ok(0); // Call was interrupted, try again
+        }
         error!("Linux getrandom syscall failed with return value {}", ret);
-        return Err(io::Error::last_os_error());
+        return Err(err);
     }
-    Ok(())
+    Ok(ret as usize)
 }
 
 pub fn getrandom_inner(dest: &mut [u8]) -> Result<(), Error> {
@@ -62,9 +65,15 @@ pub fn getrandom_inner(dest: &mut [u8]) -> Result<(), Error> {
             Ok(s)
         }, |f| {
             match f {
-                RngSource::GetRandom => syscall_getrandom(dest, true),
-                RngSource::Device(f) => f.read_exact(dest),
-            }.map_err(From::from)
+                RngSource::GetRandom => {
+                    let mut start = 0;
+                    while start < dest.len() {
+                        start += syscall_getrandom(&mut dest[start..], true)?;
+                    }
+                    Ok(())
+                }
+                RngSource::Device(f) => f.read_exact(dest).map_err(From::from),
+            }
         })
     })
 }
@@ -78,7 +87,7 @@ fn is_getrandom_available() -> bool {
     CHECKER.call_once(|| {
         let mut buf: [u8; 0] = [];
         let available = match syscall_getrandom(&mut buf, false) {
-            Ok(()) => true,
+            Ok(_) => true,
             Err(err) => err.raw_os_error() != Some(libc::ENOSYS),
         };
         AVAILABLE.store(available, Ordering::Relaxed);

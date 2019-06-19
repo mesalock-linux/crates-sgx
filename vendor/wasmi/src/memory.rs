@@ -564,6 +564,11 @@ impl MemoryInstance {
     }
 }
 
+unsafe impl Sync for MemoryRef {}
+unsafe impl Send for MemoryRef {}
+unsafe impl Sync for MemoryInstance {}
+unsafe impl Send for MemoryInstance {}
+
 #[cfg(test)]
 mod tests {
 

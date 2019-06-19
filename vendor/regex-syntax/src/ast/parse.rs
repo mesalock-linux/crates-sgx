@@ -1114,7 +1114,11 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
                 ast::ErrorKind::RepetitionCountUnclosed,
             ));
         }
-        let count_start = self.parse_decimal()?;
+        let count_start = specialize_err(
+            self.parse_decimal(),
+            ast::ErrorKind::DecimalEmpty,
+            ast::ErrorKind::RepetitionCountDecimalEmpty,
+        )?;
         let mut range = ast::RepetitionRange::Exactly(count_start);
         if self.is_eof() {
             return Err(self.error(
@@ -1130,7 +1134,11 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
                 ));
             }
             if self.char() != '}' {
-                let count_end = self.parse_decimal()?;
+                let count_end = specialize_err(
+                    self.parse_decimal(),
+                    ast::ErrorKind::DecimalEmpty,
+                    ast::ErrorKind::RepetitionCountDecimalEmpty,
+                )?;
                 range = ast::RepetitionRange::Bounded(count_start, count_end);
             } else {
                 range = ast::RepetitionRange::AtLeast(count_start);
@@ -2261,6 +2269,29 @@ impl<'p, 's, P: Borrow<Parser>> ast::Visitor for NestLimiter<'p, 's, P> {
     }
 }
 
+/// When the result is an error, transforms the ast::ErrorKind from the source
+/// Result into another one. This function is used to return clearer error
+/// messages when possible.
+fn specialize_err<T>(
+    result: Result<T>,
+    from: ast::ErrorKind,
+    to: ast::ErrorKind,
+) -> Result<T> {
+    if let Err(e) = result {
+        if e.kind == from {
+            Err(ast::Error {
+                kind: to,
+                pattern: e.pattern,
+                span: e.span,
+            })
+        } else {
+            Err(e)
+        }
+    } else {
+        result
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::ops::Range;
@@ -3145,6 +3176,18 @@ bar
                 kind: ast::ErrorKind::RepetitionMissing,
             });
         assert_eq!(
+            parser(r"a{]}").parse().unwrap_err(),
+            TestError {
+                span: span(2..2),
+                kind: ast::ErrorKind::RepetitionCountDecimalEmpty,
+            });
+        assert_eq!(
+            parser(r"a{1,]}").parse().unwrap_err(),
+            TestError {
+                span: span(4..4),
+                kind: ast::ErrorKind::RepetitionCountDecimalEmpty,
+            });
+        assert_eq!(
             parser(r"a{").parse().unwrap_err(),
             TestError {
                 span: span(1..2),
@@ -3154,13 +3197,13 @@ bar
             parser(r"a{}").parse().unwrap_err(),
             TestError {
                 span: span(2..2),
-                kind: ast::ErrorKind::DecimalEmpty,
+                kind: ast::ErrorKind::RepetitionCountDecimalEmpty,
             });
         assert_eq!(
             parser(r"a{a").parse().unwrap_err(),
             TestError {
                 span: span(2..2),
-                kind: ast::ErrorKind::DecimalEmpty,
+                kind: ast::ErrorKind::RepetitionCountDecimalEmpty,
             });
         assert_eq!(
             parser(r"a{9999999999}").parse().unwrap_err(),
@@ -3178,7 +3221,7 @@ bar
             parser(r"a{9,a").parse().unwrap_err(),
             TestError {
                 span: span(4..4),
-                kind: ast::ErrorKind::DecimalEmpty,
+                kind: ast::ErrorKind::RepetitionCountDecimalEmpty,
             });
         assert_eq!(
             parser(r"a{9,9999999999}").parse().unwrap_err(),

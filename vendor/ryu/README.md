@@ -13,22 +13,17 @@ includes a complete correctness proof of the algorithm. The paper is available
 under the creative commons CC-BY-SA license.
 
 This Rust implementation is a line-by-line port of Ulf Adams' implementation in
-C, [https://github.com/ulfjack/ryu][upstream]. The `ryu::raw` module exposes
-exactly the API and formatting of the C implementation as unsafe pure Rust
-functions. There is additionally a safe API as demonstrated in the example code
-below. The safe API uses the same underlying Ryū algorithm but diverges from the
-formatting of the C implementation to produce more human-readable output, for
-example `0.3` rather than `3E-1`.
+C, [https://github.com/ulfjack/ryu][upstream].
 
 *Requirements: this crate supports any compiler version back to rustc 1.15; it
 uses nothing from the Rust standard library so is usable from no_std crates.*
 
 [paper]: https://dl.acm.org/citation.cfm?id=3192369
-[upstream]: https://github.com/ulfjack/ryu/tree/795c8b57aa454c723194bbea8e4bf2ccd28e865f
+[upstream]: https://github.com/ulfjack/ryu/tree/688f43b62276b400728baad54afc32c3ab9c1a95
 
 ```toml
 [dependencies]
-ryu = "0.2"
+ryu = "1.0"
 ```
 
 ## Example
@@ -100,9 +95,20 @@ examples:
 Both libraries print short decimals such as 0.0000123 without scientific
 notation.
 
-## License
+<br>
 
-Licensed under either of the following at your option.
+#### License
 
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-- Boost Software License 1.0 ([LICENSE-BOOST](LICENSE-BOOST) or https://www.boost.org/LICENSE_1_0.txt)
+<sup>
+Licensed under either of <a href="LICENSE-APACHE">Apache License, Version
+2.0</a> or <a href="LICENSE-BOOST">Boost Software License 1.0</a> at your
+option.
+</sup>
+
+<br>
+
+<sub>
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in this crate by you, as defined in the Apache-2.0 license, shall
+be dual licensed as above, without any additional terms or conditions.
+</sub>

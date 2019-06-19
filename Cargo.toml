@@ -48,7 +48,7 @@ num-bigint   = { git = "https://github.com/mesalock-linux/num-bigint-sgx" }
 num-traits   = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
 parity-wasm  = { git = "https://github.com/mesalock-linux/parity-wasm-sgx", branch = "v0.31.3" }
 quick-error  = { git = "https://github.com/mesalock-linux/quick-error-sgx" }
-rand         = { git = "https://github.com/mesalock-linux/rand-sgx" }
+rand         = { git = "https://github.com/mesalock-linux/rand-sgx", rev = "v0.6.5_sgx1.0.8" }
 regex        = { git = "https://github.com/mesalock-linux/regex-sgx" }
 ring         = { git = "https://github.com/mesalock-linux/ring-sgx" }
 rustls       = { git = "https://github.com/mesalock-linux/rustls", branch = "mesalock_sgx" }

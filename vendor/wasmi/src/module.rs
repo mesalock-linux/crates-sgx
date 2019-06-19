@@ -5,10 +5,7 @@ use core::cell::RefCell;
 use core::fmt;
 use Trap;
 
-#[cfg(not(feature = "std"))]
-use hashbrown::HashMap;
-#[cfg(feature = "std")]
-use std::collections::HashMap;
+use alloc::collections::BTreeMap;
 
 use core::cell::Ref;
 use func::{FuncBody, FuncInstance, FuncRef};
@@ -18,6 +15,7 @@ use imports::ImportResolver;
 use memory::MemoryRef;
 use memory_units::Pages;
 use parity_wasm::elements::{External, InitExpr, Instruction, Internal, ResizableLimits, Type};
+use runner::StackRecycler;
 use table::TableRef;
 use types::{GlobalDescriptor, MemoryDescriptor, TableDescriptor};
 use validation::{DEFAULT_MEMORY_INDEX, DEFAULT_TABLE_INDEX};
@@ -161,7 +159,7 @@ pub struct ModuleInstance {
     funcs: RefCell<Vec<FuncRef>>,
     memories: RefCell<Vec<MemoryRef>>,
     globals: RefCell<Vec<GlobalRef>>,
-    exports: RefCell<HashMap<String, ExternVal>>,
+    exports: RefCell<BTreeMap<String, ExternVal>>,
 }
 
 impl ModuleInstance {
@@ -172,7 +170,7 @@ impl ModuleInstance {
             tables: RefCell::new(Vec::new()),
             memories: RefCell::new(Vec::new()),
             globals: RefCell::new(Vec::new()),
-            exports: RefCell::new(HashMap::new()),
+            exports: RefCell::new(BTreeMap::new()),
         }
     }
 
@@ -625,21 +623,43 @@ impl ModuleInstance {
         args: &[RuntimeValue],
         externals: &mut E,
     ) -> Result<Option<RuntimeValue>, Error> {
+        let func_instance = self.func_by_name(func_name)?;
+
+        FuncInstance::invoke(&func_instance, args, externals).map_err(|t| Error::Trap(t))
+    }
+
+    /// Invoke exported function by a name using recycled stacks.
+    ///
+    /// # Errors
+    ///
+    /// Same as [`invoke_export`].
+    ///
+    /// [`invoke_export`]: #method.invoke_export
+    pub fn invoke_export_with_stack<E: Externals>(
+        &self,
+        func_name: &str,
+        args: &[RuntimeValue],
+        externals: &mut E,
+        stack_recycler: &mut StackRecycler,
+    ) -> Result<Option<RuntimeValue>, Error> {
+        let func_instance = self.func_by_name(func_name)?;
+
+        FuncInstance::invoke_with_stack(&func_instance, args, externals, stack_recycler)
+            .map_err(|t| Error::Trap(t))
+    }
+
+    fn func_by_name(&self, func_name: &str) -> Result<FuncRef, Error> {
         let extern_val = self
             .export_by_name(func_name)
             .ok_or_else(|| Error::Function(format!("Module doesn't have export {}", func_name)))?;
 
-        let func_instance = match extern_val {
-            ExternVal::Func(func_instance) => func_instance,
-            unexpected => {
-                return Err(Error::Function(format!(
-                    "Export {} is not a function, but {:?}",
-                    func_name, unexpected
-                )));
-            }
-        };
-
-        FuncInstance::invoke(&func_instance, args, externals).map_err(|t| Error::Trap(t))
+        match extern_val {
+            ExternVal::Func(func_instance) => Ok(func_instance),
+            unexpected => Err(Error::Function(format!(
+                "Export {} is not a function, but {:?}",
+                func_name, unexpected
+            ))),
+        }
     }
 
     /// Find export by a name.
@@ -781,6 +801,13 @@ pub fn check_limits(limits: &ResizableLimits) -> Result<(), Error> {
 
     Ok(())
 }
+
+unsafe impl Sync for ModuleRef {}
+unsafe impl Send for ModuleRef {}
+unsafe impl Sync for ExternVal {}
+unsafe impl Send for ExternVal {}
+unsafe impl Sync for ModuleInstance {}
+unsafe impl Send for ModuleInstance {}
 
 #[cfg(test)]
 mod tests {

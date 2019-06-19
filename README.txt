@@ -34,6 +34,7 @@ memchr 2.2.0
 memory_units 0.3.0
 num-bigint 0.2.2
 num-integer 0.1.41
+num-rational 0.2.2
 num-traits 0.2.8
 numtoa 0.1.0
 parity-wasm 0.31.3
@@ -51,7 +52,7 @@ regex 1.1.7
 regex-syntax 0.6.7
 ring 0.14.6
 rustls 0.15.2
-ryu 0.2.8
+ryu 1.0.0
 sct 0.5.0
 serde 1.0.92
 serde_cbor 0.9.0
@@ -62,7 +63,7 @@ sha1 0.6.0
 sha2 0.8.0
 spin 0.5.0
 syn 0.11.11
-syn 0.15.35
+syn 0.15.36
 synom 0.11.3
 termcolor 1.0.5
 termion 1.5.3

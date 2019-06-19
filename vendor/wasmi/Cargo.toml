@@ -13,10 +13,12 @@ exclude = [ "/res/*", "/tests/*", "/fuzz/*", "/benches/*", "/sgx/*" ]
 [dependencies]
 wasmi-validation = { version = "0.1", path = "validation", default-features = false }
 parity-wasm = { version = "0.31", branch = "v0.31.3", git = "https://github.com/mesalock-linux/parity-wasm-sgx.git", default-features = false }
-hashbrown = { version = "0.3", features = ["nightly"], optional = true }
 memory_units = "0.3.0"
 libm = { version = "0.1.2", optional = true }
 sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+num-rational = { git = "https://github.com/mesalock-linux/num-rational-sgx" }
+num-traits = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
+serde = { git = "https://github.com/mesalock-linux/serde-sgx", features = ["derive"] }
 
 [dev-dependencies]
 assert_matches = "1.1"
@@ -24,18 +26,21 @@ rand = "0.4.2"
 wabt = "0.6"
 
 [features]
-default = ["std", "mesalock_sgx", "hashbrown"]
+default = ["std", "mesalock_sgx"]
 # Disable for no_std support
 std = [
     "wasmi-validation/mesalock_sgx",
+    "wasmi-validation/std",
     "parity-wasm/mesalock_sgx",
-    "hashbrown/nightly",
+    "parity-wasm/std",
+    "num-rational/mesalock_sgx",
+    "num-rational/std",
+    "num-traits/mesalock_sgx",
+    "num-traits/std",
 ]
 # Enable for no_std support
-# hashbrown only works on no_std
 core = [
     "wasmi-validation/core",
-    "hashbrown/nightly",
     "libm"
 ]
 

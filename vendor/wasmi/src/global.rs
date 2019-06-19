@@ -89,3 +89,8 @@ impl GlobalInstance {
         self.value_type().into_elements()
     }
 }
+
+unsafe impl Sync for GlobalRef {}
+unsafe impl Send for GlobalRef {}
+unsafe impl Sync for GlobalInstance {}
+unsafe impl Send for GlobalInstance {}

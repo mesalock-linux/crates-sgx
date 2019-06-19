@@ -1712,7 +1712,7 @@ pub trait Formatter {
         W: io::Write,
     {
         let mut buffer = ryu::Buffer::new();
-        let s = buffer.format(value);
+        let s = buffer.format_finite(value);
         writer.write_all(s.as_bytes())
     }
 
@@ -1723,7 +1723,7 @@ pub trait Formatter {
         W: io::Write,
     {
         let mut buffer = ryu::Buffer::new();
-        let s = buffer.format(value);
+        let s = buffer.format_finite(value);
         writer.write_all(s.as_bytes())
     }
 

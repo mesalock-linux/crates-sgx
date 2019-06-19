@@ -154,3 +154,8 @@ impl TableInstance {
         Ok(())
     }
 }
+
+unsafe impl Sync for TableRef {}
+unsafe impl Send for TableRef {}
+unsafe impl Sync for TableInstance {}
+unsafe impl Send for TableInstance {}

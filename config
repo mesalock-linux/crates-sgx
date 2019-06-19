@@ -101,6 +101,11 @@ git = "https://github.com/mesalock-linux/num-integer-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/num-rational-sgx"]
+git = "https://github.com/mesalock-linux/num-rational-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/num-traits-sgx"]
 git = "https://github.com/mesalock-linux/num-traits-sgx"
 branch = "master"
@@ -118,7 +123,7 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/rand-sgx"]
 git = "https://github.com/mesalock-linux/rand-sgx"
-branch = "master"
+rev = "v0.6.5_sgx1.0.8"
 replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/regex-sgx"]

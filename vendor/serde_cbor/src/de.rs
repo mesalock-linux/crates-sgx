@@ -54,7 +54,6 @@ where
 
 // When the "std" feature is enabled there should be little to no need to ever use this function,
 // as `from_slice` covers all use cases (at the expense of being less efficient).
-#[cfg_attr(feature = "std", doc(hidden))]
 /// Decode a value from CBOR data in a mutable slice.
 ///
 /// This can be used in analogy to `from_slice`. Unlike `from_slice`, this will use the slice's
@@ -73,7 +72,6 @@ where
 // When the "std" feature is enabled there should be little to no need to ever use this function,
 // as `from_slice` covers all use cases and is much more reliable (at the expense of being less
 // efficient).
-#[cfg_attr(feature = "std", doc(hidden))]
 /// Decode a value from CBOR data using a scratch buffer.
 ///
 /// Users should generally prefer to use `from_slice` or `from_mut_slice` over this function,
@@ -1113,6 +1111,27 @@ where
 ///
 /// A stream deserializer can be created from any CBOR deserializer using the
 /// `Deserializer::into_iter` method.
+///
+/// ```
+/// # extern crate serde_cbor;
+/// use serde_cbor::de::Deserializer;
+/// use serde_cbor::value::Value;
+///
+/// # fn main() {
+/// let data: Vec<u8> = vec![
+///     0x01, 0x66, 0x66, 0x6f, 0x6f, 0x62, 0x61, 0x72,
+/// ];
+/// let mut it = Deserializer::from_slice(&data[..]).into_iter::<Value>();
+/// assert_eq!(
+///     Value::Integer(1),
+///     it.next().unwrap().unwrap()
+/// );
+/// assert_eq!(
+///     Value::Text("foobar".to_string()),
+///     it.next().unwrap().unwrap()
+/// );
+/// # }
+/// ```
 pub struct StreamDeserializer<'de, R, T> {
     de: Deserializer<R>,
     output: PhantomData<T>,
