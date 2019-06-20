@@ -123,6 +123,7 @@ dependencies = [
  "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.6 (git+https://github.com/mesalock-linux/log-sgx)",
  "md5 0.6.1 (git+https://github.com/mesalock-linux/md5-sgx)",
+ "net2 0.2.33 (git+https://github.com/mesalock-linux/net2-rs)",
  "num-bigint 0.2.2 (git+https://github.com/mesalock-linux/num-bigint-sgx)",
  "num-traits 0.2.8 (git+https://github.com/mesalock-linux/num-traits-sgx)",
  "parity-wasm 0.31.3 (git+https://github.com/mesalock-linux/parity-wasm-sgx?branch=v0.31.3)",
@@ -203,7 +204,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "getrandom"
 version = "0.1.3"
-source = "git+https://github.com/mesalock-linux/getrandom-sgx#f6adaba0a0bc35d55fdc8809d39b8c111709ca97"
+source = "git+https://github.com/mesalock-linux/getrandom-sgx#f709ec78dab46628d884f8a2e639e356981a5afb"
 dependencies = [
  "cloudabi 0.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "fuchsia-cprng 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -334,6 +335,17 @@ dependencies = [
 name = "memory_units"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "net2"
+version = "0.2.33"
+source = "git+https://github.com/mesalock-linux/net2-rs#e8e742a6577d5cc4378417a88a36621ff0ca1f67"
+dependencies = [
+ "cfg-if 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sgx_libc 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
+ "sgx_tstd 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
+ "winapi 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "num-bigint"
@@ -492,7 +504,7 @@ dependencies = [
 [[package]]
 name = "ring"
 version = "0.14.6"
-source = "git+https://github.com/mesalock-linux/ring-sgx#f063fcb62467fa04d421a513f75f3e48f6bb59ec"
+source = "git+https://github.com/mesalock-linux/ring-sgx#f39555c07410decfc5a481769d4286a577926afb"
 dependencies = [
  "cc 1.0.37 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -543,7 +555,7 @@ dependencies = [
 [[package]]
 name = "serde"
 version = "1.0.92"
-source = "git+https://github.com/mesalock-linux/serde-sgx#f1732966e8f3c699d27deb0c83df73eb3aba7a28"
+source = "git+https://github.com/mesalock-linux/serde-sgx#1a9cc214e2fe85ee2343abf80b58ae172d363f38"
 dependencies = [
  "serde_derive 1.0.92 (git+https://github.com/mesalock-linux/serde-sgx)",
  "sgx_tstd 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
@@ -582,7 +594,7 @@ dependencies = [
 [[package]]
 name = "serde_derive"
 version = "1.0.92"
-source = "git+https://github.com/mesalock-linux/serde-sgx#f1732966e8f3c699d27deb0c83df73eb3aba7a28"
+source = "git+https://github.com/mesalock-linux/serde-sgx#1a9cc214e2fe85ee2343abf80b58ae172d363f38"
 dependencies = [
  "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.6.12 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1049,6 +1061,7 @@ dependencies = [
 "checksum md5 0.6.1 (git+https://github.com/mesalock-linux/md5-sgx)" = "<none>"
 "checksum memchr 2.2.0 (git+https://github.com/mesalock-linux/rust-memchr-sgx)" = "<none>"
 "checksum memory_units 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "71d96e3f3c0b6325d8ccd83c33b28acb183edcb6c67938ba104ec546854b0882"
+"checksum net2 0.2.33 (git+https://github.com/mesalock-linux/net2-rs)" = "<none>"
 "checksum num-bigint 0.2.2 (git+https://github.com/mesalock-linux/num-bigint-sgx)" = "<none>"
 "checksum num-integer 0.1.41 (git+https://github.com/mesalock-linux/num-integer-sgx)" = "<none>"
 "checksum num-rational 0.2.2 (git+https://github.com/mesalock-linux/num-rational-sgx)" = "<none>"

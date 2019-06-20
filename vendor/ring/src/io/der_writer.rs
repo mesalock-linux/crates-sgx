@@ -14,8 +14,9 @@
 
 use std::prelude::v1::*;
 use super::{der::*, writer::*, *};
+use std::boxed::Box;
 
-pub(crate) fn write_positive_integer(output: &mut Accumulator, value: &Positive) {
+pub(crate) fn write_positive_integer(output: &mut dyn Accumulator, value: &Positive) {
     let first_byte = value.first_byte();
     let value = value.big_endian_without_leading_zero_as_input();
     write_tlv(output, Tag::Integer, |output| {
@@ -26,7 +27,7 @@ pub(crate) fn write_positive_integer(output: &mut Accumulator, value: &Positive)
     })
 }
 
-pub(crate) fn write_all(tag: Tag, write_value: &Fn(&mut Accumulator)) -> Box<[u8]> {
+pub(crate) fn write_all(tag: Tag, write_value: &dyn Fn(&mut dyn Accumulator)) -> Box<[u8]> {
     let length = {
         let mut length = LengthMeasurement::zero();
         write_tlv(&mut length, tag, write_value);
@@ -39,9 +40,9 @@ pub(crate) fn write_all(tag: Tag, write_value: &Fn(&mut Accumulator)) -> Box<[u8
     output.into()
 }
 
-fn write_tlv<F>(output: &mut Accumulator, tag: Tag, write_value: F)
+fn write_tlv<F>(output: &mut dyn Accumulator, tag: Tag, write_value: F)
 where
-    F: Fn(&mut Accumulator),
+    F: Fn(&mut dyn Accumulator),
 {
     let length: usize = {
         let mut length = LengthMeasurement::zero();

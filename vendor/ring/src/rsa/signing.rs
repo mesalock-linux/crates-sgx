@@ -25,6 +25,7 @@ use crate::{
     io::{self, der, der_writer},
     pkcs8, rand, signature,
 };
+use std::boxed::Box;
 use untrusted;
 
 /// An RSA key pair, used for signing.
@@ -534,8 +535,8 @@ impl RsaKeyPair {
     /// platforms, it is done less perfectly.
     pub fn sign(
         &self,
-        padding_alg: &'static RsaEncoding,
-        rng: &rand::SecureRandom,
+        padding_alg: &'static dyn RsaEncoding,
+        rng: &dyn rand::SecureRandom,
         msg: &[u8],
         signature: &mut [u8],
     ) -> Result<(), error::Unspecified> {
@@ -610,6 +611,7 @@ mod tests {
     // We intentionally avoid `use super::*` so that we are sure to use only
     // the public API; this ensures that enough of the API is public.
     use crate::{rand, signature};
+    use std::vec;
 
     // `KeyPair::sign` requires that the output buffer is the same length as
     // the public key modulus. Test what happens when it isn't the same length.

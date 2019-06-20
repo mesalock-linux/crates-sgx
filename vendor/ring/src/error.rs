@@ -15,11 +15,7 @@
 //! Error reporting.
 
 use crate::polyfill::convert::*;
-use core;
 use untrusted;
-
-#[cfg(feature = "use_heap")]
-use std;
 
 /// An error with absolutely no details.
 ///
@@ -96,7 +92,7 @@ impl core::fmt::Display for Unspecified {
 #[cfg(feature = "use_heap")]
 impl std::error::Error for Unspecified {
     #[inline]
-    fn cause(&self) -> Option<&std::error::Error> {
+    fn cause(&self) -> Option<&dyn std::error::Error> {
         None
     }
 
@@ -203,7 +199,7 @@ impl KeyRejected {
 
 #[cfg(feature = "use_heap")]
 impl std::error::Error for KeyRejected {
-    fn cause(&self) -> Option<&std::error::Error> {
+    fn cause(&self) -> Option<&dyn std::error::Error> {
         None
     }
 
@@ -212,8 +208,7 @@ impl std::error::Error for KeyRejected {
     }
 }
 
-#[cfg(feature = "use_heap")]
-impl std::fmt::Display for KeyRejected {
+impl core::fmt::Display for KeyRejected {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         f.write_str(self.description_())
     }

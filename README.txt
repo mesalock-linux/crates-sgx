@@ -32,6 +32,7 @@ log 0.4.6
 md5 0.6.1
 memchr 2.2.0
 memory_units 0.3.0
+net2 0.2.33
 num-bigint 0.2.2
 num-integer 0.1.41
 num-rational 0.2.2

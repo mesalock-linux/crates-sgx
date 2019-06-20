@@ -1,4 +1,4 @@
-// Copyright 2018 Brian Smith.
+// Copyright 2016-2019 Brian Smith.
 //
 // Permission to use, copy, modify, and/or distribute this software for any
 // purpose with or without fee is hereby granted, provided that the above
@@ -12,13 +12,22 @@
 // OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 // CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-#include "internal.h"
+//! C types.
+//!
+//! The libc crate provide the C types for most, but not all, targets that
+//! *ring* supports.
 
-#ifndef RING_HEADER_CRYPTO_INTERNAL_H
-#define RING_HEADER_CRYPTO_INTERNAL_H
+use libc;
 
-typedef struct Block {
-  uint64_t subblocks[2];
-} Block;
+pub(crate) type size_t = libc::size_t;
+pub(crate) type int = libc::c_int;
+pub(crate) type uint = libc::c_uint;
 
-#endif
+#[cfg(all(
+    any(target_os = "android", target_os = "linux"),
+    any(target_arch = "aarch64", target_arch = "arm")
+))]
+pub(crate) type ulong = libc::c_ulong;
+
+#[cfg(all(not(feature = "mesalock_sgx"), any(target_os = "android", target_os = "linux")))]
+pub(crate) type long = libc::c_long;

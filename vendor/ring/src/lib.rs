@@ -59,28 +59,19 @@
     unused_results,
     warnings
 )]
-#![cfg_attr(
-    any(
-        target_os = "redox",
-        all(
-            not(test),
-            not(feature = "use_heap"),
-            unix,
-            not(any(target_os = "macos", target_os = "ios")),
-            any(not(target_os = "linux"), feature = "dev_urandom_fallback")
-        ),
-        all(
-            feature = "mesalock_sgx",
-            not(target_env = "sgx"),
-        ),
-    ),
-    no_std
-)]
+#![no_std]
 #![cfg_attr(feature = "internal_benches", allow(unstable_features), feature(test))]
 #![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))] 
 #[cfg(all(feature = "mesalock_sgx", not(target_env = "sgx")))]
 #[macro_use]
 extern crate sgx_tstd as std;
+
+#[cfg(all(feature = "mesalock_sgx", target_env = "sgx"))]
+#[macro_use]
+extern crate std;
+
+#[cfg(any(test, all(not(feature = "mesalock_sgx"), feature = "use_heap")))]
+extern crate std;
 
 #[macro_use]
 mod debug;
@@ -102,6 +93,7 @@ pub mod agreement;
 
 mod bits;
 
+pub(crate) mod c;
 pub mod constant_time;
 
 pub mod io;

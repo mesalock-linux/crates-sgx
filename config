@@ -91,6 +91,11 @@ git = "https://github.com/mesalock-linux/md5-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/net2-rs"]
+git = "https://github.com/mesalock-linux/net2-rs"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/num-bigint-sgx"]
 git = "https://github.com/mesalock-linux/num-bigint-sgx"
 branch = "master"

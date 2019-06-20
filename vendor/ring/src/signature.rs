@@ -257,7 +257,6 @@
 //! ```
 
 use crate::{cpu, ec, error, sealed};
-use core;
 use untrusted;
 
 pub use crate::ec::{
@@ -365,7 +364,7 @@ pub trait VerificationAlgorithm: core::fmt::Debug + Sync + sealed::Sealed {
 
 /// An unparsed, possibly malformed, public key for signature verification.
 pub struct UnparsedPublicKey<B: AsRef<[u8]>> {
-    algorithm: &'static VerificationAlgorithm,
+    algorithm: &'static dyn VerificationAlgorithm,
     bytes: B,
 }
 
@@ -388,7 +387,7 @@ impl<B: AsRef<[u8]>> UnparsedPublicKey<B> {
     ///
     /// No validation of `bytes` is done until `verify()` is called.
     #[inline]
-    pub fn new(algorithm: &'static VerificationAlgorithm, bytes: B) -> Self {
+    pub fn new(algorithm: &'static dyn VerificationAlgorithm, bytes: B) -> Self {
         Self { algorithm, bytes }
     }
 
@@ -411,7 +410,7 @@ impl<B: AsRef<[u8]>> UnparsedPublicKey<B> {
 /// [UnparsedPublicKey::verify()]: UnparsedPublicKey::verify
 #[deprecated(note = "Use UnparsedPublicKey::verify")]
 pub fn verify(
-    algorithm: &'static VerificationAlgorithm,
+    algorithm: &'static dyn VerificationAlgorithm,
     public_key: untrusted::Input,
     msg: untrusted::Input,
     signature: untrusted::Input,
