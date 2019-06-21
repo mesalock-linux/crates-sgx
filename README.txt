@@ -40,6 +40,7 @@ num-traits 0.2.8
 numtoa 0.1.0
 parity-wasm 0.31.3
 proc-macro2 0.4.30
+profiler_builtins 0.1.0
 quick-error 1.2.2
 quote 0.3.15
 quote 0.6.12

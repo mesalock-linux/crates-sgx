@@ -5,8 +5,12 @@ authors = ["MesaTEE Authors"]
 edition = "2018"
 
 [dependencies]
+# SGX helper
+profiler_builtins              = { git = "https://github.com/mesalock-linux/sgx-fake-profiler-builtins" }
+
 # Rust SGX SDK
 sgx_alloc                      = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
+sgx_cov                        = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 sgx_libc                       = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 sgx_rand                       = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 sgx_rand_derive                = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }

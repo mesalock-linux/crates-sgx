@@ -127,6 +127,7 @@ dependencies = [
  "num-bigint 0.2.2 (git+https://github.com/mesalock-linux/num-bigint-sgx)",
  "num-traits 0.2.8 (git+https://github.com/mesalock-linux/num-traits-sgx)",
  "parity-wasm 0.31.3 (git+https://github.com/mesalock-linux/parity-wasm-sgx?branch=v0.31.3)",
+ "profiler_builtins 0.1.0 (git+https://github.com/mesalock-linux/sgx-fake-profiler-builtins)",
  "quick-error 1.2.2 (git+https://github.com/mesalock-linux/quick-error-sgx)",
  "rand 0.6.5 (git+https://github.com/mesalock-linux/rand-sgx?rev=v0.6.5_sgx1.0.8)",
  "regex 1.1.7 (git+https://github.com/mesalock-linux/regex-sgx)",
@@ -138,6 +139,7 @@ dependencies = [
  "serde_derive 1.0.92 (git+https://github.com/mesalock-linux/serde-sgx)",
  "serde_json 1.0.39 (git+https://github.com/mesalock-linux/serde-json-sgx)",
  "sgx_alloc 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
+ "sgx_cov 0.1.0 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
  "sgx_libc 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
  "sgx_rand 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
  "sgx_rand_derive 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
@@ -410,6 +412,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "profiler_builtins"
+version = "0.1.0"
+source = "git+https://github.com/mesalock-linux/sgx-fake-profiler-builtins#37b585ce50ce53a74d57b8aee7f6344765846ac1"
+
+[[package]]
 name = "quick-error"
 version = "1.2.2"
 source = "git+https://github.com/mesalock-linux/quick-error-sgx#35d46de450bf8881ef6cbe0a47da6ca58299bafa"
@@ -547,7 +554,7 @@ dependencies = [
 [[package]]
 name = "serde"
 version = "1.0.84"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_tstd 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
 ]
@@ -564,7 +571,7 @@ dependencies = [
 [[package]]
 name = "serde-big-array"
 version = "0.1.3"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "serde 1.0.84 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
  "serde_derive 1.0.84 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
@@ -584,7 +591,7 @@ dependencies = [
 [[package]]
 name = "serde_derive"
 version = "1.0.84"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.6.12 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -615,7 +622,7 @@ dependencies = [
 [[package]]
 name = "sgx_alloc"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_trts 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
 ]
@@ -623,12 +630,24 @@ dependencies = [
 [[package]]
 name = "sgx_build_helper"
 version = "0.1.0"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
+
+[[package]]
+name = "sgx_cov"
+version = "0.1.0"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
+dependencies = [
+ "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "profiler_builtins 0.1.0 (git+https://github.com/mesalock-linux/sgx-fake-profiler-builtins)",
+ "sgx_rand 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
+ "sgx_tstd 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
+ "sgx_types 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
+]
 
 [[package]]
 name = "sgx_libc"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_types 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
 ]
@@ -636,7 +655,7 @@ dependencies = [
 [[package]]
 name = "sgx_rand"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_trts 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
  "sgx_tstd 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
@@ -646,7 +665,7 @@ dependencies = [
 [[package]]
 name = "sgx_rand_derive"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "quote 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 0.11.11 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -655,7 +674,7 @@ dependencies = [
 [[package]]
 name = "sgx_serialize"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_tstd 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
 ]
@@ -663,7 +682,7 @@ dependencies = [
 [[package]]
 name = "sgx_serialize_derive"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "quote 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "sgx_serialize_derive_internals 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
@@ -673,7 +692,7 @@ dependencies = [
 [[package]]
 name = "sgx_serialize_derive_internals"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "syn 0.11.11 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -681,7 +700,7 @@ dependencies = [
 [[package]]
 name = "sgx_tcrypto"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_types 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
 ]
@@ -689,7 +708,7 @@ dependencies = [
 [[package]]
 name = "sgx_tcrypto_helper"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "itertools 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.84 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
@@ -703,7 +722,7 @@ dependencies = [
 [[package]]
 name = "sgx_tdh"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_tcrypto 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
  "sgx_trts 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
@@ -714,7 +733,7 @@ dependencies = [
 [[package]]
 name = "sgx_tkey_exchange"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_types 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
 ]
@@ -722,7 +741,7 @@ dependencies = [
 [[package]]
 name = "sgx_tprotected_fs"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_trts 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
  "sgx_types 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
@@ -731,7 +750,7 @@ dependencies = [
 [[package]]
 name = "sgx_trts"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_libc 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
  "sgx_types 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
@@ -740,7 +759,7 @@ dependencies = [
 [[package]]
 name = "sgx_tse"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_types 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
 ]
@@ -748,7 +767,7 @@ dependencies = [
 [[package]]
 name = "sgx_tseal"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_tcrypto 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
  "sgx_trts 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
@@ -759,7 +778,7 @@ dependencies = [
 [[package]]
 name = "sgx_tservice"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_types 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
 ]
@@ -767,7 +786,7 @@ dependencies = [
 [[package]]
 name = "sgx_tstd"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_alloc 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
  "sgx_build_helper 0.1.0 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
@@ -781,7 +800,7 @@ dependencies = [
 [[package]]
 name = "sgx_tunittest"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_tstd 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
 ]
@@ -789,12 +808,12 @@ dependencies = [
 [[package]]
 name = "sgx_types"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 
 [[package]]
 name = "sgx_unwind"
 version = "0.0.1"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "sgx_trts 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
 ]
@@ -802,7 +821,7 @@ dependencies = [
 [[package]]
 name = "sgx_urts"
 version = "1.0.8"
-source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#21f9e7fc2474c1a59234f6da59132c846c7b9fa2"
+source = "git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8#25077e13771969ec62cbc4c2cb761ef43a19e666"
 dependencies = [
  "libc 0.2.58 (registry+https://github.com/rust-lang/crates.io-index)",
  "sgx_types 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
@@ -942,7 +961,7 @@ dependencies = [
 [[package]]
 name = "wasmi"
 version = "0.4.5"
-source = "git+https://github.com/mesalock-linux/wasmi-sgx#8b61d6795884780c42f386894784c5d526dba61b"
+source = "git+https://github.com/mesalock-linux/wasmi-sgx#947527b503c9a70e73c01919582b341d69e81145"
 dependencies = [
  "memory_units 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-rational 0.2.2 (git+https://github.com/mesalock-linux/num-rational-sgx)",
@@ -956,7 +975,7 @@ dependencies = [
 [[package]]
 name = "wasmi-validation"
 version = "0.1.0"
-source = "git+https://github.com/mesalock-linux/wasmi-sgx#8b61d6795884780c42f386894784c5d526dba61b"
+source = "git+https://github.com/mesalock-linux/wasmi-sgx#947527b503c9a70e73c01919582b341d69e81145"
 dependencies = [
  "parity-wasm 0.31.3 (git+https://github.com/mesalock-linux/parity-wasm-sgx?branch=v0.31.3)",
  "sgx_tstd 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
@@ -1069,6 +1088,7 @@ dependencies = [
 "checksum numtoa 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b8f8bdf33df195859076e54ab11ee78a1b208382d3a26ec40d142ffc1ecc49ef"
 "checksum parity-wasm 0.31.3 (git+https://github.com/mesalock-linux/parity-wasm-sgx?branch=v0.31.3)" = "<none>"
 "checksum proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)" = "cf3d2011ab5c909338f7887f4fc896d35932e29146c12c8d01da6b22a80ba759"
+"checksum profiler_builtins 0.1.0 (git+https://github.com/mesalock-linux/sgx-fake-profiler-builtins)" = "<none>"
 "checksum quick-error 1.2.2 (git+https://github.com/mesalock-linux/quick-error-sgx)" = "<none>"
 "checksum quote 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)" = "7a6e920b65c65f10b2ae65c831a81a073a89edd28c7cce89475bff467ab4167a"
 "checksum quote 0.6.12 (registry+https://github.com/rust-lang/crates.io-index)" = "faf4799c5d274f3868a4aae320a0a182cbd2baee377b378f080e16a23e9d80db"
@@ -1093,6 +1113,7 @@ dependencies = [
 "checksum serde_json 1.0.39 (git+https://github.com/mesalock-linux/serde-json-sgx)" = "<none>"
 "checksum sgx_alloc 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)" = "<none>"
 "checksum sgx_build_helper 0.1.0 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)" = "<none>"
+"checksum sgx_cov 0.1.0 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)" = "<none>"
 "checksum sgx_libc 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)" = "<none>"
 "checksum sgx_rand 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)" = "<none>"
 "checksum sgx_rand_derive 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)" = "<none>"

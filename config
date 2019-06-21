@@ -186,6 +186,11 @@ git = "https://github.com/mesalock-linux/serde-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/sgx-fake-profiler-builtins"]
+git = "https://github.com/mesalock-linux/sgx-fake-profiler-builtins"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/termcolor-sgx"]
 git = "https://github.com/mesalock-linux/termcolor-sgx"
 branch = "master"
