@@ -1,0 +1,31 @@
+[package]
+name = "tiff"
+version = "0.3.1"
+authors = [
+    "ccgn",
+    "bvssvni <bvssvni@gmail.com>",
+    "nwin",
+    "TyOverby <ty@pre-alpha.com>",
+    "HeroicKatora",
+    "Calum",
+    "CensoredUsername <cens.username@gmail.com>",
+    "Robzz",
+    "birktj"]
+license = "MIT"
+description = "TIFF decoding and encoding library in pure Rust"
+repository = "https://github.com/image-rs/image-tiff"
+exclude = ["tests/images/*", "tests/fuzz_images/*", "/sgx/*"]
+
+[dependencies]
+byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
+lzw = { git = "https://github.com/mesalock-linux/lzw-sgx" }
+num-derive = { git = "https://github.com/rust-num/num-derive" }
+num-traits = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
+sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+
+[dev-dependencies]
+tempfile = "3.0"
+
+[features]
+default = ["mesalock_sgx"]
+mesalock_sgx = ["sgx_tstd"]

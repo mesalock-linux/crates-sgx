@@ -10,6 +10,7 @@ documentation = "https://doc.rust-lang.org/net2-rs/"
 description = """
 Extensions to the standard library's networking types as proposed in RFC 1158.
 """
+exclude = ["/sgx/*"]
 
 [target."cfg(windows)".dependencies]
 winapi = { version = "0.3", features = ["handleapi", "winsock2", "ws2def", "ws2ipdef", "ws2tcpip"] }

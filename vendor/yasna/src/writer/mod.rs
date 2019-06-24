@@ -56,6 +56,52 @@ pub fn construct_der<F>(callback: F) -> Vec<u8>
     return buf;
 }
 
+/// Tries to construct DER-encoded data as `Vec<u8>`.
+///
+/// Same as [`construct_der`][construct_der], only that it allows
+/// returning an error from the passed closure.
+///
+/// [construct_der]: fn.construct_der.html
+///
+/// This function uses the loan pattern: `callback` is called back with
+/// a [`DERWriterSeq`][derwriterseq], to which the ASN.1 values are written.
+///
+/// [derwriterseq]: struct.DERWriterSeq.html
+///
+/// # Examples
+///
+/// ```
+/// use yasna;
+/// let res_ok = yasna::try_construct_der::<_, ()>(|writer| {
+///     writer.write_sequence(|writer| {
+///         writer.next().write_i64(10);
+///         writer.next().write_bool(true);
+///     });
+///     Ok(())
+/// });
+/// let res_err = yasna::try_construct_der::<_, &str>(|writer| {
+///     writer.write_sequence(|writer| {
+///         writer.next().write_i64(10);
+///         writer.next().write_bool(true);
+///         return Err("some error here");
+///     })?;
+///     Ok(())
+/// });
+/// assert_eq!(res_ok, Ok(vec![48, 6, 2, 1, 10, 1, 1, 255]));
+/// assert_eq!(res_err, Err("some error here"));
+/// ```
+pub fn try_construct_der<F, E>(callback: F) -> Result<Vec<u8>, E>
+        where F: FnOnce(DERWriter) -> Result<(), E> {
+    let mut buf = Vec::new();
+    {
+        let mut writer = DERWriterSeq {
+            buf: &mut buf,
+        };
+        callback(writer.next())?;
+    }
+    return Ok(buf);
+}
+
 /// Constructs DER-encoded sequence of data as `Vec<u8>`.
 ///
 /// This is similar to [`construct_der`][construct_der], but this function
@@ -88,6 +134,45 @@ pub fn construct_der_seq<F>(callback: F) -> Vec<u8>
         callback(&mut writer);
     }
     return buf;
+}
+
+/// Tries to construct a DER-encoded sequence of data as `Vec<u8>`.
+///
+/// Same as [`construct_der_seq`][construct_der_seq], only that it allows
+/// returning an error from the passed closure.
+///
+/// [construct_der_seq]: fn.construct_der_seq.html
+///
+/// This function uses the loan pattern: `callback` is called back with
+/// a [`DERWriterSeq`][derwriterseq], to which the ASN.1 values are written.
+///
+/// [derwriterseq]: struct.DERWriterSeq.html
+///
+/// # Examples
+///
+/// ```
+/// use yasna;
+/// let res_ok = yasna::try_construct_der_seq::<_, ()>(|writer| {
+///     writer.next().write_i64(10);
+///     writer.next().write_bool(true);
+///     Ok(())
+/// });
+/// let res_err = yasna::try_construct_der_seq::<_, &str>(|writer| {
+///     return Err("some error here");
+/// });
+/// assert_eq!(res_ok, Ok(vec![2, 1, 10, 1, 1, 255]));
+/// assert_eq!(res_err, Err("some error here"));
+/// ```
+pub fn try_construct_der_seq<F, E>(callback: F) -> Result<Vec<u8> , E>
+        where F: FnOnce(&mut DERWriterSeq) -> Result<(), E> {
+    let mut buf = Vec::new();
+    {
+        let mut writer = DERWriterSeq {
+            buf: &mut buf,
+        };
+        callback(&mut writer)?;
+    }
+    return Ok(buf);
 }
 
 /// A writer object that accepts an ASN.1 value.
@@ -484,16 +569,46 @@ impl<'a> DERWriter<'a> {
     /// [dependencies]
     /// yasna = { version = "*", features = ["bit-vec"] }
     /// ```
-    pub fn write_bitvec(mut self, bitvec: &BitVec) {
-        use super::tags::TAG_BITSTRING;
-        self.write_identifier(TAG_BITSTRING, PCBit::Primitive);
+    pub fn write_bitvec(self, bitvec: &BitVec) {
         let len = bitvec.len();
         let bytes = bitvec.to_bytes();
+        self.write_bitvec_bytes(&bytes, len);
+    }
+
+    /// Writes `&[u8]` and `usize` as an ASN.1 BITSTRING value.
+    ///
+    /// This function is similar to `write_bitvec`, but is available
+    /// even if the `bit-vec` feature is disabled.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # extern crate yasna;
+    /// # fn main() {
+    /// use yasna;
+    /// let der_1 = yasna::construct_der(|writer| {
+    ///     writer.write_bitvec_bytes(&[117, 13, 64], 18)
+    /// });
+    /// let der_2 = yasna::construct_der(|writer| {
+    ///     writer.write_bitvec_bytes(&[117, 13, 65], 18)
+    /// });
+    /// assert_eq!(&der_1, &[3, 4, 6, 117, 13, 64]);
+    /// assert_eq!(&der_2, &[3, 4, 6, 117, 13, 64]);
+    /// # }
+    /// ```
+    pub fn write_bitvec_bytes(mut self, bytes: &[u8], len: usize) {
+        use super::tags::TAG_BITSTRING;
+        self.write_identifier(TAG_BITSTRING, PCBit::Primitive);
         debug_assert!(len <= 8 * bytes.len());
         debug_assert!(8 * bytes.len() < len + 8);
         self.write_length(1 + bytes.len());
-        self.buf.push((8 * bytes.len() - len) as u8);
-        self.buf.extend_from_slice(&bytes);
+        let len_diff = 8 * bytes.len() - len;
+        self.buf.push(len_diff as u8);
+        if bytes.len() > 0 {
+            self.buf.extend_from_slice(&bytes[0 .. bytes.len() - 1]);
+            let mask = !(255u16 >> (8 - len_diff)) as u8;
+            self.buf.push(bytes[bytes.len() - 1] & mask);
+        }
     }
 
     /// Writes `&[u8]` as an ASN.1 OCTETSTRING value.

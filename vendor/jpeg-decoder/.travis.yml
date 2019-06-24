@@ -1,0 +1,15 @@
+language: rust
+rust:
+  - 1.24.1
+  - stable
+  - beta
+  - nightly
+matrix:
+  allow_failures:
+    - rust: nightly
+env:
+  - FEATURES=""
+  - FEATURES="rayon"
+script:
+  - cargo build --verbose --no-default-features --features "$FEATURES"
+  - cargo test --verbose --no-default-features --features "$FEATURES"
