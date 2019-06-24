@@ -10,6 +10,7 @@ profiler_builtins              = { git = "https://github.com/mesalock-linux/sgx-
 
 # Rust SGX SDK
 sgx_alloc                      = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
+sgx_build_helper               = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 sgx_cov                        = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 sgx_libc                       = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }
 sgx_rand                       = { git = "https://github.com/baidu/rust-sgx-sdk", rev = "v1.0.8" }

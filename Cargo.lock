@@ -173,6 +173,7 @@ dependencies = [
  "serde_derive 1.0.93 (git+https://github.com/mesalock-linux/serde-sgx)",
  "serde_json 1.0.39 (git+https://github.com/mesalock-linux/serde-json-sgx)",
  "sgx_alloc 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
+ "sgx_build_helper 0.1.0 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
  "sgx_cov 0.1.0 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
  "sgx_libc 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
  "sgx_rand 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
