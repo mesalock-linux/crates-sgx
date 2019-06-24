@@ -66,11 +66,6 @@ git = "https://github.com/mesalock-linux/env_logger-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
-[source."https://github.com/mesalock-linux/gbdt-rs"]
-git = "https://github.com/mesalock-linux/gbdt-rs"
-branch = "master"
-replace-with = "vendored-sources"
-
 [source."https://github.com/mesalock-linux/getrandom-sgx"]
 git = "https://github.com/mesalock-linux/getrandom-sgx"
 branch = "master"

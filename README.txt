@@ -20,7 +20,6 @@ either                        1.5.2
 env_logger                    0.6.1
 fnv                           1.0.6
 fuchsia-cprng                 0.1.1
-gbdt_sgx                      0.1.0
 getrandom                     0.1.3
 gif                           0.10.2
 gzip-header                   0.2.0
