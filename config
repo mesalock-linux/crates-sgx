@@ -136,6 +136,11 @@ git = "https://github.com/mesalock-linux/jpeg-decoder-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/linked-hash-map-sgx"]
+git = "https://github.com/mesalock-linux/linked-hash-map-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/log-sgx"]
 git = "https://github.com/mesalock-linux/log-sgx"
 branch = "master"
@@ -268,6 +273,11 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/thread_local-rs-sgx"]
 git = "https://github.com/mesalock-linux/thread_local-rs-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/toml-rs-sgx"]
+git = "https://github.com/mesalock-linux/toml-rs-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 

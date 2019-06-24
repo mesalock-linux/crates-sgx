@@ -57,6 +57,7 @@ image        = { git = "https://github.com/mesalock-linux/image-sgx" }
 inflate      = { git = "https://github.com/mesalock-linux/inflate-sgx" }
 itoa         = { git = "https://github.com/mesalock-linux/itoa-sgx" }
 jpeg-decoder = { git = "https://github.com/mesalock-linux/jpeg-decoder-sgx" }
+linked-hash-map = { git = "https://github.com/mesalock-linux/linked-hash-map-sgx" }
 log          = { git = "https://github.com/mesalock-linux/log-sgx" }
 lzw          = { git = "https://github.com/mesalock-linux/lzw-sgx" }
 md5          = { git = "https://github.com/mesalock-linux/md5-sgx" }
@@ -79,6 +80,7 @@ sha-1        = { git = "https://github.com/mesalock-linux/hashes-sgx-fake" }
 sha1         = { git = "https://github.com/mesalock-linux/rust-sha1-sgx" }
 sha2         = { git = "https://github.com/mesalock-linux/hashes-sgx-fake" }
 tiff         = { git = "https://github.com/mesalock-linux/image-tiff-sgx" }
+toml         = { git = "https://github.com/mesalock-linux/toml-rs-sgx" }
 untrusted    = { git = "https://github.com/briansmith/untrusted", tag = "ring-master" }
 uuid         = { git = "https://github.com/mesalock-linux/uuid-sgx" }
 wabt         = { git = "https://github.com/mesalock-linux/wabt-rs-sgx", branch = "v0.6.0-core" }

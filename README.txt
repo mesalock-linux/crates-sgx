@@ -38,6 +38,7 @@ itoa                          0.4.4
 jpeg-decoder                  0.1.15
 lazy_static                   1.3.0
 libc                          0.2.58
+linked-hash-map               0.5.2
 log                           0.4.6
 lzw                           0.10.0
 md5                           0.6.1
@@ -84,6 +85,7 @@ termcolor                     1.0.5
 termion                       1.5.3
 thread_local                  0.3.6
 tiff                          0.3.1
+toml                          0.5.1
 ucd-util                      0.1.3
 unicode-xid                   0.0.4
 unicode-xid                   0.1.0
