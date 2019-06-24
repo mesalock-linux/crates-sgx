@@ -46,7 +46,7 @@ crc32fast    = { git = "https://github.com/mesalock-linux/rust-crc32fast-sgx" }
 color_quant  = { git = "https://github.com/mesalock-linux/color_quant-sgx" }
 deflate      = { git = "https://github.com/mesalock-linux/deflate-rs-sgx", branch = "dev" }
 env_logger   = { git = "https://github.com/mesalock-linux/env_logger-sgx" }
-gbdt         = { git = "https://github.com/mesalock-linux/gbdt-rs", package = "gbdt_sgx" }
+gbdt_sgx     = { git = "https://github.com/mesalock-linux/gbdt-rs" }
 getrandom    = { git = "https://github.com/mesalock-linux/getrandom-sgx" }
 gif          = { git = "https://github.com/mesalock-linux/image-gif-sgx" }
 gzip-header  = { git = "https://github.com/mesalock-linux/gzip-header-sgx" }
