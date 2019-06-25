@@ -11,7 +11,7 @@ byteorder                     1.3.2
 bytes                         0.5.0
 cc                            1.0.37
 cfg-if                        0.1.9
-chrono                        0.4.6
+chrono                        0.4.7
 cloudabi                      0.0.3
 color_quant                   1.0.1
 crc32fast                     1.2.0
@@ -22,7 +22,7 @@ fnv                           1.0.6
 fuchsia-cprng                 0.1.1
 getrandom                     0.1.3
 gif                           0.10.2
-gzip-header                   0.2.0
+gzip-header                   0.3.0
 half                          1.3.0
 hashbrown                     0.3.1
 heapsize                      0.4.2

@@ -23,7 +23,7 @@ members = ['test-suite']
 travis-ci = { repository = "alexcrichton/toml-rs" }
 
 [dependencies]
-serde = { git = "https://github.com/mesalock-linux/serde-sgx" }
+serde = { git = "https://github.com/mesalock-linux/serde-sgx", default-features = false, features = ["std"] }
 linked-hash-map = { git = "https://github.com/mesalock-linux/linked-hash-map-sgx", optional = true }
 sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 
@@ -39,4 +39,4 @@ default = ["mesalock_sgx"]
 # while preserving the order of map keys in the input.
 preserve_order = ["linked-hash-map"]
 
-mesalock_sgx = ["sgx_tstd"]
+mesalock_sgx = ["sgx_tstd", "serde/std", "serde/mesalock_sgx"]
