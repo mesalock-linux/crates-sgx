@@ -11,10 +11,10 @@ extern crate std;
 #[cfg(feature = "mesalock_sgx")]
 use std;
 
-use std::{io, error};
+use crate::error::Error;
 use core::convert::From;
 use core::num::NonZeroU32;
-use crate::error::Error;
+use std::{error, io};
 
 impl From<io::Error> for Error {
     fn from(err: io::Error) -> Self {
@@ -35,11 +35,4 @@ impl From<Error> for io::Error {
     }
 }
 
-#[cfg(not(feature = "mesalock_sgx"))]
-impl error::Error for Error { }
-
-#[cfg(feature = "mesalock_sgx")]
-impl error::Error for Error {
-    #[allow(deprecated)]
-    fn description(&self) -> &str { "fn description is softly deprecated" }
-}
+impl error::Error for Error {}

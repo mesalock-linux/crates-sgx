@@ -126,6 +126,7 @@ include = [
     "src/aead/shift.rs",
     "src/agreement.rs",
     "src/arithmetic.rs",
+    "src/arithmetic/constant.rs",
     "src/arithmetic/montgomery.rs",
     "src/array.rs",
     "src/bits.rs",

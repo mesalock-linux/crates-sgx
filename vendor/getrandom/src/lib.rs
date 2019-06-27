@@ -22,9 +22,9 @@
 //! | Solaris, illumos | [`getrandom`][9] system call if available, otherwise [`/dev/random`][10]
 //! | Fuchsia OS       | [`cprng_draw`][11]
 //! | Redox            | [`rand:`][12]
-//! | CloudABI         | [`random_get`][13]
+//! | CloudABI         | [`cloudabi_sys_random_get`][13]
 //! | Haiku            | `/dev/random` (identical to `/dev/urandom`)
-//! | SGX              | RDRAND
+//! | SGX, UEFI        | [RDRAND][18]
 //! | Web browsers     | [`Crypto.getRandomValues`][14] (see [Support for WebAssembly and ams.js][14])
 //! | Node.js          | [`crypto.randomBytes`][15] (see [Support for WebAssembly and ams.js][16])
 //! | WASI             | [`__wasi_random_get`][17]
@@ -45,10 +45,10 @@
 //! features are activated for this crate. Note that if both features are
 //! enabled `wasm-bindgen` will be used. If neither feature is enabled,
 //! `getrandom` will always fail.
-//! 
+//!
 //! The WASI target `wasm32-wasi` uses the `__wasi_random_get` function defined
 //! by the WASI standard.
-//! 
+//!
 //!
 //! ## Early boot
 //!
@@ -99,7 +99,7 @@
 //!
 //! [1]: http://man7.org/linux/man-pages/man2/getrandom.2.html
 //! [2]: http://man7.org/linux/man-pages/man4/urandom.4.html
-//! [3]: https://msdn.microsoft.com/en-us/library/windows/desktop/aa387694.aspx
+//! [3]: https://docs.microsoft.com/en-us/windows/desktop/api/ntsecapi/nf-ntsecapi-rtlgenrandom
 //! [4]: https://developer.apple.com/documentation/security/1399291-secrandomcopybytes?language=objc
 //! [5]: https://www.freebsd.org/cgi/man.cgi?query=random&sektion=4
 //! [6]: https://man.openbsd.org/getentropy.2
@@ -107,19 +107,22 @@
 //! [8]: https://leaf.dragonflybsd.org/cgi/web-man?command=random&section=4
 //! [9]: https://docs.oracle.com/cd/E88353_01/html/E37841/getrandom-2.html
 //! [10]: https://docs.oracle.com/cd/E86824_01/html/E54777/random-7d.html
-//! [11]: https://fuchsia.googlesource.com/zircon/+/HEAD/docs/syscalls/cprng_draw.md
+//! [11]: https://fuchsia.googlesource.com/fuchsia/+/master/zircon/docs/syscalls/cprng_draw.md
 //! [12]: https://github.com/redox-os/randd/blob/master/src/main.rs
-//! [13]: https://github.com/NuxiNL/cloudabi/blob/v0.20/cloudabi.txt#L1826
+//! [13]: https://github.com/nuxinl/cloudabi#random_get
 //! [14]: https://www.w3.org/TR/WebCryptoAPI/#Crypto-method-getRandomValues
 //! [15]: https://nodejs.org/api/crypto.html#crypto_crypto_randombytes_size_callback
 //! [16]: #support-for-webassembly-and-amsjs
 //! [17]: https://github.com/CraneStation/wasmtime/blob/master/docs/WASI-api.md#__wasi_random_get
+//! [18]: https://software.intel.com/en-us/articles/intel-digital-random-number-generator-drng-software-implementation-guide
 
-#![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk.png",
-       html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-       html_root_url = "https://rust-random.github.io/rand/")]
+#![doc(
+    html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk.png",
+    html_favicon_url = "https://www.rust-lang.org/favicon.ico",
+    html_root_url = "https://rust-random.github.io/rand/"
+)]
 #![no_std]
-#![cfg_attr(feature = "stdweb", recursion_limit="128")]
+#![cfg_attr(feature = "stdweb", recursion_limit = "128")]
 
 #![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
 #[cfg(all(feature = "mesalock_sgx", not(target_env = "sgx")))]
@@ -139,28 +142,14 @@ extern crate log;
 
 #[cfg(not(feature = "log"))]
 #[allow(unused)]
-macro_rules! error { ($($x:tt)*) => () }
+macro_rules! error {
+    ($($x:tt)*) => {};
+}
 
 // temp fix for stdweb
 #[cfg(target_arch = "wasm32")]
 extern crate std;
 
-#[cfg(any(
-    target_os = "android",
-    target_os = "netbsd",
-    target_os = "solaris",
-    target_os = "illumos",
-    target_os = "redox",
-    target_os = "dragonfly",
-    target_os = "haiku",
-    target_os = "linux",
-    all(
-        target_arch = "wasm32", 
-        not(target_os = "wasi")
-    ),
-))]
-#[cfg(not(feature = "mesalock_sgx"))]
-mod utils;
 mod error;
 pub use crate::error::Error;
 
@@ -173,19 +162,29 @@ macro_rules! mod_use {
         #[$cond]
         mod $module;
         #[$cond]
-        use crate::$module::{getrandom_inner, error_msg_inner};
-    }
+        use crate::$module::{error_msg_inner, getrandom_inner};
+    };
 }
 
+// These targets use std anyway, so we use the std declarations.
 #[cfg(any(
     feature = "std",
     feature = "mesalock_sgx",
-    windows, unix,
-    target_os = "cloudabi",
+    windows,
+    unix,
     target_os = "redox",
     target_arch = "wasm32",
 ))]
 mod error_impls;
+
+// These targets read from a file as a fallback method.
+#[cfg(any(
+    target_os = "android",
+    all(target_os = "linux", not(feature = "mesalock_sgx")),
+    target_os = "solaris",
+    target_os = "illumos",
+))]
+mod use_file;
 
 mod_use!(cfg(feature = "mesalock_sgx"), mesalock_sgx);
 mod_use!(cfg(target_os = "android"), linux_android);
@@ -249,21 +248,16 @@ mod_use!(
         target_os = "redox",
         target_os = "solaris",
         all(target_arch = "x86_64", target_os = "uefi"),
+        target_os = "wasi",
         target_env = "sgx",
         windows,
         all(
             target_arch = "wasm32",
-            any(
-                target_os = "emscripten",
-                target_os = "wasi",
-                feature = "wasm-bindgen",
-                feature = "stdweb",
-            ),
+            any(feature = "wasm-bindgen", feature = "stdweb"),
         ),
     ))),
     dummy
 );
-
 
 /// Fill `dest` with random bytes from the system's preferred random number
 /// source.

@@ -12,9 +12,9 @@
 
 [package]
 name = "syn"
-version = "0.15.38"
+version = "0.15.39"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
-include = ["/build.rs", "/Cargo.toml", "/LICENSE-APACHE", "/LICENSE-MIT", "/README.md", "/src/**/*.rs"]
+include = ["/benches/**", "/build.rs", "/Cargo.toml", "/LICENSE-APACHE", "/LICENSE-MIT", "/README.md", "/src/**", "/tests/**"]
 description = "Parser for Rust source code"
 documentation = "https://docs.rs/syn"
 readme = "README.md"
@@ -26,6 +26,17 @@ all-features = true
 
 [package.metadata.playground]
 all-features = true
+
+[[bench]]
+name = "rust"
+harness = false
+required-features = ["full", "parsing"]
+edition = "2018"
+
+[[bench]]
+name = "file"
+required-features = ["full", "parsing"]
+edition = "2018"
 [dependencies.proc-macro2]
 version = "0.4.4"
 default-features = false

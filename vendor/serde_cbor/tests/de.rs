@@ -402,4 +402,328 @@ mod std_tests {
         assert_eq!(value, "foobar");
         assert_eq!(rest, &[]);
     }
+
+    #[derive(Debug, Copy, Clone)]
+    struct Options {
+        standard: bool,
+        legacy: bool,
+        packed: bool,
+        named: bool,
+    }
+
+    impl Default for Options {
+        fn default() -> Self {
+            Options {
+                standard: true,
+                legacy: true,
+                packed: true,
+                named: true,
+            }
+        }
+    }
+
+    impl Options {
+        fn no_standard(self) -> Self {
+            Options {
+                standard: false,
+                ..self
+            }
+        }
+
+        fn no_legacy(self) -> Self {
+            Options {
+                legacy: false,
+                ..self
+            }
+        }
+
+        fn no_packed(self) -> Self {
+            Options {
+                packed: false,
+                ..self
+            }
+        }
+
+        fn no_named(self) -> Self {
+            Options {
+                named: false,
+                ..self
+            }
+        }
+    }
+
+    fn from_slice_stream_options<'a, T>(
+        slice: &'a [u8],
+        options: Options,
+    ) -> error::Result<(&'a [u8], T)>
+    where
+        T: serde_de::Deserialize<'a>,
+    {
+        let deserializer = Deserializer::from_slice(slice);
+        let deserializer = if !options.packed {
+            deserializer.disable_packed_format()
+        } else {
+            deserializer
+        };
+        let deserializer = if !options.named {
+            deserializer.disable_named_format()
+        } else {
+            deserializer
+        };
+        let deserializer = if !options.standard {
+            deserializer.disable_standard_enums()
+        } else {
+            deserializer
+        };
+        let mut deserializer = if !options.legacy {
+            deserializer.disable_legacy_enums()
+        } else {
+            deserializer
+        };
+        let value = serde_de::Deserialize::deserialize(&mut deserializer)?;
+        let rest = &slice[deserializer.byte_offset()..];
+
+        Ok((rest, value))
+    }
+
+    #[test]
+    fn test_deserializer_enums() {
+        #[derive(Debug, PartialEq, Deserialize)]
+        enum Enum {
+            Unit,
+            NewType(i32),
+            Tuple(String, bool),
+            Struct { x: i32, y: i32 },
+        }
+
+        // This is the format used in serde >= 0.10
+        //
+        // Serialization of Enum::NewType(10)
+        let v: Vec<u8> = vec![
+            0xa1, // map 1pair
+            0x67, 0x4e, 0x65, 0x77, 0x54, 0x79, 0x70, 0x65, // utf8 string: NewType
+            0x1a, // u32
+            0x00, 0x00, 0x00, 0x0a, // 10 (dec)
+        ];
+        let (_rest, value): (&[u8], Enum) = from_slice_stream(&v[..]).unwrap();
+        assert_eq!(value, Enum::NewType(10));
+        let (_rest, value): (&[u8], Enum) =
+            from_slice_stream_options(&v[..], Options::default().no_legacy()).unwrap();
+        assert_eq!(value, Enum::NewType(10));
+        let value: error::Result<(&[u8], Enum)> =
+            from_slice_stream_options(&v[..], Options::default().no_standard());
+        assert_eq!(
+            value.unwrap_err().classify(),
+            serde_cbor::error::Category::Syntax
+        );
+        let value: error::Result<(&[u8], Enum)> =
+            from_slice_stream_options(&v[..], Options::default().no_standard().no_legacy());
+        assert_eq!(
+            value.unwrap_err().classify(),
+            serde_cbor::error::Category::Syntax
+        );
+        // Serialization of Enum::Unit
+        let v: Vec<u8> = vec![
+            0x64, 0x55, 0x6e, 0x69, 0x74, // utf8 string: Unit
+        ];
+        let (_rest, value): (&[u8], Enum) = from_slice_stream(&v[..]).unwrap();
+        assert_eq!(value, Enum::Unit);
+        let (_rest, value): (&[u8], Enum) =
+            from_slice_stream_options(&v[..], Options::default().no_legacy()).unwrap();
+        assert_eq!(value, Enum::Unit);
+        let (_rest, value): (&[u8], Enum) =
+            from_slice_stream_options(&v[..], Options::default().no_standard()).unwrap();
+        assert_eq!(value, Enum::Unit);
+        let value: error::Result<(&[u8], Enum)> =
+            from_slice_stream_options(&v[..], Options::default().no_legacy().no_standard());
+        assert_eq!(
+            value.unwrap_err().classify(),
+            serde_cbor::error::Category::Syntax
+        );
+
+        // This is the format used in serde <= 0.9
+        let v: Vec<u8> = vec![
+            0x82, // array 2 items
+            0x67, 0x4e, 0x65, 0x77, 0x54, 0x79, 0x70, 0x65, // utf8 string: NewType
+            0x1a, // u32
+            0x00, 0x00, 0x00, 0x0a, // 10 (dec)
+        ];
+        let (_rest, value): (&[u8], Enum) = from_slice_stream(&v[..]).unwrap();
+        assert_eq!(value, Enum::NewType(10));
+        let value: error::Result<(&[u8], Enum)> =
+            from_slice_stream_options(&v[..], Options::default().no_legacy());
+        assert_eq!(
+            value.unwrap_err().classify(),
+            serde_cbor::error::Category::Syntax
+        );
+        let value: error::Result<(&[u8], Enum)> =
+            from_slice_stream_options(&v[..], Options::default().no_standard());
+        assert_eq!(value.unwrap().1, Enum::NewType(10));
+        let value: error::Result<(&[u8], Enum)> =
+            from_slice_stream_options(&v[..], Options::default().no_standard().no_legacy());
+        assert_eq!(
+            value.unwrap_err().classify(),
+            serde_cbor::error::Category::Syntax
+        );
+    }
+
+    #[test]
+    fn test_packed_deserialization() {
+        #[derive(Debug, PartialEq, Deserialize)]
+        struct User {
+            user_id: u32,
+            password_hash: [u8; 4],
+        }
+
+        // unpacked
+        let v: Vec<u8> = vec![
+            0xa2, // map 2pair
+            0x67, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x69, 0x64, // utf8 string: user_id
+            0x0a, // integer: 10
+            // utf8 string: password_hash
+            0x6d, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x5f, 0x68, 0x61, 0x73, 0x68,
+            0x84, 0x01, 0x02, 0x03, 0x04, // 4 byte array [1, 2, 3, 4]
+        ];
+
+        let (_rest, value): (&[u8], User) = from_slice_stream(&v[..]).unwrap();
+        assert_eq!(
+            value,
+            User {
+                user_id: 10,
+                password_hash: [1, 2, 3, 4],
+            }
+        );
+        let (_rest, value): (&[u8], User) =
+            from_slice_stream_options(&v[..], Options::default().no_packed()).unwrap();
+        assert_eq!(
+            value,
+            User {
+                user_id: 10,
+                password_hash: [1, 2, 3, 4],
+            }
+        );
+        let value: error::Result<(&[u8], User)> =
+            from_slice_stream_options(&v[..], Options::default().no_named());
+        assert_eq!(
+            value.unwrap_err().classify(),
+            serde_cbor::error::Category::Syntax
+        );
+
+        // unpacked - indefinite length
+        let v: Vec<u8> = vec![
+            0xbf, // map to be followed by a break
+            0x67, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x69, 0x64, // utf8 string: user_id
+            0x0a, // integer: 10
+            // utf8 string: password_hash
+            0x6d, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x5f, 0x68, 0x61, 0x73, 0x68,
+            0x84, 0x01, 0x02, 0x03, 0x04, // 4 byte array [1, 2, 3, 4]
+            0xff, // break
+        ];
+
+        let (_rest, value): (&[u8], User) = from_slice_stream(&v[..]).unwrap();
+        assert_eq!(
+            value,
+            User {
+                user_id: 10,
+                password_hash: [1, 2, 3, 4],
+            }
+        );
+        let (_rest, value): (&[u8], User) =
+            from_slice_stream_options(&v[..], Options::default().no_packed()).unwrap();
+        assert_eq!(
+            value,
+            User {
+                user_id: 10,
+                password_hash: [1, 2, 3, 4],
+            }
+        );
+        let value: error::Result<(&[u8], User)> =
+            from_slice_stream_options(&v[..], Options::default().no_named());
+        assert_eq!(
+            value.unwrap_err().classify(),
+            serde_cbor::error::Category::Syntax
+        );
+
+        // packed
+        let v: Vec<u8> = vec![
+            0xa2, // map 2pair
+            0x00, // index 0
+            0x0a, // integer: 10
+            0x01, // index 1
+            0x84, 0x01, 0x02, 0x03, 0x04, // 4 byte array [1, 2, 3, 4]
+        ];
+
+        let (_rest, value): (&[u8], User) = from_slice_stream(&v[..]).unwrap();
+        assert_eq!(
+            value,
+            User {
+                user_id: 10,
+                password_hash: [1, 2, 3, 4],
+            }
+        );
+        let (_rest, value): (&[u8], User) =
+            from_slice_stream_options(&v[..], Options::default().no_named()).unwrap();
+        assert_eq!(
+            value,
+            User {
+                user_id: 10,
+                password_hash: [1, 2, 3, 4],
+            }
+        );
+        let value: error::Result<(&[u8], User)> =
+            from_slice_stream_options(&v[..], Options::default().no_packed());
+        assert_eq!(
+            value.unwrap_err().classify(),
+            serde_cbor::error::Category::Syntax
+        );
+
+        // packed - indefinite length
+        let v: Vec<u8> = vec![
+            0xbf, // map, to be followed by a break
+            0x00, // index 0
+            0x0a, // integer: 10
+            0x01, // index 1
+            0x84, 0x01, 0x02, 0x03, 0x04, // 4 byte array [1, 2, 3, 4]
+            0xff, // break
+        ];
+
+        let (_rest, value): (&[u8], User) = from_slice_stream(&v[..]).unwrap();
+        assert_eq!(
+            value,
+            User {
+                user_id: 10,
+                password_hash: [1, 2, 3, 4],
+            }
+        );
+        let (_rest, value): (&[u8], User) =
+            from_slice_stream_options(&v[..], Options::default().no_named()).unwrap();
+        assert_eq!(
+            value,
+            User {
+                user_id: 10,
+                password_hash: [1, 2, 3, 4],
+            }
+        );
+        let value: error::Result<(&[u8], User)> =
+            from_slice_stream_options(&v[..], Options::default().no_packed());
+        assert_eq!(
+            value.unwrap_err().classify(),
+            serde_cbor::error::Category::Syntax
+        );
+    }
+
+    use serde_cbor::{de::from_slice, ser::to_vec_packed};
+    use std::net::{IpAddr, Ipv4Addr};
+    #[test]
+    fn test_ipaddr_deserialization() {
+        let ip = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
+        let buf = to_vec_packed(&ip).unwrap();
+        let deserialized_ip = from_slice::<IpAddr>(&buf).unwrap();
+        assert_eq!(ip, deserialized_ip);
+
+        let buf = to_vec(&ip).unwrap();
+        let deserialized_ip = from_slice::<IpAddr>(&buf).unwrap();
+        assert_eq!(ip, deserialized_ip);
+    }
+
 }

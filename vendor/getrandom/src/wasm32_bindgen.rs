@@ -7,8 +7,6 @@
 // except according to those terms.
 
 //! Implementation for WASM via wasm-bindgen
-extern crate std;
-
 use core::cell::RefCell;
 use core::mem;
 use core::num::NonZeroU32;
@@ -16,9 +14,8 @@ use std::thread_local;
 
 use wasm_bindgen::prelude::*;
 
-use crate::Error;
 use crate::error::CODE_PREFIX;
-use crate::utils::use_init;
+use crate::Error;
 
 const CODE_CRYPTO_UNDEF: u32 = CODE_PREFIX | 0x80;
 const CODE_GRV_UNDEF: u32 = CODE_PREFIX | 0x81;
@@ -29,6 +26,8 @@ enum RngSource {
     Browser(BrowserCrypto),
 }
 
+// JsValues are always per-thread, so we initialize RngSource for each thread.
+//   See: https://github.com/rustwasm/wasm-bindgen/pull/955
 thread_local!(
     static RNG_SOURCE: RefCell<Option<RngSource>> = RefCell::new(None);
 );
@@ -37,25 +36,27 @@ pub fn getrandom_inner(dest: &mut [u8]) -> Result<(), Error> {
     assert_eq!(mem::size_of::<usize>(), 4);
 
     RNG_SOURCE.with(|f| {
-        use_init(f, getrandom_init, |source| {
-            match *source {
-                RngSource::Node(ref n) => n.random_fill_sync(dest),
-                RngSource::Browser(ref n) => {
-                    // see https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues
-                    //
-                    // where it says:
-                    //
-                    // > A QuotaExceededError DOMException is thrown if the
-                    // > requested length is greater than 65536 bytes.
-                    for chunk in dest.chunks_mut(65536) {
-                        n.get_random_values(chunk)
-                    }
+        let mut source = f.borrow_mut();
+        if source.is_none() {
+            *source = Some(getrandom_init()?);
+        }
+
+        match source.as_ref().unwrap() {
+            RngSource::Node(n) => n.random_fill_sync(dest),
+            RngSource::Browser(n) => {
+                // see https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues
+                //
+                // where it says:
+                //
+                // > A QuotaExceededError DOMException is thrown if the
+                // > requested length is greater than 65536 bytes.
+                for chunk in dest.chunks_mut(65536) {
+                    n.get_random_values(chunk)
                 }
             }
-            Ok(())
-        })
+        };
+        Ok(())
     })
-
 }
 
 fn getrandom_init() -> Result<RngSource, Error> {
@@ -71,7 +72,7 @@ fn getrandom_init() -> Result<RngSource, Error> {
     let is_browser = this.self_() != JsValue::undefined();
 
     if !is_browser {
-        return Ok(RngSource::Node(node_require("crypto")))
+        return Ok(RngSource::Node(node_require("crypto")));
     }
 
     // If `self` is defined then we're in a browser somehow (main window
@@ -103,7 +104,7 @@ pub fn error_msg_inner(n: NonZeroU32) -> Option<&'static str> {
     match n.get() {
         CODE_CRYPTO_UNDEF => Some("getrandom: self.crypto is undefined"),
         CODE_GRV_UNDEF => Some("crypto.getRandomValues is undefined"),
-        _ => None
+        _ => None,
     }
 }
 

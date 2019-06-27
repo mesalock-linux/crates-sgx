@@ -126,6 +126,10 @@ where
 pub struct Deserializer<R> {
     read: R,
     remaining_depth: u8,
+    accept_named: bool,
+    accept_packed: bool,
+    accept_standard_enums: bool,
+    accept_legacy_enums: bool,
 }
 
 #[cfg(feature = "std")]
@@ -180,7 +184,35 @@ where
         Deserializer {
             read,
             remaining_depth: 128,
+            accept_named: true,
+            accept_packed: true,
+            accept_standard_enums: true,
+            accept_legacy_enums: true,
         }
+    }
+
+    /// Don't accept named variants and fields.
+    pub fn disable_named_format(mut self) -> Self {
+        self.accept_named = false;
+        self
+    }
+
+    /// Don't accept numbered variants and fields.
+    pub fn disable_packed_format(mut self) -> Self {
+        self.accept_packed = false;
+        self
+    }
+
+    /// Don't accept the new enum format used by `serde_cbor` versions >= v0.10.
+    pub fn disable_standard_enums(mut self) -> Self {
+        self.accept_standard_enums = false;
+        self
+    }
+
+    /// Don't accept the old enum format used by `serde_cbor` versions <= v0.9.
+    pub fn disable_legacy_enums(mut self) -> Self {
+        self.accept_legacy_enums = false;
+        self
     }
 
     /// This method should be called after a value has been deserialized to ensure there is no
@@ -408,8 +440,15 @@ where
     where
         V: de::Visitor<'de>,
     {
+        let accept_packed = self.accept_packed;
+        let accept_named = self.accept_named;
         self.recursion_checked(|de| {
-            let value = visitor.visit_map(MapAccess { de, len: &mut len })?;
+            let value = visitor.visit_map(MapAccess {
+                de,
+                len: &mut len,
+                accept_named,
+                accept_packed,
+            })?;
 
             if len != 0 {
                 Err(de.error(ErrorCode::TrailingData))
@@ -423,8 +462,14 @@ where
     where
         V: de::Visitor<'de>,
     {
+        let accept_named = self.accept_named;
+        let accept_packed = self.accept_packed;
         self.recursion_checked(|de| {
-            let value = visitor.visit_map(IndefiniteMapAccess { de })?;
+            let value = visitor.visit_map(IndefiniteMapAccess {
+                de,
+                accept_packed,
+                accept_named,
+            })?;
             match de.next()? {
                 Some(0xff) => Ok(value),
                 Some(_) => Err(de.error(ErrorCode::TrailingData)),
@@ -454,10 +499,17 @@ where
     where
         V: de::Visitor<'de>,
     {
+        let accept_named = self.accept_named;
+        let accept_packed = self.accept_packed;
         self.recursion_checked(|de| {
             let mut len = 1;
             let value = visitor.visit_enum(VariantAccessMap {
-                map: MapAccess { de, len: &mut len },
+                map: MapAccess {
+                    de,
+                    len: &mut len,
+                    accept_packed,
+                    accept_named,
+                },
             })?;
 
             if len != 0 {
@@ -746,6 +798,9 @@ where
     {
         match self.peek()? {
             Some(byte @ 0x80..=0x9f) => {
+                if !self.accept_legacy_enums {
+                    return Err(self.error(ErrorCode::WrongEnumFormat));
+                }
                 self.consume();
                 match byte {
                     0x80..=0x97 => self.parse_enum(byte as usize - 0x80, visitor),
@@ -775,11 +830,19 @@ where
                 }
             }
             Some(0xa1) => {
+                if !self.accept_standard_enums {
+                    return Err(self.error(ErrorCode::WrongEnumFormat));
+                }
                 self.consume();
                 self.parse_enum_map(visitor)
             }
             None => Err(self.error(ErrorCode::EofWhileParsingValue)),
-            _ => visitor.visit_enum(UnitVariantAccess { de: self }),
+            _ => {
+                if !self.accept_standard_enums && !self.accept_legacy_enums {
+                    return Err(self.error(ErrorCode::WrongEnumFormat));
+                }
+                visitor.visit_enum(UnitVariantAccess { de: self })
+            }
         }
     }
 
@@ -885,6 +948,8 @@ where
 struct MapAccess<'a, R> {
     de: &'a mut Deserializer<R>,
     len: &'a mut usize,
+    accept_named: bool,
+    accept_packed: bool,
 }
 
 impl<'de, 'a, R> de::MapAccess<'de> for MapAccess<'a, R>
@@ -901,6 +966,16 @@ where
             return Ok(None);
         }
         *self.len -= 1;
+
+        match self.de.peek()? {
+            Some(_byte @ 0x00..=0x1b) if !self.accept_packed => {
+                return Err(self.de.error(ErrorCode::WrongStructFormat));
+            }
+            Some(_byte @ 0x60..=0x7f) if !self.accept_named => {
+                return Err(self.de.error(ErrorCode::WrongStructFormat));
+            }
+            _ => {}
+        };
 
         let value = seed.deserialize(&mut *self.de)?;
         Ok(Some(value))
@@ -929,6 +1004,8 @@ where
 
 struct IndefiniteMapAccess<'a, R> {
     de: &'a mut Deserializer<R>,
+    accept_packed: bool,
+    accept_named: bool,
 }
 
 impl<'de, 'a, R> de::MapAccess<'de> for IndefiniteMapAccess<'a, R>
@@ -942,6 +1019,12 @@ where
         K: de::DeserializeSeed<'de>,
     {
         match self.de.peek()? {
+            Some(_byte @ 0x00..=0x1b) if !self.accept_packed => {
+                return Err(self.de.error(ErrorCode::WrongStructFormat))
+            }
+            Some(_byte @ 0x60..=0x7f) if !self.accept_named => {
+                return Err(self.de.error(ErrorCode::WrongStructFormat))
+            }
             Some(0xff) => return Ok(None),
             Some(_) => {}
             None => return Err(self.de.error(ErrorCode::EofWhileParsingMap)),

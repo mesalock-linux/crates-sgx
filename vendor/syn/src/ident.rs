@@ -1,11 +1,11 @@
 #[cfg(feature = "parsing")]
 use buffer::Cursor;
 #[cfg(feature = "parsing")]
-use lookahead;
-#[cfg(feature = "parsing")]
 use parse::{Parse, ParseStream, Result};
 #[cfg(feature = "parsing")]
 use token::Token;
+#[cfg(feature = "parsing")]
+use {lookahead, private};
 
 pub use proc_macro2::Ident;
 
@@ -82,5 +82,19 @@ ident_from_token!(extern);
 impl From<Token![_]> for Ident {
     fn from(token: Token![_]) -> Ident {
         Ident::new("_", token.span)
+    }
+}
+
+#[cfg(feature = "parsing")]
+impl private {
+    #[cfg(syn_can_use_associated_constants)]
+    pub fn peek_any_ident(input: ParseStream) -> bool {
+        use ext::IdentExt;
+        input.peek(Ident::peek_any)
+    }
+
+    #[cfg(not(syn_can_use_associated_constants))]
+    pub fn peek_any_ident(input: ParseStream) -> bool {
+        input.cursor().ident().is_some()
     }
 }
