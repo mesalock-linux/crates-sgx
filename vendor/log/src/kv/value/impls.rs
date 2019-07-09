@@ -3,197 +3,191 @@ use std::prelude::v1::*;
 
 use std::fmt;
 
-use super::{Error, ToValue, Value, Visit, Visitor};
+use super::{ToValue, Value, Primitive};
 
 impl ToValue for usize {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for usize {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.u64(*self as u64)
+impl<'v> From<usize> for Value<'v> {
+    fn from(value: usize) -> Self {
+        Value::from_primitive(Primitive::Unsigned(value as u64))
     }
 }
 
 impl ToValue for isize {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for isize {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.i64(*self as i64)
+impl<'v> From<isize> for Value<'v> {
+    fn from(value: isize) -> Self {
+        Value::from_primitive(Primitive::Signed(value as i64))
     }
 }
 
 impl ToValue for u8 {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for u8 {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.u64(*self as u64)
+impl<'v> From<u8> for Value<'v> {
+    fn from(value: u8) -> Self {
+        Value::from_primitive(Primitive::Unsigned(value as u64))
     }
 }
 
 impl ToValue for u16 {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for u16 {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.u64(*self as u64)
+impl<'v> From<u16> for Value<'v> {
+    fn from(value: u16) -> Self {
+        Value::from_primitive(Primitive::Unsigned(value as u64))
     }
 }
 
 impl ToValue for u32 {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for u32 {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.u64(*self as u64)
+impl<'v> From<u32> for Value<'v> {
+    fn from(value: u32) -> Self {
+        Value::from_primitive(Primitive::Unsigned(value as u64))
     }
 }
 
 impl ToValue for u64 {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for u64 {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.u64(*self)
+impl<'v> From<u64> for Value<'v> {
+    fn from(value: u64) -> Self {
+        Value::from_primitive(Primitive::Unsigned(value))
     }
 }
 
 impl ToValue for i8 {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for i8 {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.i64(*self as i64)
+impl<'v> From<i8> for Value<'v> {
+    fn from(value: i8) -> Self {
+        Value::from_primitive(Primitive::Signed(value as i64))
     }
 }
 
 impl ToValue for i16 {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for i16 {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.i64(*self as i64)
+impl<'v> From<i16> for Value<'v> {
+    fn from(value: i16) -> Self {
+        Value::from_primitive(Primitive::Signed(value as i64))
     }
 }
 
 impl ToValue for i32 {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for i32 {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.i64(*self as i64)
+impl<'v> From<i32> for Value<'v> {
+    fn from(value: i32) -> Self {
+        Value::from_primitive(Primitive::Signed(value as i64))
     }
 }
 
 impl ToValue for i64 {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for i64 {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.i64(*self)
+impl<'v> From<i64> for Value<'v> {
+    fn from(value: i64) -> Self {
+        Value::from_primitive(Primitive::Signed(value))
     }
 }
 
 impl ToValue for f32 {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for f32 {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.f64(*self as f64)
+impl<'v> From<f32> for Value<'v> {
+    fn from(value: f32) -> Self {
+        Value::from_primitive(Primitive::Float(value as f64))
     }
 }
 
 impl ToValue for f64 {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for f64 {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.f64(*self)
+impl<'v> From<f64> for Value<'v> {
+    fn from(value: f64) -> Self {
+        Value::from_primitive(Primitive::Float(value))
     }
 }
 
 impl ToValue for bool {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for bool {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.bool(*self)
+impl<'v> From<bool> for Value<'v> {
+    fn from(value: bool) -> Self {
+        Value::from_primitive(Primitive::Bool(value))
     }
 }
 
 impl ToValue for char {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl Visit for char {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.char(*self)
+impl<'v> From<char> for Value<'v> {
+    fn from(value: char) -> Self {
+        Value::from_primitive(Primitive::Char(value))
     }
 }
 
 impl<'v> ToValue for &'v str {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
+        Value::from(*self)
     }
 }
 
-impl<'v> Visit for &'v str {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.str(*self)
+impl<'v> From<&'v str> for Value<'v> {
+    fn from(value: &'v str) -> Self {
+        Value::from_primitive(Primitive::Str(value))
     }
 }
 
 impl ToValue for () {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
-    }
-}
-
-impl Visit for () {
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-        visitor.none()
+        Value::from_primitive(Primitive::None)
     }
 }
 
@@ -202,18 +196,9 @@ where
     T: ToValue,
 {
     fn to_value(&self) -> Value {
-        Value::from_internal(self)
-    }
-}
-
-impl<T> Visit for Option<T>
-where
-    T: ToValue,
-{
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
         match *self {
-            Some(ref value) => value.to_value().visit(visitor),
-            None => visitor.none(),
+            Some(ref value) => value.to_value(),
+            None => Value::from_primitive(Primitive::None),
         }
     }
 }
@@ -241,25 +226,13 @@ mod std_support {
 
     impl ToValue for String {
         fn to_value(&self) -> Value {
-            Value::from_internal(self)
+            Value::from_primitive(Primitive::Str(&*self))
         }
     }
 
-    impl Visit for String {
-        fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-            visitor.str(&*self)
-        }
-    }
-
-    impl<'a> ToValue for Cow<'a, str> {
+    impl<'v> ToValue for Cow<'v, str> {
         fn to_value(&self) -> Value {
-            Value::from_internal(self)
-        }
-    }
-
-    impl<'a> Visit for Cow<'a, str> {
-        fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
-            visitor.str(&*self)
+            Value::from_primitive(Primitive::Str(&*self))
         }
     }
 }
@@ -267,151 +240,33 @@ mod std_support {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use kv::value::Error;
-    use kv::value::internal::Visitor;
-
-    use std::fmt::Write;
-    use std::str::{self, Utf8Error};
-
-    // A quick-and-dirty no-std buffer
-    // to write strings into
-    struct Buffer {
-        buf: [u8; 16],
-        len: usize,
-    }
-
-    impl Buffer {
-        fn new() -> Self {
-            Buffer {
-                buf: [0; 16],
-                len: 0,
-            }
-        }
-
-        fn as_str(&self) -> Result<&str, Utf8Error> {
-            str::from_utf8(&self.buf[0..self.len])
-        }
-    }
-
-    impl Write for Buffer {
-        fn write_str(&mut self, s: &str) -> fmt::Result {
-            let bytes = s.as_bytes();
-
-            let end = self.len + bytes.len();
-
-            if end > 16 {
-                panic!("`{}` would overflow", s);
-            }
-
-            let buf = &mut self.buf[self.len..end];
-            buf.copy_from_slice(bytes);
-            self.len = end;
-
-            Ok(())
-        }
-    }
+    use kv::value::test::Token;
 
     #[test]
     fn test_to_value_display() {
-        // Write a value into our buffer using `<Value as Display>::fmt`
-        fn check(value: Value, expected: &str) {
-            let mut buf = Buffer::new();
-            write!(&mut buf, "{}", value).unwrap();
-
-            assert_eq!(expected, buf.as_str().unwrap());
-        }
-
-        check(42u64.to_value(), "42");
-        check(42i64.to_value(), "42");
-        check(42.01f64.to_value(), "42.01");
-        check(true.to_value(), "true");
-        check('a'.to_value(), "'a'");
-        check(format_args!("a {}", "value").to_value(), "a value");
-        check("a loong string".to_value(), "\"a loong string\"");
-        check(Some(true).to_value(), "true");
-        check(().to_value(), "None");
-        check(Option::None::<bool>.to_value(), "None");
+        assert_eq!(42u64.to_value().to_str_buf(), "42");
+        assert_eq!(42i64.to_value().to_str_buf(), "42");
+        assert_eq!(42.01f64.to_value().to_str_buf(), "42.01");
+        assert_eq!(true.to_value().to_str_buf(), "true");
+        assert_eq!('a'.to_value().to_str_buf(), "'a'");
+        assert_eq!(format_args!("a {}", "value").to_value().to_str_buf(), "a value");
+        assert_eq!("a loong string".to_value().to_str_buf(), "\"a loong string\"");
+        assert_eq!(Some(true).to_value().to_str_buf(), "true");
+        assert_eq!(().to_value().to_str_buf(), "None");
+        assert_eq!(Option::None::<bool>.to_value().to_str_buf(), "None");
     }
 
     #[test]
     fn test_to_value_structured() {
-        #[derive(Debug, PartialEq)]
-        enum Token<'a> {
-            U64(u64),
-            I64(i64),
-            F64(f64),
-            Char(char),
-            Bool(bool),
-            Str(&'a str),
-            None,
-        }
-
-        struct TestVisitor<F>(F);
-
-        impl<F> Visitor for TestVisitor<F>
-        where
-            F: Fn(Token),
-        {
-            fn debug(&mut self, v: &fmt::Debug) -> Result<(), Error> {
-                let mut buf = Buffer::new();
-                write!(&mut buf, "{:?}", v)?;
-
-                let s = buf.as_str().map_err(|_| Error::msg("invalid UTF8"))?;
-                (self.0)(Token::Str(s));
-                Ok(())
-            }
-
-            fn u64(&mut self, v: u64) -> Result<(), Error> {
-                (self.0)(Token::U64(v));
-                Ok(())
-            }
-
-            fn i64(&mut self, v: i64) -> Result<(), Error> {
-                (self.0)(Token::I64(v));
-                Ok(())
-            }
-
-            fn f64(&mut self, v: f64) -> Result<(), Error> {
-                (self.0)(Token::F64(v));
-                Ok(())
-            }
-
-            fn bool(&mut self, v: bool) -> Result<(), Error> {
-                (self.0)(Token::Bool(v));
-                Ok(())
-            }
-
-            fn char(&mut self, v: char) -> Result<(), Error> {
-                (self.0)(Token::Char(v));
-                Ok(())
-            }
-
-            fn str(&mut self, v: &str) -> Result<(), Error> {
-                (self.0)(Token::Str(v));
-                Ok(())
-            }
-
-            fn none(&mut self) -> Result<(), Error> {
-                (self.0)(Token::None);
-                Ok(())
-            }
-        }
-
-        // Check that a value retains the right structure
-        fn check(value: Value, expected: Token) {
-            let mut visitor = TestVisitor(|token: Token| assert_eq!(expected, token));
-            value.visit(&mut visitor).unwrap();
-        }
-
-        check(42u64.to_value(), Token::U64(42));
-        check(42i64.to_value(), Token::I64(42));
-        check(42.01f64.to_value(), Token::F64(42.01));
-        check(true.to_value(), Token::Bool(true));
-        check('a'.to_value(), Token::Char('a'));
-        check(format_args!("a {}", "value").to_value(), Token::Str("a value"));
-        check("a loong string".to_value(), Token::Str("a loong string"));
-        check(Some(true).to_value(), Token::Bool(true));
-        check(().to_value(), Token::None);
-        check(Option::None::<bool>.to_value(), Token::None);
+        assert_eq!(42u64.to_value().to_token(), Token::U64(42));
+        assert_eq!(42i64.to_value().to_token(), Token::I64(42));
+        assert_eq!(42.01f64.to_value().to_token(), Token::F64(42.01));
+        assert_eq!(true.to_value().to_token(), Token::Bool(true));
+        assert_eq!('a'.to_value().to_token(), Token::Char('a'));
+        assert_eq!(format_args!("a {}", "value").to_value().to_token(), Token::Str("a value".into()));
+        assert_eq!("a loong string".to_value().to_token(), Token::Str("a loong string".into()));
+        assert_eq!(Some(true).to_value().to_token(), Token::Bool(true));
+        assert_eq!(().to_value().to_token(), Token::None);
+        assert_eq!(Option::None::<bool>.to_value().to_token(), Token::None);
     }
 }

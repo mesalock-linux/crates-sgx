@@ -45,6 +45,10 @@ impl PathAndQuery {
         let mut fragment = None;
 
         // block for iterator borrow
+        //
+        // allow: `...` pattersn are now `..=`, but we cannot update yet
+        // because of minimum Rust version
+        #[allow(warnings)]
         {
             let mut iter = src.as_ref().iter().enumerate();
 
@@ -79,6 +83,10 @@ impl PathAndQuery {
 
             // query ...
             if query != NONE {
+
+                // allow: `...` pattersn are now `..=`, but we cannot update yet
+                // because of minimum Rust version
+                #[allow(warnings)]
                 for (i, &b) in iter {
                     match b {
                         // While queries *should* be percent-encoded, most

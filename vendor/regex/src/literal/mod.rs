@@ -12,7 +12,7 @@ use std::prelude::v1::*;
 use std::cmp;
 use std::mem;
 
-use aho_corasick::{AhoCorasick, AhoCorasickBuilder};
+use aho_corasick::{self, AhoCorasick, AhoCorasickBuilder};
 use memchr::{memchr, memchr2, memchr3};
 use syntax::hir::literal::{Literal, Literals};
 
@@ -262,6 +262,7 @@ impl Matcher {
         }
         let pats = lits.literals().to_owned();
         let ac = AhoCorasickBuilder::new()
+            .match_kind(aho_corasick::MatchKind::LeftmostFirst)
             .dfa(true)
             .build_with_size::<u32, _, _>(&pats)
             .unwrap();

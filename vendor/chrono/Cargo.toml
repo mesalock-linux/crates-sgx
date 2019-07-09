@@ -29,7 +29,6 @@ clock = ["time"]
 mesalock_sgx = ["sgx_tstd"]
 
 [dependencies]
-libc = { version = "0.2", default-features = false }
 time = { version = "0.1.39", optional = true }
 num-integer = { git = "https://github.com/mesalock-linux/num-integer-sgx" }
 num-traits = { git = "https://github.com/mesalock-linux/num-traits-sgx" }

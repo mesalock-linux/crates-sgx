@@ -7,11 +7,12 @@
 // except according to those terms.
 
 //! Implementation for SGX using RDRAND instruction
+#[cfg(not(target_feature = "rdrand"))]
+use crate::util::LazyBool;
 use crate::Error;
-use core::arch::x86_64::{__cpuid, _rdrand64_step};
+use core::arch::x86_64::_rdrand64_step;
 use core::mem;
 use core::num::NonZeroU32;
-use lazy_static::lazy_static;
 
 // Recommendation from "Intel® Digital Random Number Generator (DRNG) Software
 // Implementation Guide" - Section 5.2.1 and "Intel® 64 and IA-32 Architectures
@@ -22,9 +23,18 @@ const WORD_SIZE: usize = mem::size_of::<u64>();
 #[target_feature(enable = "rdrand")]
 unsafe fn rdrand() -> Result<[u8; WORD_SIZE], Error> {
     for _ in 0..RETRY_LIMIT {
-        let mut el = mem::uninitialized();
+        let mut el = mem::zeroed();
         if _rdrand64_step(&mut el) == 1 {
-            return Ok(el.to_ne_bytes());
+            // AMD CPUs from families 14h to 16h (pre Ryzen) sometimes fail to
+            // set CF on bogus random data, so we check these values explictly.
+            // See https://github.com/systemd/systemd/issues/11810#issuecomment-489727505
+            // We perform this check regardless of target to guard against
+            // any implementation that incorrectly fails to set CF.
+            if el != 0 && el != !0 {
+                return Ok(el.to_ne_bytes());
+            }
+            error!("RDRAND returned {:X}, CPU RNG may be broken", el);
+            // Keep looping in case this was a false positive.
         }
     }
     error!("RDRAND failed, CPU issue likely");
@@ -37,19 +47,20 @@ compile_error!(
     "SGX targets require 'rdrand' target feature. Enable by using -C target-feature=+rdrnd."
 );
 
-// TODO use is_x86_feature_detected!("rdrand") when that works in core. See:
-//   https://github.com/rust-lang-nursery/stdsimd/issues/464
+#[cfg(target_feature = "rdrand")]
 fn is_rdrand_supported() -> bool {
-    if cfg!(target_feature = "rdrand") {
-        true
-    } else {
-        // SAFETY: All x86_64 CPUs support CPUID leaf 1
-        const FLAG: u32 = 1 << 30;
-        lazy_static! {
-            static ref HAS_RDRAND: bool = unsafe { __cpuid(1).ecx & FLAG != 0 };
-        }
-        *HAS_RDRAND
-    }
+    true
+}
+
+// TODO use is_x86_feature_detected!("rdrand") when that works in core. See:
+// https://github.com/rust-lang-nursery/stdsimd/issues/464
+#[cfg(not(target_feature = "rdrand"))]
+fn is_rdrand_supported() -> bool {
+    use core::arch::x86_64::__cpuid;
+    // SAFETY: All x86_64 CPUs support CPUID leaf 1
+    const FLAG: u32 = 1 << 30;
+    static HAS_RDRAND: LazyBool = LazyBool::new();
+    HAS_RDRAND.unsync_init(|| unsafe { (__cpuid(1).ecx & FLAG) != 0 })
 }
 
 pub fn getrandom_inner(dest: &mut [u8]) -> Result<(), Error> {

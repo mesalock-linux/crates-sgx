@@ -169,7 +169,7 @@ impl AllowAnyAuthenticatedClient {
     /// Construct a new `AllowAnyAuthenticatedClient`.
     ///
     /// `roots` is the list of trust anchors to use for certificate validation.
-    pub fn new(roots: RootCertStore) -> Arc<ClientCertVerifier> {
+    pub fn new(roots: RootCertStore) -> Arc<dyn ClientCertVerifier> {
         Arc::new(AllowAnyAuthenticatedClient { roots })
     }
 }
@@ -209,7 +209,7 @@ impl AllowAnyAnonymousOrAuthenticatedClient {
     /// Construct a new `AllowAnyAnonymousOrAuthenticatedClient`.
     ///
     /// `roots` is the list of trust anchors to use for certificate validation.
-    pub fn new(roots: RootCertStore) -> Arc<ClientCertVerifier> {
+    pub fn new(roots: RootCertStore) -> Arc<dyn ClientCertVerifier> {
         Arc::new(AllowAnyAnonymousOrAuthenticatedClient {
             inner: AllowAnyAuthenticatedClient { roots }
         })
@@ -236,7 +236,7 @@ pub struct NoClientAuth;
 
 impl NoClientAuth {
     /// Constructs a `NoClientAuth` and wraps it in an `Arc`.
-    pub fn new() -> Arc<ClientCertVerifier> { Arc::new(NoClientAuth) }
+    pub fn new() -> Arc<dyn ClientCertVerifier> { Arc::new(NoClientAuth) }
 }
 
 impl ClientCertVerifier for NoClientAuth {

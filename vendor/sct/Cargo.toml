@@ -17,6 +17,6 @@ ecdsa = []
 mesalock_sgx = ["sgx_tstd"]
 
 [dependencies]
-ring = { git = "https://github.com/mesalock-linux/ring-sgx" }
+ring = { git = "https://github.com/mesalock-linux/ring-sgx", tag = "v0.14.6" }
 untrusted = { git = "https://github.com/briansmith/untrusted", tag = "ring-master" }
 sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }

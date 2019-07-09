@@ -17,7 +17,7 @@
 //! The libc crate provide the C types for most, but not all, targets that
 //! *ring* supports.
 
-use libc;
+use sgx_libc as libc;
 
 pub(crate) type size_t = libc::size_t;
 pub(crate) type int = libc::c_int;

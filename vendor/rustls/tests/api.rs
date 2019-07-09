@@ -5,6 +5,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::mem;
 use std::fmt;
 use std::env;
+use std::error::Error;
 use std::io::{self, Write, Read};
 
 use rustls;
@@ -946,8 +947,9 @@ fn stream_write_reports_underlying_io_error_before_plaintext_processed() {
     let mut client_stream = Stream::new(&mut client, &mut pipe);
     let rc = client_stream.write(b"world");
     assert!(rc.is_err());
-    assert_eq!(format!("{:?}", rc),
-               "Err(Custom { kind: WouldBlock, error: StringError(\"oops\") })");
+    let err = rc.err().unwrap();
+    assert_eq!(err.kind(), io::ErrorKind::WouldBlock);
+    assert_eq!(err.description(), "oops");
 }
 
 #[test]
@@ -1497,7 +1499,7 @@ fn vectored_write_for_server_handshake() {
         let mut pipe = OtherSession::new(&mut client);
         let wrlen = server.writev_tls(&mut pipe).unwrap();
         // don't assert exact sizes here, to avoid a brittle test
-        assert!(wrlen > 5000); // its pretty big (contains cert chain)
+        assert!(wrlen > 4000); // its pretty big (contains cert chain)
         assert_eq!(pipe.writevs.len(), 1); // only one writev
         assert!(pipe.writevs[0].len() > 3); // at least a server hello/cert/serverkx
     }

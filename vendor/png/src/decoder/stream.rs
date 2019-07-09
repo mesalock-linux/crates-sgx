@@ -108,7 +108,7 @@ impl error::Error for DecodingError {
 impl fmt::Display for DecodingError {
     #[allow(deprecated)]
     fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        write!(fmt, "{}", (self as &error::Error).description())
+        write!(fmt, "{}", (self as &dyn error::Error).description())
     }
 }
 

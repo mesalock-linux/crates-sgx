@@ -14,7 +14,6 @@ exclude = [
 [dependencies]
 inflate = { git = "https://github.com/mesalock-linux/inflate-sgx" }
 deflate = { git = "https://github.com/mesalock-linux/deflate-rs-sgx", branch = "dev", optional = true }
-num-iter = { git = "https://github.com/mesalock-linux/num-iter-sgx" }
 bitflags = "1.0"
 crc32fast = { git = "https://github.com/mesalock-linux/rust-crc32fast-sgx" }
 sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }

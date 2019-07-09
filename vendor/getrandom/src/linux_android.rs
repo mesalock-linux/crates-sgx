@@ -12,49 +12,33 @@ extern crate std;
 #[cfg(feature = "mesalock_sgx")]
 use std;
 
+use crate::util::LazyBool;
+use crate::util_libc::sys_fill_exact;
 use crate::{use_file, Error};
 use core::num::NonZeroU32;
-use lazy_static::lazy_static;
 use std::io;
 
-fn syscall_getrandom(dest: &mut [u8], block: bool) -> Result<usize, io::Error> {
-    let flags = if block { 0 } else { libc::GRND_NONBLOCK };
-    let ret = unsafe { libc::syscall(libc::SYS_getrandom, dest.as_mut_ptr(), dest.len(), flags) };
-    if ret < 0 {
-        let err = io::Error::last_os_error();
-        if err.raw_os_error() == Some(libc::EINTR) {
-            return Ok(0); // Call was interrupted, try again
-        }
-        error!("Linux getrandom syscall failed with return value {}", ret);
-        return Err(err);
-    }
-    Ok(ret as usize)
-}
-
 pub fn getrandom_inner(dest: &mut [u8]) -> Result<(), Error> {
-    lazy_static! {
-        static ref HAS_GETRANDOM: bool = is_getrandom_available();
-    }
-    match *HAS_GETRANDOM {
-        true => {
-            let mut start = 0;
-            while start < dest.len() {
-                start += syscall_getrandom(&mut dest[start..], true)?;
-            }
-            Ok(())
-        }
-        false => use_file::getrandom_inner(dest),
+    static HAS_GETRANDOM: LazyBool = LazyBool::new();
+    if HAS_GETRANDOM.unsync_init(is_getrandom_available) {
+        sys_fill_exact(dest, |buf| unsafe {
+            libc::syscall(libc::SYS_getrandom, buf.as_mut_ptr(), buf.len(), 0) as libc::ssize_t
+        })
+    } else {
+        use_file::getrandom_inner(dest)
     }
 }
 
 fn is_getrandom_available() -> bool {
-    match syscall_getrandom(&mut [], false) {
-        Err(err) => match err.raw_os_error() {
+    let res = unsafe { libc::syscall(libc::SYS_getrandom, 0, 0, libc::GRND_NONBLOCK) };
+    if res < 0 {
+        match io::Error::last_os_error().raw_os_error() {
             Some(libc::ENOSYS) => false, // No kernel support
             Some(libc::EPERM) => false,  // Blocked by seccomp
             _ => true,
-        },
-        Ok(_) => true,
+        }
+    } else {
+        true
     }
 }
 

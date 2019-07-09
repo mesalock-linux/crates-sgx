@@ -198,7 +198,7 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/rand-sgx"]
 git = "https://github.com/mesalock-linux/rand-sgx"
-rev = "v0.6.5_sgx1.0.8"
+tag = "v0.6.5_sgx1.0.8"
 replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/regex-sgx"]
@@ -208,7 +208,7 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/ring-sgx"]
 git = "https://github.com/mesalock-linux/ring-sgx"
-branch = "master"
+tag = "v0.14.6"
 replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/rust-base64-sgx"]

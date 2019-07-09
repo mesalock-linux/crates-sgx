@@ -754,6 +754,10 @@ extern {
     pub fn tcgetpgrp(fd: ::c_int) -> pid_t;
     pub fn tcsetpgrp(fd: ::c_int, pgrp: ::pid_t) -> ::c_int;
     pub fn ttyname(fd: ::c_int) -> *mut c_char;
+    #[cfg_attr(all(target_os = "macos", target_arch = "x86"),
+               link_name = "ttyname_r$UNIX2003")]
+    pub fn ttyname_r(fd: ::c_int,
+                     buf: *mut c_char, buflen: ::size_t) -> ::c_int;
     pub fn unlink(c: *const c_char) -> ::c_int;
     #[cfg_attr(all(target_os = "macos", target_arch = "x86"),
                link_name = "wait$UNIX2003")]
@@ -1147,8 +1151,8 @@ cfg_if! {
     } else if #[cfg(any(target_os = "linux",
                         target_os = "android",
                         target_os = "emscripten"))] {
-        mod notbsd;
-        pub use self::notbsd::*;
+        mod linux_like;
+        pub use self::linux_like::*;
     } else if #[cfg(any(target_os = "macos",
                         target_os = "ios",
                         target_os = "freebsd",

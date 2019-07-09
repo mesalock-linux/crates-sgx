@@ -47,7 +47,7 @@ macro_rules! extract_handshake(
 );
 
 pub type CheckResult = Result<(), TLSError>;
-pub type NextState = Box<State + Send + Sync>;
+pub type NextState = Box<dyn State + Send + Sync>;
 pub type NextStateOrError = Result<NextState, TLSError>;
 
 pub trait State {

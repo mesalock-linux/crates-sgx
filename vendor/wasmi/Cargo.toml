@@ -1,6 +1,6 @@
 [package]
 name = "wasmi"
-version = "0.4.5"
+version = "0.5.0"
 authors = ["Nikolay Volf <nikvolf@gmail.com>", "Svyatoslav Nikolsky <svyatonik@yandex.ru>", "Sergey Pepyakin <s.pepyakin@gmail.com>"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
@@ -26,7 +26,7 @@ rand = "0.4.2"
 wabt = "0.6"
 
 [features]
-default = ["std", "mesalock_sgx"]
+default = ["std", "vec_memory", "mesalock_sgx"]
 # Disable for no_std support
 std = [
     "wasmi-validation/mesalock_sgx",
@@ -43,6 +43,12 @@ core = [
     "wasmi-validation/core",
     "libm"
 ]
+# Enforce using the linear memory implementation based on `Vec` instead of
+# mmap on unix systems.
+#
+# Useful for tests and if you need to minimize unsafe usage at the cost of performance on some
+# workloads.
+vec_memory = []
 
 mesalock_sgx = ["sgx_tstd"]
 

@@ -134,6 +134,7 @@ mod private {
 
 /// CBOR input source that reads from a std::io input stream.
 #[cfg(feature = "std")]
+#[derive(Debug)]
 pub struct IoRead<R>
 where
     R: io::Read,
@@ -262,6 +263,7 @@ where
 }
 
 #[cfg(feature = "std")]
+#[derive(Debug)]
 struct OffsetReader<R> {
     reader: R,
     offset: u64,
@@ -284,6 +286,7 @@ where
 
 /// A CBOR input source that reads from a slice of bytes.
 #[cfg(feature = "std")]
+#[derive(Debug)]
 pub struct SliceRead<'a> {
     slice: &'a [u8],
     scratch: Vec<u8>,
@@ -392,6 +395,7 @@ impl<'a> Read<'a> for SliceRead<'a> {
 ///
 /// [`SliceRead`](struct.SliceRead.html) and [`MutSliceRead`](struct.MutSliceRead.html) are usually
 /// preferred over this, as they can handle indefinite length items.
+#[derive(Debug)]
 pub struct SliceReadFixed<'a, 'b> {
     slice: &'a [u8],
     scratch: &'b mut [u8],
@@ -498,6 +502,7 @@ impl<'a, 'b> Read<'a> for SliceReadFixed<'a, 'b> {
 
 /// A CBOR input source that reads from a slice of bytes, and can move data around internally to
 /// reassemble indefinite strings without the need of an allocated scratch buffer.
+#[derive(Debug)]
 pub struct MutSliceRead<'a> {
     /// A complete view of the reader's data. It is promised that bytes before buffer_end are not
     /// mutated any more.

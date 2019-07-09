@@ -1,6 +1,6 @@
 [package]
 name = "regex"
-version = "1.1.7"  #:version
+version = "1.1.9"  #:version
 authors = ["The Rust Project Developers"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
@@ -26,7 +26,7 @@ members = [
 
 [dependencies]
 # For very fast prefix literal matching.
-aho-corasick = { version = "0.7.3", git = "https://github.com/mesalock-linux/aho-corasick-sgx" }
+aho-corasick = { version = "0.7.4", git = "https://github.com/mesalock-linux/aho-corasick-sgx" }
 # For skipping along search text quickly when a leading byte is known.
 memchr = { git = "https://github.com/mesalock-linux/rust-memchr-sgx" }
 # For managing regex caches quickly across multiple threads.

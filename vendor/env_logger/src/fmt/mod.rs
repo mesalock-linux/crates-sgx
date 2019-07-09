@@ -118,6 +118,7 @@ pub(crate) struct Builder {
     pub default_format_timestamp_nanos: bool,
     pub default_format_module_path: bool,
     pub default_format_level: bool,
+    #[allow(unknown_lints, bare_trait_objects)]
     pub custom_format: Option<Box<Fn(&mut Formatter, &Record) -> io::Result<()> + Sync + Send>>,
     built: bool,
 }
@@ -141,6 +142,7 @@ impl Builder {
     /// If the `custom_format` is `Some`, then any `default_format` switches are ignored.
     /// If the `custom_format` is `None`, then a default format is returned.
     /// Any `default_format` switches set to `false` won't be written by the format.
+    #[allow(unknown_lints, bare_trait_objects)]
     pub fn build(&mut self) -> Box<Fn(&mut Formatter, &Record) -> io::Result<()> + Sync + Send> {
         assert!(!self.built, "attempt to re-use consumed builder");
 

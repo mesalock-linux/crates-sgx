@@ -67,9 +67,9 @@ num-traits   = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
 parity-wasm  = { git = "https://github.com/mesalock-linux/parity-wasm-sgx", branch = "v0.31.3" }
 png          = { git = "https://github.com/mesalock-linux/image-png-sgx" }
 quick-error  = { git = "https://github.com/mesalock-linux/quick-error-sgx" }
-rand         = { git = "https://github.com/mesalock-linux/rand-sgx", rev = "v0.6.5_sgx1.0.8" }
+rand         = { git = "https://github.com/mesalock-linux/rand-sgx", tag = "v0.6.5_sgx1.0.8" }
 regex        = { git = "https://github.com/mesalock-linux/regex-sgx" }
-ring         = { git = "https://github.com/mesalock-linux/ring-sgx" }
+ring         = { git = "https://github.com/mesalock-linux/ring-sgx", tag = "v0.14.6" }
 rustls       = { git = "https://github.com/mesalock-linux/rustls", branch = "mesalock_sgx" }
 sct          = { git = "https://github.com/mesalock-linux/sct.rs", branch = "mesalock_sgx" }
 serde        = { git = "https://github.com/mesalock-linux/serde-sgx" }
@@ -92,6 +92,6 @@ yasna        = { git = "https://github.com/mesalock-linux/yasna.rs-sgx" }
 # no_std crates
 bit-vec = { version = "0.6.1", default-feature = false }
 cfg-if       = "0.1.9"
-httparse     = { version = "1.3.2", default-features=false }
+httparse     = { version = "1.3.4", default-features=false }
 itertools    = { version = "0.8.0", default-features = false }
-lazy_static  = { version = "1.0.2", features = ["spin_no_std"] }
+lazy_static  = { version = "1.3.0", features = ["spin_no_std"] }

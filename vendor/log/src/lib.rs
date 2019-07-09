@@ -267,7 +267,7 @@
 #![doc(
     html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
     html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-    html_root_url = "https://docs.rs/log/0.4.6"
+    html_root_url = "https://docs.rs/log/0.4.7"
 )]
 #![warn(missing_docs)]
 #![deny(missing_debug_implementations)]
@@ -747,21 +747,9 @@ struct KeyValues<'a>(&'a kv::Source);
 #[cfg(feature = "kv_unstable")]
 impl<'a> fmt::Debug for KeyValues<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use self::kv::{Key, Value, Visitor, Error};
-
-        struct FmtVisitor<'a, 'b: 'a>(fmt::DebugMap<'a, 'b>);
-
-        impl<'a, 'b: 'a, 'kvs> Visitor<'kvs> for FmtVisitor<'a, 'b> {
-            fn visit_pair(&mut self, key: Key<'kvs>, value: Value<'kvs>) -> Result<(), Error> {
-                self.0.entry(&key, &value);
-
-                Ok(())
-            }
-        }
-
-        let mut visitor = FmtVisitor(f.debug_map());
+        let mut visitor = f.debug_map();
         self.0.visit(&mut visitor)?;
-        visitor.0.finish()
+        visitor.finish()
     }
 }
 

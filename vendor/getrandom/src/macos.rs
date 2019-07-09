@@ -1,4 +1,4 @@
-// Copyright 2018 Developers of the Rand project.
+// Copyright 2019 Developers of the Rand project.
 //
 // Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
 // https://www.apache.org/licenses/LICENSE-2.0> or the MIT license
@@ -6,32 +6,33 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! Implementation for MacOS / iOS
+//! Implementation for macOS
 extern crate std;
 
-use crate::Error;
+use crate::util_libc::Weak;
+use crate::{use_file, Error};
+use core::mem;
 use core::num::NonZeroU32;
 use std::io;
 
-// TODO: Make extern once extern_types feature is stabilized. See:
-//   https://github.com/rust-lang/rust/issues/43467
-#[repr(C)]
-struct SecRandom([u8; 0]);
-
-#[link(name = "Security", kind = "framework")]
-extern "C" {
-    static kSecRandomDefault: *const SecRandom;
-
-    fn SecRandomCopyBytes(rnd: *const SecRandom, count: usize, bytes: *mut u8) -> i32;
-}
+type GetEntropyFn = unsafe extern "C" fn(*mut u8, libc::size_t) -> libc::c_int;
 
 pub fn getrandom_inner(dest: &mut [u8]) -> Result<(), Error> {
-    let ret = unsafe { SecRandomCopyBytes(kSecRandomDefault, dest.len(), dest.as_mut_ptr()) };
-    if ret == -1 {
-        error!("SecRandomCopyBytes call failed");
-        Err(io::Error::last_os_error().into())
-    } else {
+    static GETENTROPY: Weak = unsafe { Weak::new("getentropy\0") };
+    if let Some(fptr) = GETENTROPY.ptr() {
+        let func: GetEntropyFn = unsafe { mem::transmute(fptr) };
+        for chunk in dest.chunks_mut(256) {
+            let ret = unsafe { func(chunk.as_mut_ptr(), chunk.len()) };
+            if ret != 0 {
+                error!("getentropy syscall failed with ret={}", ret);
+                return Err(io::Error::last_os_error().into());
+            }
+        }
         Ok(())
+    } else {
+        // We fallback to reading from /dev/random instead of SecRandomCopyBytes
+        // to avoid high startup costs and linking the Security framework.
+        use_file::getrandom_inner(dest)
     }
 }
 

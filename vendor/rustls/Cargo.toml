@@ -14,7 +14,7 @@ exclude = ["/sgx/*"]
 [dependencies]
 base64 = { git = "https://github.com/mesalock-linux/rust-base64-sgx" }
 log = { git = "https://github.com/mesalock-linux/log-sgx", optional = true }
-ring = { git = "https://github.com/mesalock-linux/ring-sgx" }
+ring = { git = "https://github.com/mesalock-linux/ring-sgx", tag = "v0.14.6" }
 sct = { git = "https://github.com/mesalock-linux/sct.rs", branch = "mesalock_sgx" }
 untrusted = { git = "https://github.com/briansmith/untrusted", tag = "ring-master"  }
 webpki = { git = "https://github.com/mesalock-linux/webpki", branch = "mesalock_sgx" }

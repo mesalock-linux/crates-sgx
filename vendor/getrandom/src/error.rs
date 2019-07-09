@@ -38,7 +38,7 @@ impl Error {
     }
 
     pub(crate) fn msg(&self) -> Option<&'static str> {
-        if let Some(msg) = super::error_msg_inner(self.0) {
+        if let Some(msg) = crate::imp::error_msg_inner(self.0) {
             Some(msg)
         } else {
             match *self {
@@ -71,6 +71,12 @@ impl fmt::Display for Error {
 impl From<NonZeroU32> for Error {
     fn from(code: NonZeroU32) -> Self {
         Error(code)
+    }
+}
+
+impl From<&Error> for Error {
+    fn from(error: &Error) -> Self {
+        *error
     }
 }
 
