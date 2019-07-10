@@ -1082,7 +1082,7 @@ dependencies = [
 [[package]]
 name = "wasmi"
 version = "0.5.0"
-source = "git+https://github.com/mesalock-linux/wasmi-sgx#c4ab7c97910d3669f039038c3bfb5426cdc03c7f"
+source = "git+https://github.com/mesalock-linux/wasmi-sgx#3703312b3ded790a67516ac9c7ba67f3ff6ac028"
 dependencies = [
  "memory_units 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-rational 0.2.2 (git+https://github.com/mesalock-linux/num-rational-sgx)",
@@ -1096,7 +1096,7 @@ dependencies = [
 [[package]]
 name = "wasmi-validation"
 version = "0.1.0"
-source = "git+https://github.com/mesalock-linux/wasmi-sgx#c4ab7c97910d3669f039038c3bfb5426cdc03c7f"
+source = "git+https://github.com/mesalock-linux/wasmi-sgx#3703312b3ded790a67516ac9c7ba67f3ff6ac028"
 dependencies = [
  "parity-wasm 0.31.3 (git+https://github.com/mesalock-linux/parity-wasm-sgx?branch=v0.31.3)",
  "sgx_tstd 1.0.8 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.8)",
