@@ -1,6 +1,7 @@
 adler32                       1.0.3
 aho-corasick                  0.7.4
 array_tool                    1.0.3
+assert_matches                1.3.0
 autocfg                       0.1.4
 base64                        0.10.1
 bincode                       1.1.4
