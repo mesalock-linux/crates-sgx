@@ -31,8 +31,7 @@ pub const DEFAULT_TABLE_INDEX: u32 = 0;
 /// Maximal number of pages that a wasm instance supports.
 pub const LINEAR_MEMORY_MAX_PAGES: u32 = 65536;
 
-#[allow(unused_imports)]
-use alloc::prelude::v1::*;
+use alloc::{string::String, vec::Vec};
 use core::fmt;
 #[cfg(feature = "std")]
 use std::error;

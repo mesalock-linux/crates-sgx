@@ -13,6 +13,7 @@ A crate for decoding and encoding the header part of gzip files based on the gzi
  implementation in the flate2 crate.
 """
 categories = ["compression"]
+exclude = ["/sgx/*"]
 
 [dependencies]
 crc32fast = { git = "https://github.com/mesalock-linux/rust-crc32fast-sgx" }

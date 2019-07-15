@@ -1,6 +1,9 @@
-#[allow(unused_imports)]
-use alloc::prelude::v1::*;
-use alloc::sync::Arc;
+use alloc::{
+    borrow::ToOwned,
+    string::{String, ToString},
+    sync::Arc,
+    vec::Vec,
+};
 use core::cell::RefCell;
 use core::fmt;
 use Trap;

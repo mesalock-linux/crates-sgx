@@ -60,6 +60,7 @@ jpeg-decoder = { git = "https://github.com/mesalock-linux/jpeg-decoder-sgx" }
 linked-hash-map = { git = "https://github.com/mesalock-linux/linked-hash-map-sgx" }
 log          = { git = "https://github.com/mesalock-linux/log-sgx" }
 lzw          = { git = "https://github.com/mesalock-linux/lzw-sgx" }
+matrixmultiply = { git = "https://github.com/mesalock-linux/matrixmultiply-sgx" }
 md5          = { git = "https://github.com/mesalock-linux/md5-sgx" }
 net2         = { git = "https://github.com/mesalock-linux/net2-rs" }
 num-bigint   = { git = "https://github.com/mesalock-linux/num-bigint-sgx" }
@@ -70,7 +71,9 @@ quick-error  = { git = "https://github.com/mesalock-linux/quick-error-sgx" }
 rand         = { git = "https://github.com/mesalock-linux/rand-sgx", tag = "v0.6.5_sgx1.0.8" }
 regex        = { git = "https://github.com/mesalock-linux/regex-sgx" }
 ring         = { git = "https://github.com/mesalock-linux/ring-sgx", tag = "v0.14.6" }
+rulinalg     = { git = "https://github.com/mesalock-linux/rulinalg-sgx" }
 rustls       = { git = "https://github.com/mesalock-linux/rustls", branch = "mesalock_sgx" }
+rusty-machine = {git = "https://github.com/mesalock-linux/rusty-machine-sgx" }
 sct          = { git = "https://github.com/mesalock-linux/sct.rs", branch = "mesalock_sgx" }
 serde        = { git = "https://github.com/mesalock-linux/serde-sgx" }
 serde_cbor   = { git = "https://github.com/mesalock-linux/cbor-sgx" }

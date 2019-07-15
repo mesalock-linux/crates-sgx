@@ -107,6 +107,7 @@ impl<'a> RuntimeArgs<'a> {
 ///     _ => panic!(),
 /// }
 /// ```
+#[typetag::serde(tag = "type")]
 pub trait HostError: 'static + ::core::fmt::Display + ::core::fmt::Debug + Send + Sync {
     #[doc(hidden)]
     fn __private_get_type_id__(&self) -> TypeId {
@@ -114,26 +115,26 @@ pub trait HostError: 'static + ::core::fmt::Display + ::core::fmt::Debug + Send 
     }
 }
 
-//impl HostError {
-//    /// Attempt to downcast this `HostError` to a concrete type by reference.
-//    pub fn downcast_ref<T: HostError>(&self) -> Option<&T> {
-//        if self.__private_get_type_id__() == TypeId::of::<T>() {
-//            unsafe { Some(&*(self as *const HostError as *const T)) }
-//        } else {
-//            None
-//        }
-//    }
-//
-//    /// Attempt to downcast this `HostError` to a concrete type by mutable
-//    /// reference.
-//    pub fn downcast_mut<T: HostError>(&mut self) -> Option<&mut T> {
-//        if self.__private_get_type_id__() == TypeId::of::<T>() {
-//            unsafe { Some(&mut *(self as *mut HostError as *mut T)) }
-//        } else {
-//            None
-//        }
-//    }
-//}
+impl dyn HostError {
+    /// Attempt to downcast this `HostError` to a concrete type by reference.
+    pub fn downcast_ref<T: HostError>(&self) -> Option<&T> {
+        if self.__private_get_type_id__() == TypeId::of::<T>() {
+            unsafe { Some(&*(self as *const dyn HostError as *const T)) }
+        } else {
+            None
+        }
+    }
+
+    /// Attempt to downcast this `HostError` to a concrete type by mutable
+    /// reference.
+    pub fn downcast_mut<T: HostError>(&mut self) -> Option<&mut T> {
+        if self.__private_get_type_id__() == TypeId::of::<T>() {
+            unsafe { Some(&mut *(self as *mut dyn HostError as *mut T)) }
+        } else {
+            None
+        }
+    }
+}
 
 /// Trait that allows to implement host functions.
 ///
@@ -257,5 +258,5 @@ mod tests {
     }
 
     // Tests that `HostError` trait is object safe.
-    fn _host_error_is_object_safe(_: &HostError) {}
+    fn _host_error_is_object_safe(_: &dyn HostError) {}
 }

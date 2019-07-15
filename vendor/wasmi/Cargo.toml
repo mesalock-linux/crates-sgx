@@ -19,6 +19,7 @@ sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", 
 num-rational = { git = "https://github.com/mesalock-linux/num-rational-sgx" }
 num-traits = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
 serde = { git = "https://github.com/mesalock-linux/serde-sgx", features = ["derive"] }
+typetag = { git = "https://github.com/mesalock-linux/typetag-sgx" }
 
 [dev-dependencies]
 assert_matches = "1.1"
@@ -40,6 +41,8 @@ std = [
 ]
 # Enable for no_std support
 core = [
+    # `core` doesn't support vec_memory
+    "vec_memory",
     "wasmi-validation/core",
     "libm"
 ]

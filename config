@@ -66,6 +66,11 @@ git = "https://github.com/mesalock-linux/env_logger-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/erased-serde-sgx"]
+git = "https://github.com/mesalock-linux/erased-serde-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/getrandom-sgx"]
 git = "https://github.com/mesalock-linux/getrandom-sgx"
 branch = "master"
@@ -121,6 +126,11 @@ git = "https://github.com/mesalock-linux/inflate-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/inventory-sgx"]
+git = "https://github.com/mesalock-linux/inventory-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/iovec-sgx"]
 git = "https://github.com/mesalock-linux/iovec-sgx"
 branch = "master"
@@ -151,6 +161,11 @@ git = "https://github.com/mesalock-linux/lzw-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/matrixmultiply-sgx"]
+git = "https://github.com/mesalock-linux/matrixmultiply-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/md5-sgx"]
 git = "https://github.com/mesalock-linux/md5-sgx"
 branch = "master"
@@ -166,6 +181,11 @@ git = "https://github.com/mesalock-linux/num-bigint-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/num-complex-sgx"]
+git = "https://github.com/mesalock-linux/num-complex-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/num-integer-sgx"]
 git = "https://github.com/mesalock-linux/num-integer-sgx"
 branch = "master"
@@ -178,6 +198,11 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/num-rational-sgx"]
 git = "https://github.com/mesalock-linux/num-rational-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/num-sgx"]
+git = "https://github.com/mesalock-linux/num-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
@@ -209,6 +234,11 @@ replace-with = "vendored-sources"
 [source."https://github.com/mesalock-linux/ring-sgx"]
 git = "https://github.com/mesalock-linux/ring-sgx"
 tag = "v0.14.6"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/rulinalg-sgx"]
+git = "https://github.com/mesalock-linux/rulinalg-sgx"
+branch = "master"
 replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/rust-base64-sgx"]
@@ -246,6 +276,11 @@ git = "https://github.com/mesalock-linux/rustls"
 branch = "mesalock_sgx"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/rusty-machine-sgx"]
+git = "https://github.com/mesalock-linux/rusty-machine-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/sct.rs"]
 git = "https://github.com/mesalock-linux/sct.rs"
 branch = "mesalock_sgx"
@@ -278,6 +313,11 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/toml-rs-sgx"]
 git = "https://github.com/mesalock-linux/toml-rs-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/typetag-sgx"]
+git = "https://github.com/mesalock-linux/typetag-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
