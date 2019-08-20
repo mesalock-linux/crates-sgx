@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/http/0.1.17")]
+#![doc(html_root_url = "https://docs.rs/http/0.1.18")]
 
 //! A general purpose library of common HTTP types
 //!
@@ -170,6 +170,13 @@ extern crate sgx_tstd as std;
 extern crate bytes;
 extern crate fnv;
 extern crate itoa;
+
+#[cfg(test)]
+#[macro_use]
+extern crate doc_comment;
+
+#[cfg(test)]
+doctest!("../README.md");
 
 pub mod header;
 pub mod method;

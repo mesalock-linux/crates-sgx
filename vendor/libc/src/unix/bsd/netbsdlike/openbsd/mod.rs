@@ -308,6 +308,21 @@ s! {
     }
 }
 
+impl siginfo_t {
+    pub unsafe fn si_value(&self) -> ::sigval {
+        #[repr(C)]
+        struct siginfo_timer {
+            _si_signo: ::c_int,
+            _si_errno: ::c_int,
+            _si_code: ::c_int,
+            _pid: ::pid_t,
+            _uid: ::uid_t,
+            value: ::sigval,
+        }
+        (*(self as *const siginfo_t as *const siginfo_timer)).value
+    }
+}
+
 s_no_extra_traits! {
     pub struct dirent {
         pub d_fileno: ::ino_t,
@@ -1168,7 +1183,8 @@ pub const KERN_CONSBUF: ::c_int = 83;
 pub const KERN_AUDIO: ::c_int = 84;
 pub const KERN_CPUSTATS: ::c_int = 85;
 pub const KERN_PFSTATUS: ::c_int = 86;
-pub const KERN_MAXID: ::c_int = 87;
+pub const KERN_TIMEOUT_STATS: ::c_int = 87;
+pub const KERN_MAXID: ::c_int = 88;
 
 pub const KERN_PROC_ALL: ::c_int = 0;
 pub const KERN_PROC_PID: ::c_int = 1;

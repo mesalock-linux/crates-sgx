@@ -1,6 +1,6 @@
 #[cfg(span_locations)]
 use std::cell::RefCell;
-#[cfg(procmacro2_semver_exempt)]
+#[cfg(span_locations)]
 use std::cmp;
 use std::fmt;
 use std::iter;
@@ -10,10 +10,9 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::vec;
 
-use strnom::{block_comment, skip_whitespace, whitespace, word_break, Cursor, PResult};
+use crate::strnom::{block_comment, skip_whitespace, whitespace, word_break, Cursor, PResult};
+use crate::{Delimiter, Punct, Spacing, TokenTree};
 use unicode_xid::UnicodeXID;
-
-use {Delimiter, Punct, Spacing, TokenTree};
 
 #[derive(Clone)]
 pub struct TokenStream {
@@ -118,8 +117,8 @@ impl fmt::Debug for TokenStream {
 }
 
 #[cfg(use_proc_macro)]
-impl From<::proc_macro::TokenStream> for TokenStream {
-    fn from(inner: ::proc_macro::TokenStream) -> TokenStream {
+impl From<proc_macro::TokenStream> for TokenStream {
+    fn from(inner: proc_macro::TokenStream) -> TokenStream {
         inner
             .to_string()
             .parse()
@@ -128,8 +127,8 @@ impl From<::proc_macro::TokenStream> for TokenStream {
 }
 
 #[cfg(use_proc_macro)]
-impl From<TokenStream> for ::proc_macro::TokenStream {
-    fn from(inner: TokenStream) -> ::proc_macro::TokenStream {
+impl From<TokenStream> for proc_macro::TokenStream {
+    fn from(inner: TokenStream) -> proc_macro::TokenStream {
         inner
             .to_string()
             .parse()
@@ -314,22 +313,19 @@ impl SourceMap {
         let lo = self.next_start_pos();
         // XXX(nika): Shouild we bother doing a checked cast or checked add here?
         let span = Span {
-            lo: lo,
+            lo,
             hi: lo + (src.len() as u32),
         };
 
         #[cfg(procmacro2_semver_exempt)]
         self.files.push(FileInfo {
             name: name.to_owned(),
-            span: span,
-            lines: lines,
+            span,
+            lines,
         });
 
         #[cfg(not(procmacro2_semver_exempt))]
-        self.files.push(FileInfo {
-            span: span,
-            lines: lines,
-        });
+        self.files.push(FileInfo { span, lines });
         let _ = name;
 
         span
@@ -411,7 +407,12 @@ impl Span {
         })
     }
 
-    #[cfg(procmacro2_semver_exempt)]
+    #[cfg(not(span_locations))]
+    pub fn join(&self, _other: Span) -> Option<Span> {
+        Some(Span {})
+    }
+
+    #[cfg(span_locations)]
     pub fn join(&self, other: Span) -> Option<Span> {
         SOURCE_MAP.with(|cm| {
             let cm = cm.borrow();
@@ -453,8 +454,8 @@ pub struct Group {
 impl Group {
     pub fn new(delimiter: Delimiter, stream: TokenStream) -> Group {
         Group {
-            delimiter: delimiter,
-            stream: stream,
+            delimiter,
+            stream,
             span: Span::call_site(),
         }
     }
@@ -471,12 +472,10 @@ impl Group {
         self.span
     }
 
-    #[cfg(procmacro2_semver_exempt)]
     pub fn span_open(&self) -> Span {
         self.span
     }
 
-    #[cfg(procmacro2_semver_exempt)]
     pub fn span_close(&self) -> Span {
         self.span
     }
@@ -527,8 +526,8 @@ impl Ident {
 
         Ident {
             sym: string.to_owned(),
-            span: span,
-            raw: raw,
+            span,
+            raw,
         }
     }
 
@@ -671,7 +670,7 @@ macro_rules! unsuffixed_numbers {
 impl Literal {
     fn _new(text: String) -> Literal {
         Literal {
-            text: text,
+            text,
             span: Span::call_site(),
         }
     }
@@ -681,21 +680,17 @@ impl Literal {
         u16_suffixed => u16,
         u32_suffixed => u32,
         u64_suffixed => u64,
+        u128_suffixed => u128,
         usize_suffixed => usize,
         i8_suffixed => i8,
         i16_suffixed => i16,
         i32_suffixed => i32,
         i64_suffixed => i64,
+        i128_suffixed => i128,
         isize_suffixed => isize,
 
         f32_suffixed => f32,
         f64_suffixed => f64,
-    }
-
-    #[cfg(u128)]
-    suffixed_numbers! {
-        u128_suffixed => u128,
-        i128_suffixed => i128,
     }
 
     unsuffixed_numbers! {
@@ -703,18 +698,14 @@ impl Literal {
         u16_unsuffixed => u16,
         u32_unsuffixed => u32,
         u64_unsuffixed => u64,
+        u128_unsuffixed => u128,
         usize_unsuffixed => usize,
         i8_unsuffixed => i8,
         i16_unsuffixed => i16,
         i32_unsuffixed => i32,
         i64_unsuffixed => i64,
-        isize_unsuffixed => isize,
-    }
-
-    #[cfg(u128)]
-    unsuffixed_numbers! {
-        u128_unsuffixed => u128,
         i128_unsuffixed => i128,
+        isize_unsuffixed => isize,
     }
 
     pub fn f32_unsuffixed(f: f32) -> Literal {
@@ -771,7 +762,7 @@ impl Literal {
                 b'\r' => escaped.push_str(r"\r"),
                 b'"' => escaped.push_str("\\\""),
                 b'\\' => escaped.push_str("\\\\"),
-                b'\x20'...b'\x7E' => escaped.push(*b as char),
+                b'\x20'..=b'\x7E' => escaped.push(*b as char),
                 _ => escaped.push_str(&format!("\\x{:02X}", b)),
             }
         }
@@ -831,21 +822,21 @@ fn token_stream(mut input: Cursor) -> PResult<TokenStream> {
 fn spanned<'a, T>(
     input: Cursor<'a>,
     f: fn(Cursor<'a>) -> PResult<'a, T>,
-) -> PResult<'a, (T, ::Span)> {
+) -> PResult<'a, (T, crate::Span)> {
     let (a, b) = f(skip_whitespace(input))?;
-    Ok((a, ((b, ::Span::_new_stable(Span::call_site())))))
+    Ok((a, ((b, crate::Span::_new_stable(Span::call_site())))))
 }
 
 #[cfg(span_locations)]
 fn spanned<'a, T>(
     input: Cursor<'a>,
     f: fn(Cursor<'a>) -> PResult<'a, T>,
-) -> PResult<'a, (T, ::Span)> {
+) -> PResult<'a, (T, crate::Span)> {
     let input = skip_whitespace(input);
     let lo = input.off;
     let (a, b) = f(input)?;
     let hi = a.off;
-    let span = ::Span::_new_stable(Span { lo: lo, hi: hi });
+    let span = crate::Span::_new_stable(Span { lo, hi });
     Ok((a, (b, span)))
 }
 
@@ -856,9 +847,9 @@ fn token_tree(input: Cursor) -> PResult<TokenTree> {
 }
 
 named!(token_kind -> TokenTree, alt!(
-    map!(group, |g| TokenTree::Group(::Group::_new_stable(g)))
+    map!(group, |g| TokenTree::Group(crate::Group::_new_stable(g)))
     |
-    map!(literal, |l| TokenTree::Literal(::Literal::_new_stable(l))) // must be before symbol
+    map!(literal, |l| TokenTree::Literal(crate::Literal::_new_stable(l))) // must be before symbol
     |
     map!(op, TokenTree::Punct)
     |
@@ -890,13 +881,26 @@ fn symbol_leading_ws(input: Cursor) -> PResult<TokenTree> {
 }
 
 fn symbol(input: Cursor) -> PResult<TokenTree> {
-    let mut chars = input.char_indices();
-
     let raw = input.starts_with("r#");
-    if raw {
-        chars.next();
-        chars.next();
+    let rest = input.advance((raw as usize) << 1);
+
+    let (rest, sym) = symbol_not_raw(rest)?;
+
+    if !raw {
+        let ident = crate::Ident::new(sym, crate::Span::call_site());
+        return Ok((rest, ident.into()));
     }
+
+    if sym == "_" {
+        return Err(LexError);
+    }
+
+    let ident = crate::Ident::_new_raw(sym, crate::Span::call_site());
+    Ok((rest, ident.into()))
+}
+
+fn symbol_not_raw(input: Cursor) -> PResult<&str> {
+    let mut chars = input.char_indices();
 
     match chars.next() {
         Some((_, ch)) if is_ident_start(ch) => {}
@@ -911,17 +915,7 @@ fn symbol(input: Cursor) -> PResult<TokenTree> {
         }
     }
 
-    let a = &input.rest[..end];
-    if a == "r#_" {
-        Err(LexError)
-    } else {
-        let ident = if raw {
-            ::Ident::_new_raw(&a[2..], ::Span::call_site())
-        } else {
-            ::Ident::new(a, ::Span::call_site())
-        };
-        Ok((input.advance(end), ident.into()))
-    }
+    Ok((input.advance(end), &input.rest[..end]))
 }
 
 fn literal(input: Cursor) -> PResult<Literal> {
@@ -961,10 +955,12 @@ named!(string -> (), alt!(
     ) => { |_| () }
 ));
 
-named!(quoted_string -> (), delimited!(
-    punct!("\""),
-    cooked_string,
-    tag!("\"")
+named!(quoted_string -> (), do_parse!(
+    punct!("\"") >>
+    cooked_string >>
+    tag!("\"") >>
+    option!(symbol_not_raw) >>
+    (())
 ));
 
 fn cooked_string(input: Cursor) -> PResult<()> {
@@ -1173,8 +1169,8 @@ fn backslash_x_char<I>(chars: &mut I) -> bool
 where
     I: Iterator<Item = (usize, char)>,
 {
-    next_ch!(chars @ '0'...'7');
-    next_ch!(chars @ '0'...'9' | 'a'...'f' | 'A'...'F');
+    next_ch!(chars @ '0'..='7');
+    next_ch!(chars @ '0'..='9' | 'a'..='f' | 'A'..='F');
     true
 }
 
@@ -1182,8 +1178,8 @@ fn backslash_x_byte<I>(chars: &mut I) -> bool
 where
     I: Iterator<Item = (usize, u8)>,
 {
-    next_ch!(chars @ b'0'...b'9' | b'a'...b'f' | b'A'...b'F');
-    next_ch!(chars @ b'0'...b'9' | b'a'...b'f' | b'A'...b'F');
+    next_ch!(chars @ b'0'..=b'9' | b'a'..=b'f' | b'A'..=b'F');
+    next_ch!(chars @ b'0'..=b'9' | b'a'..=b'f' | b'A'..=b'F');
     true
 }
 
@@ -1192,9 +1188,9 @@ where
     I: Iterator<Item = (usize, char)>,
 {
     next_ch!(chars @ '{');
-    next_ch!(chars @ '0'...'9' | 'a'...'f' | 'A'...'F');
+    next_ch!(chars @ '0'..='9' | 'a'..='f' | 'A'..='F');
     loop {
-        let c = next_ch!(chars @ '0'...'9' | 'a'...'f' | 'A'...'F' | '_' | '}');
+        let c = next_ch!(chars @ '0'..='9' | 'a'..='f' | 'A'..='F' | '_' | '}');
         if c == '}' {
             return true;
         }
@@ -1202,10 +1198,10 @@ where
 }
 
 fn float(input: Cursor) -> PResult<()> {
-    let (rest, ()) = float_digits(input)?;
-    for suffix in &["f32", "f64"] {
-        if rest.starts_with(suffix) {
-            return word_break(rest.advance(suffix.len()));
+    let (mut rest, ()) = float_digits(input)?;
+    if let Some(ch) = rest.chars().next() {
+        if is_ident_start(ch) {
+            rest = symbol_not_raw(rest)?.0;
         }
     }
     word_break(rest)
@@ -1223,7 +1219,7 @@ fn float_digits(input: Cursor) -> PResult<()> {
     let mut has_exp = false;
     while let Some(&ch) = chars.peek() {
         match ch {
-            '0'...'9' | '_' => {
+            '0'..='9' | '_' => {
                 chars.next();
                 len += 1;
             }
@@ -1234,7 +1230,7 @@ fn float_digits(input: Cursor) -> PResult<()> {
                 chars.next();
                 if chars
                     .peek()
-                    .map(|&ch| ch == '.' || UnicodeXID::is_xid_start(ch))
+                    .map(|&ch| ch == '.' || is_ident_start(ch))
                     .unwrap_or(false)
                 {
                     return Err(LexError);
@@ -1268,7 +1264,7 @@ fn float_digits(input: Cursor) -> PResult<()> {
                     chars.next();
                     len += 1;
                 }
-                '0'...'9' => {
+                '0'..='9' => {
                     chars.next();
                     len += 1;
                     has_exp_value = true;
@@ -1289,12 +1285,10 @@ fn float_digits(input: Cursor) -> PResult<()> {
 }
 
 fn int(input: Cursor) -> PResult<()> {
-    let (rest, ()) = digits(input)?;
-    for suffix in &[
-        "isize", "i8", "i16", "i32", "i64", "i128", "usize", "u8", "u16", "u32", "u64", "u128",
-    ] {
-        if rest.starts_with(suffix) {
-            return word_break(rest.advance(suffix.len()));
+    let (mut rest, ()) = digits(input)?;
+    if let Some(ch) = rest.chars().next() {
+        if is_ident_start(ch) {
+            rest = symbol_not_raw(rest)?.0;
         }
     }
     word_break(rest)
@@ -1318,9 +1312,9 @@ fn digits(mut input: Cursor) -> PResult<()> {
     let mut empty = true;
     for b in input.bytes() {
         let digit = match b {
-            b'0'...b'9' => (b - b'0') as u64,
-            b'a'...b'f' => 10 + (b - b'a') as u64,
-            b'A'...b'F' => 10 + (b - b'A') as u64,
+            b'0'..=b'9' => (b - b'0') as u64,
+            b'a'..=b'f' => 10 + (b - b'a') as u64,
+            b'A'..=b'F' => 10 + (b - b'A') as u64,
             b'_' => {
                 if empty && base == 10 {
                     return Err(LexError);
@@ -1390,15 +1384,15 @@ fn doc_comment(input: Cursor) -> PResult<Vec<TokenTree>> {
         trees.push(Punct::new('!', Spacing::Alone).into());
     }
     let mut stream = vec![
-        TokenTree::Ident(::Ident::new("doc", span)),
+        TokenTree::Ident(crate::Ident::new("doc", span)),
         TokenTree::Punct(Punct::new('=', Spacing::Alone)),
-        TokenTree::Literal(::Literal::string(comment)),
+        TokenTree::Literal(crate::Literal::string(comment)),
     ];
     for tt in stream.iter_mut() {
         tt.set_span(span);
     }
     let group = Group::new(Delimiter::Bracket, stream.into_iter().collect());
-    trees.push(::Group::_new_stable(group).into());
+    trees.push(crate::Group::_new_stable(group).into());
     for tt in trees.iter_mut() {
         tt.set_span(span);
     }

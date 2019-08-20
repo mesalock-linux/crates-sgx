@@ -331,14 +331,12 @@ fn emit_client_hello_for_retry(sess: &mut ClientSessionImpl,
         let client_hello_hash = handshake.transcript.get_hash_given(resuming_suite.get_hash(), &[]);
         let client_early_traffic_secret = sess.common
             .get_key_schedule()
-            .derive(SecretKind::ClientEarlyTrafficSecret, &client_hello_hash);
+            .derive_logged_secret(SecretKind::ClientEarlyTrafficSecret, &client_hello_hash,
+                                  &*sess.config.key_log,
+                                  &handshake.randoms.client);
         // Set early data encryption key
         sess.common
             .set_message_encrypter(cipher::new_tls13_write(resuming_suite, &client_early_traffic_secret));
-
-        sess.config.key_log.log(sess.common.protocol.labels().client_early_traffic_secret,
-                                &handshake.randoms.client,
-                                &client_early_traffic_secret);
 
         #[cfg(feature = "quic")]
         {
@@ -595,7 +593,7 @@ impl State for ExpectServerHello {
                 let secrets = SessionSecrets::new_resume(&self.handshake.randoms,
                                                          scs.unwrap().get_hash(),
                                                          &resuming.master_secret.0);
-                sess.config.key_log.log(sess.common.protocol.labels().client_random,
+                sess.config.key_log.log("CLIENT_RANDOM",
                                         &secrets.randoms.client,
                                         &secrets.master_secret);
                 sess.common.start_encryption_tls12(secrets);

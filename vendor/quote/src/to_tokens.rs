@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 use proc_macro2::{Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
 
-/// Types that can be interpolated inside a [`quote!`] invocation.
+/// Types that can be interpolated inside a `quote!` invocation.
 ///
 /// [`quote!`]: macro.quote.html
 pub trait ToTokens {
@@ -22,7 +22,7 @@ pub trait ToTokens {
     /// Example implementation for a struct representing Rust paths like
     /// `std::cmp::PartialEq`:
     ///
-    /// ```edition2018
+    /// ```
     /// use proc_macro2::{TokenTree, Spacing, Span, Punct, TokenStream};
     /// use quote::{TokenStreamExt, ToTokens};
     ///
@@ -58,13 +58,21 @@ pub trait ToTokens {
     ///
     /// This method is implicitly implemented using `to_tokens`, and acts as a
     /// convenience method for consumers of the `ToTokens` trait.
+    fn to_token_stream(&self) -> TokenStream {
+        let mut tokens = TokenStream::new();
+        self.to_tokens(&mut tokens);
+        tokens
+    }
+
+    /// Convert `self` directly into a `TokenStream` object.
+    ///
+    /// This method is implicitly implemented using `to_tokens`, and acts as a
+    /// convenience method for consumers of the `ToTokens` trait.
     fn into_token_stream(self) -> TokenStream
     where
         Self: Sized,
     {
-        let mut tokens = TokenStream::new();
-        self.to_tokens(&mut tokens);
-        tokens
+        self.to_token_stream()
     }
 }
 
@@ -133,22 +141,18 @@ primitive! {
     i16 => i16_suffixed
     i32 => i32_suffixed
     i64 => i64_suffixed
+    i128 => i128_suffixed
     isize => isize_suffixed
 
     u8 => u8_suffixed
     u16 => u16_suffixed
     u32 => u32_suffixed
     u64 => u64_suffixed
+    u128 => u128_suffixed
     usize => usize_suffixed
 
     f32 => f32_suffixed
     f64 => f64_suffixed
-}
-
-#[cfg(integer128)]
-primitive! {
-    i128 => i128_suffixed
-    u128 => u128_suffixed
 }
 
 impl ToTokens for char {

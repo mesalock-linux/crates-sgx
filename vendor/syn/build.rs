@@ -11,21 +11,8 @@ fn main() {
         None => return,
     };
 
-    if compiler.minor >= 17 {
-        println!("cargo:rustc-cfg=syn_can_match_trailing_dollar");
-    }
-
-    if compiler.minor >= 19 {
-        println!("cargo:rustc-cfg=syn_can_use_thread_id");
-    }
-
-    if compiler.minor >= 20 {
-        println!("cargo:rustc-cfg=syn_can_use_associated_constants");
-    }
-
-    // Macro modularization allows re-exporting the `quote!` macro in 1.30+.
-    if compiler.minor >= 30 {
-        println!("cargo:rustc-cfg=syn_can_call_macro_by_path");
+    if compiler.minor < 36 {
+        println!("cargo:rustc-cfg=syn_omit_await_from_token_macro");
     }
 
     if !compiler.nightly {

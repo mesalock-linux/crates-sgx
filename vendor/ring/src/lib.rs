@@ -22,6 +22,8 @@
 //! <table>
 //! <tr><th>Feature
 //!     <th>Description
+//! <tr><td><code>alloc (default)</code>
+//!     <td>Enable features that require use of the heap, RSA in particular.
 //! <tr><td><code>dev_urandom_fallback (default)</code>
 //!     <td>This is only applicable to Linux. On Linux, by default,
 //!         <code>ring::rand::SystemRandom</code> will fall back to reading
@@ -30,8 +32,9 @@
 //!         <code>dev_urandom_fallback</code> feature is disabled, such
 //!         fallbacks will not occur. See the documentation for
 //!         <code>rand::SystemRandom</code> for more details.
-//! <tr><td><code>use_heap (default)</code>
-//!     <td>Enable features that require use of the heap, RSA in particular.
+//! <tr><td><code>std</code>
+//!     <td>Enable features that use libstd, in particular `std::error::Error`
+//!         integration.
 //! </table>
 
 #![doc(html_root_url = "https://briansmith.org/rustdoc/")]
@@ -54,29 +57,40 @@
     anonymous_parameters,
     trivial_casts,
     trivial_numeric_casts,
-    unused_extern_crates,
+    //unused_extern_crates,
     unused_import_braces,
     unused_results,
-    warnings
+    //warnings
 )]
-#![no_std]
+#![cfg_attr(
+    any(
+        target_os = "redox",
+        all(
+            not(test),
+            not(feature = "use_heap"),
+            unix,
+            not(any(target_os = "macos", target_os = "ios")),
+            any(not(target_os = "linux"), feature = "dev_urandom_fallback")
+        ),
+        all(
+            feature = "mesalock_sgx",
+            not(target_env = "sgx"),
+        ),
+    ),
+    no_std
+)]
 #![cfg_attr(feature = "internal_benches", allow(unstable_features), feature(test))]
 #![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))] 
 #[cfg(all(feature = "mesalock_sgx", not(target_env = "sgx")))]
 #[macro_use]
 extern crate sgx_tstd as std;
 
-#[cfg(all(feature = "mesalock_sgx", target_env = "sgx"))]
-#[macro_use]
-extern crate std;
-
-#[cfg(any(test, all(not(feature = "mesalock_sgx"), feature = "use_heap")))]
-extern crate std;
+#[cfg(feature = "alloc")]
+extern crate alloc;
 
 #[macro_use]
 mod debug;
 
-#[cfg(any(test, feature = "use_heap"))]
 #[macro_use]
 pub mod test;
 
@@ -111,7 +125,7 @@ pub mod pbkdf2;
 pub mod pkcs8;
 pub mod rand;
 
-#[cfg(feature = "use_heap")]
+#[cfg(feature = "alloc")]
 mod rsa;
 
 pub mod signature;

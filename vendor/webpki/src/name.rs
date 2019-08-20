@@ -18,7 +18,6 @@ use crate::{
     der, Error,
 };
 use core;
-use untrusted;
 
 /// A DNS Name suitable for use in the TLS Server Name Indication (SNI)
 /// extension and/or for use as the reference hostname for which to verify a
@@ -43,7 +42,7 @@ pub struct DNSName(String);
 #[cfg(feature = "std")]
 impl DNSName {
     /// Returns a `DNSNameRef` that refers to this `DNSName`.
-    pub fn as_ref(&self) -> DNSNameRef { DNSNameRef(untrusted::Input::from(self.0.as_bytes())) }
+    pub fn as_ref(&self) -> DNSNameRef { DNSNameRef(self.0.as_bytes()) }
 }
 
 #[cfg(feature = "std")]
@@ -71,7 +70,7 @@ impl From<DNSNameRef<'_>> for DNSName {
 ///
 /// [RFC 5280 Section 7.2]: https://tools.ietf.org/html/rfc5280#section-7.2
 #[derive(Clone, Copy)]
-pub struct DNSNameRef<'a>(untrusted::Input<'a>);
+pub struct DNSNameRef<'a>(&'a [u8]);
 
 /// An error indicating that a `DNSNameRef` could not built because the input
 /// is not a syntactically-valid DNS Name.
@@ -88,8 +87,8 @@ impl ::std::error::Error for InvalidDNSNameError {}
 impl<'a> DNSNameRef<'a> {
     /// Constructs a `DNSNameRef` from the given input if the input is a
     /// syntactically-valid DNS name.
-    pub fn try_from_ascii(dns_name: untrusted::Input<'a>) -> Result<Self, InvalidDNSNameError> {
-        if !is_valid_reference_dns_id(dns_name) {
+    pub fn try_from_ascii(dns_name: &'a [u8]) -> Result<Self, InvalidDNSNameError> {
+        if !is_valid_reference_dns_id(untrusted::Input::from(dns_name)) {
             return Err(InvalidDNSNameError);
         }
 
@@ -99,7 +98,7 @@ impl<'a> DNSNameRef<'a> {
     /// Constructs a `DNSNameRef` from the given input if the input is a
     /// syntactically-valid DNS name.
     pub fn try_from_ascii_str(dns_name: &'a str) -> Result<Self, InvalidDNSNameError> {
-        Self::try_from_ascii(untrusted::Input::from(dns_name.as_bytes()))
+        Self::try_from_ascii(dns_name.as_bytes())
     }
 
     /// Constructs a `DNSName` from this `DNSNameRef`
@@ -124,19 +123,15 @@ impl<'a> From<DNSNameRef<'a>> for &'a str {
     fn from(DNSNameRef(d): DNSNameRef<'a>) -> Self {
         // The unwrap won't fail because DNSNameRefs are guaranteed to be ASCII
         // and ASCII is a subset of UTF-8.
-        core::str::from_utf8(d.as_slice_less_safe()).unwrap()
+        core::str::from_utf8(d).unwrap()
     }
-}
-
-impl<'a> From<DNSNameRef<'a>> for untrusted::Input<'a> {
-    fn from(DNSNameRef(dns_name): DNSNameRef<'a>) -> Self { dns_name }
 }
 
 pub fn verify_cert_dns_name(
     cert: &super::EndEntityCert, DNSNameRef(dns_name): DNSNameRef,
 ) -> Result<(), Error> {
     let cert = &cert.inner;
-
+    let dns_name = untrusted::Input::from(dns_name);
     iterate_names(
         cert.subject,
         cert.subject_alt_name,
@@ -392,7 +387,7 @@ enum NameIteration {
 
 fn iterate_names(
     subject: untrusted::Input, subject_alt_name: Option<untrusted::Input>,
-    result_if_never_stopped_early: Result<(), Error>, f: &Fn(GeneralName) -> NameIteration,
+    result_if_never_stopped_early: Result<(), Error>, f: &dyn Fn(GeneralName) -> NameIteration,
 ) -> Result<(), Error> {
     match subject_alt_name {
         Some(subject_alt_name) => {
@@ -739,7 +734,7 @@ fn presented_dns_id_matches_reference_dns_id_internal(
 #[inline]
 fn ascii_lower(b: u8) -> u8 {
     match b {
-        b'A'...b'Z' => b + b'a' - b'A',
+        b'A'..=b'Z' => b + b'a' - b'A',
         _ => b,
     }
 }
@@ -818,7 +813,7 @@ fn is_valid_dns_id(
                 }
             },
 
-            Ok(b'0'...b'9') => {
+            Ok(b'0'..=b'9') => {
                 if label_length == 0 {
                     label_is_all_numeric = true;
                 }
@@ -829,7 +824,7 @@ fn is_valid_dns_id(
                 }
             },
 
-            Ok(b'a'...b'z') | Ok(b'A'...b'Z') | Ok(b'_') => {
+            Ok(b'a'..=b'z') | Ok(b'A'..=b'Z') | Ok(b'_') => {
                 label_is_all_numeric = false;
                 label_ends_with_hyphen = false;
                 label_length += 1;
@@ -897,7 +892,6 @@ fn is_valid_dns_id(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use untrusted;
 
     const PRESENTED_MATCHES_REFERENCE: &[(&[u8], &[u8], Option<bool>)] = &[
         (b"", b"a", None),

@@ -24,7 +24,7 @@ pub trait Speculative {
     /// repetition, bypassing the need to involve the downsides associated with
     /// speculative parsing.
     ///
-    /// [`ParseStream::fork`]: ../struct.ParseBuffer.html#method.fork
+    /// [`ParseStream::fork`]: ParseBuffer::fork
     ///
     /// # Example
     ///
@@ -43,7 +43,7 @@ pub trait Speculative {
     /// This change in behavior can be implemented in syn by replacing just the
     /// `Parse` implementation for `PathSegment`:
     ///
-    /// ```edition2018
+    /// ```
     /// # use syn::ext::IdentExt;
     /// use syn::parse::discouraged::Speculative;
     /// # use syn::parse::{Parse, ParseStream};
@@ -81,7 +81,7 @@ pub trait Speculative {
     ///         let ident = input.parse()?;
     ///         if input.peek(Token![::]) && input.peek3(Token![<]) {
     ///             return Ok(PathSegment {
-    ///                 ident: ident,
+    ///                 ident,
     ///                 arguments: PathArguments::AngleBracketed(input.parse()?),
     ///             });
     ///         }
@@ -90,7 +90,7 @@ pub trait Speculative {
     ///             if let Ok(arguments) = fork.parse() {
     ///                 input.advance_to(&fork);
     ///                 return Ok(PathSegment {
-    ///                     ident: ident,
+    ///                     ident,
     ///                     arguments: PathArguments::AngleBracketed(arguments),
     ///                 });
     ///             }
@@ -143,7 +143,7 @@ pub trait Speculative {
     /// possible, displaying reasonable errors becomes much more simple.
     ///
     /// [RFC 2544]: https://github.com/rust-lang/rfcs/pull/2544
-    /// [`PathSegment`]: ../../struct.PathSegment.html
+    /// [`PathSegment`]: crate::PathSegment
     ///
     /// # Performance
     ///
@@ -160,7 +160,7 @@ pub trait Speculative {
 
 impl<'a> Speculative for ParseBuffer<'a> {
     fn advance_to(&self, fork: &Self) {
-        if !private::same_scope(self.cursor(), fork.cursor()) {
+        if !crate::buffer::same_scope(self.cursor(), fork.cursor()) {
             panic!("Fork was not derived from the advancing parse stream");
         }
 

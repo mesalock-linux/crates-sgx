@@ -232,8 +232,7 @@ pub enum Error {
 }
 
 /// The version of the UUID, denoting the generating algorithm.
-#[derive(Debug, PartialEq, Copy, Clone)]
-#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Version {
     /// Special case for `nil` [`Uuid`].
     ///
@@ -253,7 +252,6 @@ pub enum Version {
 
 /// The reserved variants of UUIDs.
 #[derive(Clone, Copy, Debug, PartialEq)]
-#[repr(C)]
 pub enum Variant {
     /// Reserved by the NCS for backward compatibility
     NCS = 0,

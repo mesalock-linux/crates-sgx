@@ -98,7 +98,7 @@ pub fn test_agreement_ecdh_x25519_rfc_iterated() {
 
     fn expect_iterated_x25519(
         expected_result: &str,
-        range: std::ops::Range<usize>,
+        range: core::ops::Range<usize>,
         k: &mut Vec<u8>,
         u: &mut Vec<u8>,
     ) {

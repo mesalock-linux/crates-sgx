@@ -168,8 +168,7 @@ const SCT_X509_ENTRY: [u8; 2] = [0, 0];
 
 impl<'a> SCT<'a> {
     fn verify(&self, key: &[u8], cert: &[u8]) -> Result<(), Error> {
-        let alg: &ring::signature::VerificationAlgorithm = match self.sig_alg {
-            #[cfg(feature = "ecdsa")]
+        let alg: &dyn ring::signature::VerificationAlgorithm = match self.sig_alg {
             ECDSA_SHA256 => &ring::signature::ECDSA_P256_SHA256_ASN1,
             #[cfg(feature = "ecdsa")]
             ECDSA_SHA384 => &ring::signature::ECDSA_P384_SHA384_ASN1,
@@ -188,18 +187,9 @@ impl<'a> SCT<'a> {
         write_u16(self.exts.len() as u16, &mut data);
         data.extend_from_slice(self.exts);
 
-        let sig = untrusted::Input::from(self.sig);
-        let data = untrusted::Input::from(&data);
-        let key = untrusted::Input::from(key);
+        let key = ring::signature::UnparsedPublicKey::new(alg, key);
 
-        use ring::signature::UnparsedPublicKey;
-
-        //ring::signature::verify(alg, key, data, sig)
-        //    .map_err(|_| Error::InvalidSignature)
-
-        UnparsedPublicKey::new(alg, key.as_slice_less_safe())
-            .verify(data.as_slice_less_safe(),
-                    sig.as_slice_less_safe())
+        key.verify(&data, self.sig)
             .map_err(|_| Error::InvalidSignature)
     }
 

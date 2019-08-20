@@ -36,6 +36,10 @@
 
 #![deny(missing_debug_implementations)]
 #![deny(missing_docs)]
+// allow future warnings that can't be fixed while keeping 1.0 compatibility
+#![allow(unknown_lints)]
+#![allow(bare_trait_objects)]
+#![allow(ellipsis_inclusive_range_patterns)]
 
 use std::env;
 use std::ffi::OsString;
@@ -206,6 +210,25 @@ impl AutoCfg {
 
         let status = try!(child.wait().map_err(error::from_io));
         Ok(status.success())
+    }
+
+    /// Tests whether the given sysroot crate can be used.
+    ///
+    /// The test code is subject to change, but currently looks like:
+    ///
+    /// ```ignore
+    /// extern crate CRATE as probe;
+    /// ```
+    pub fn probe_sysroot_crate(&self, name: &str) -> bool {
+        self.probe(format!("extern crate {} as probe;", name)) // `as _` wasn't stabilized until Rust 1.33
+            .unwrap_or(false)
+    }
+
+    /// Emits a config value `has_CRATE` if `probe_sysroot_crate` returns true.
+    pub fn emit_sysroot_crate(&self, name: &str) {
+        if self.probe_sysroot_crate(name) {
+            emit(&format!("has_{}", mangle(name)));
+        }
     }
 
     /// Tests whether the given path can be used.

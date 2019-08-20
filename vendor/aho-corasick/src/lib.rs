@@ -33,6 +33,10 @@ This section gives a brief overview of the primary types in this crate:
   that matched and the start and end byte offsets corresponding to the position
   in the haystack at which it matched.
 
+Additionally, the [`packed`](packed/index.html) sub-module contains a lower
+level API for using fast vectorized routines for finding a small number of
+patterns in a haystack.
+
 # Example: basic searching
 
 This example shows how to search for occurrences of multiple patterns
@@ -168,11 +172,6 @@ to accelerate searches when possible. Currently, this library has fairly
 limited implementation that only applies when there are 3 or fewer unique
 starting bytes among all patterns in an automaton.
 
-In the future, it is intended for this prefilter to grow more sophisticated
-by pushing applicable optimizations from the
-[`regex`](http://docs.rs/regex)
-crate (and other places) down into this library.
-
 While a prefilter is generally good to have on by default since it works well
 in the common case, it can lead to less predictable or even sub-optimal
 performance in some cases. For that reason, prefilters can be disabled via
@@ -180,7 +179,6 @@ performance in some cases. For that reason, prefilters can be disabled via
 */
 
 #![deny(missing_docs)]
-#![allow(bare_trait_objects)]
 
 // We can never be truly no_std, but we could be alloc-only some day, so
 // require the std feature for now.
@@ -195,6 +193,9 @@ compile_error!("`std` feature is currently required to build this crate");
 #[macro_use]
 extern crate sgx_tstd as std;
 
+#[cfg(all(feature = "mesalock_sgx", target_env = "sgx"))]
+extern crate core;
+
 extern crate memchr;
 #[cfg(test)]
 #[macro_use]
@@ -204,8 +205,8 @@ extern crate doc_comment;
 doctest!("../README.md");
 
 pub use ahocorasick::{
-    AhoCorasick, AhoCorasickBuilder, MatchKind,
-    FindIter, FindOverlappingIter, StreamFindIter,
+    AhoCorasick, AhoCorasickBuilder, FindIter, FindOverlappingIter, MatchKind,
+    StreamFindIter,
 };
 pub use error::{Error, ErrorKind};
 pub use state_id::StateID;
@@ -213,11 +214,13 @@ pub use state_id::StateID;
 mod ahocorasick;
 mod automaton;
 mod buffer;
+mod byte_frequencies;
+mod classes;
 mod dfa;
 mod error;
-mod classes;
-mod prefilter;
 mod nfa;
+pub mod packed;
+mod prefilter;
 mod state_id;
 #[cfg(test)]
 mod tests;
@@ -295,10 +298,11 @@ impl Match {
 
     #[inline]
     fn increment(&self, by: usize) -> Match {
-        Match {
-            pattern: self.pattern,
-            len: self.len,
-            end: self.end + by,
-        }
+        Match { pattern: self.pattern, len: self.len, end: self.end + by }
+    }
+
+    #[inline]
+    fn from_span(id: usize, start: usize, end: usize) -> Match {
+        Match { pattern: id, len: end - start, end: end }
     }
 }

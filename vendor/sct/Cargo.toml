@@ -1,6 +1,6 @@
 [package]
 name = "sct"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2018"
 authors = ["Joseph Birr-Pixton <jpixton@gmail.com>"]
 description = "Certificate transparency SCT verification library"
@@ -17,6 +17,6 @@ ecdsa = []
 mesalock_sgx = ["sgx_tstd"]
 
 [dependencies]
-ring = { git = "https://github.com/mesalock-linux/ring-sgx", tag = "v0.14.6" }
-untrusted = { git = "https://github.com/briansmith/untrusted", tag = "ring-master" }
+ring = { git = "https://github.com/mesalock-linux/ring-sgx", tag = "v0.16.5" }
+untrusted = "0.7.0"
 sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }

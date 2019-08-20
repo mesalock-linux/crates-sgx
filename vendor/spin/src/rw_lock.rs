@@ -1,4 +1,4 @@
-use core::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT, spin_loop_hint as cpu_relax};
+use core::sync::atomic::{AtomicUsize, Ordering, spin_loop_hint as cpu_relax};
 use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut};
 use core::fmt;
@@ -48,7 +48,7 @@ pub struct RwLock<T: ?Sized>
     data: UnsafeCell<T>,
 }
 
-/// A guard to which the protected data can be read
+/// A guard from which the protected data can be read
 ///
 /// When the guard falls out of scope it will decrement the read count,
 /// potentially releasing the lock.
@@ -97,7 +97,7 @@ impl<T> RwLock<T>
     {
         RwLock
         {
-            lock: ATOMIC_USIZE_INIT,
+            lock: AtomicUsize::new(0),
             data: UnsafeCell::new(user_data),
         }
     }

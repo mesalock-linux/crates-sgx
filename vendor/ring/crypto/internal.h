@@ -111,9 +111,12 @@
 
 #include <GFp/base.h> // Must be first.
 
+#if !defined(NDEBUG)
 #include <assert.h>
-
-#include <GFp/type_check.h>
+#define ASSERT(x) assert(x)
+#else
+#define ASSERT(x) ((void)0)
+#endif
 
 #if defined(__GNUC__) && \
     (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) < 40800
@@ -121,26 +124,11 @@
 // Testing for __STDC_VERSION__/__cplusplus doesn't work because 4.7 already
 // reports support for C11.
 #define alignas(x) __attribute__ ((aligned (x)))
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && !defined(__clang__)
 #define alignas(x) __declspec(align(x))
 #else
 #include <stdalign.h>
 #endif
-
-#define OPENSSL_LITTLE_ENDIAN 1
-#define OPENSSL_BIG_ENDIAN 2
-
-#if defined(OPENSSL_X86_64) || defined(OPENSSL_X86) || \
-    (defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && \
-     __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
-#define OPENSSL_ENDIAN OPENSSL_LITTLE_ENDIAN
-#elif defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && \
-      __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#define OPENSSL_ENDIAN OPENSSL_BIG_ENDIAN
-#else
-#error "Cannot determine endianness"
-#endif
-
 
 #if (!defined(_MSC_VER) || defined(__clang__)) && defined(OPENSSL_64_BIT)
 #define BORINGSSL_HAS_UINT128

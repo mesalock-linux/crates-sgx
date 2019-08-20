@@ -1,9 +1,5 @@
 // rustc-cfg emitted by the build script:
 //
-// "u128"
-//     Include u128 and i128 constructors for proc_macro2::Literal. Enabled on
-//     any compiler 1.26+.
-//
 // "use_proc_macro"
 //     Link to extern crate proc_macro. Available on any compiler and any target
 //     except wasm32. Requires "proc-macro" Cargo cfg to be enabled (default is
@@ -17,11 +13,6 @@
 //     else. Also enabled unconditionally on nightly, in which case the
 //     procmacro2_semver_exempt surface area is implemented by using the
 //     nightly-only proc_macro API.
-//
-// "slow_extend"
-//     Fallback when `impl Extend for TokenStream` is not available. These impls
-//     were added one version later than the rest of the proc_macro token API.
-//     Enabled on rustc 1.29 only.
 //
 // "proc_macro_span"
 //     Enable non-dummy behavior of Span::start and Span::end methods which
@@ -40,21 +31,20 @@
 //     location inside spans is a performance hit.
 
 use std::env;
-use std::process::Command;
+use std::process::{self, Command};
 use std::str;
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
-
-    let target = env::var("TARGET").unwrap();
 
     let version = match rustc_version() {
         Some(version) => version,
         None => return,
     };
 
-    if version.minor >= 26 {
-        println!("cargo:rustc-cfg=u128");
+    if version.minor < 31 {
+        eprintln!("Minimum supported rustc version is 1.31");
+        process::exit(1);
     }
 
     let semver_exempt = cfg!(procmacro2_semver_exempt);
@@ -67,19 +57,15 @@ fn main() {
         println!("cargo:rustc-cfg=span_locations");
     }
 
+    let target = env::var("TARGET").unwrap();
     if !enable_use_proc_macro(&target) {
         return;
     }
 
     println!("cargo:rustc-cfg=use_proc_macro");
 
-    // Rust 1.29 stabilized the necessary APIs in the `proc_macro` crate
-    if version.nightly || version.minor >= 29 && !semver_exempt {
+    if version.nightly || !semver_exempt {
         println!("cargo:rustc-cfg=wrap_proc_macro");
-    }
-
-    if version.minor == 29 {
-        println!("cargo:rustc-cfg=slow_extend");
     }
 
     if version.nightly && feature_allowed("proc_macro_span") {
@@ -107,30 +93,16 @@ struct RustcVersion {
 }
 
 fn rustc_version() -> Option<RustcVersion> {
-    macro_rules! otry {
-        ($e:expr) => {
-            match $e {
-                Some(e) => e,
-                None => return None,
-            }
-        };
-    }
-
-    let rustc = otry!(env::var_os("RUSTC"));
-    let output = otry!(Command::new(rustc).arg("--version").output().ok());
-    let version = otry!(str::from_utf8(&output.stdout).ok());
+    let rustc = env::var_os("RUSTC")?;
+    let output = Command::new(rustc).arg("--version").output().ok()?;
+    let version = str::from_utf8(&output.stdout).ok()?;
     let nightly = version.contains("nightly");
     let mut pieces = version.split('.');
     if pieces.next() != Some("rustc 1") {
         return None;
     }
-    let minor = otry!(pieces.next());
-    let minor = otry!(minor.parse().ok());
-
-    Some(RustcVersion {
-        minor: minor,
-        nightly: nightly,
-    })
+    let minor = pieces.next()?.parse().ok()?;
+    Some(RustcVersion { minor, nightly })
 }
 
 fn feature_allowed(feature: &str) -> bool {

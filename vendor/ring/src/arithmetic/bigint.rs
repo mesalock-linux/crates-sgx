@@ -36,19 +36,16 @@
 //! [Static checking of units in Servo]:
 //!     https://blog.mozilla.org/research/2014/06/23/static-checking-of-units-in-servo/
 
-#![allow(box_pointers)]
-
-use std::prelude::v1::*;
 use crate::{
     arithmetic::montgomery::*,
     bits, bssl, c, error,
     limb::{self, Limb, LimbMask, LIMB_BITS, LIMB_BYTES},
 };
+use alloc::{borrow::ToOwned as _, boxed::Box, vec, vec::Vec};
 use core::{
     marker::PhantomData,
     ops::{Deref, DerefMut},
 };
-//use std::borrow::ToOwned as _; // TODO: Remove; Redundant as of Rust 1.36.
 use untrusted;
 
 pub unsafe trait Prime {}
@@ -1293,7 +1290,7 @@ extern "C" {
 mod tests {
     use super::*;
     use crate::test;
-    use std::format;
+    use alloc::format;
     use untrusted;
 
     // Type-level representation of an arbitrary modulus.

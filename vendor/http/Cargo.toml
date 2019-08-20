@@ -4,11 +4,10 @@ name = "http"
 # - Update html_root_url in lib.rs.
 # - Update CHANGELOG.md.
 # - Create git tag
-version = "0.1.17"
+version = "0.1.18"
 readme = "README.md"
 documentation = "https://docs.rs/http"
 repository = "https://github.com/hyperium/http"
-homepage = "https://github.com/hyperium/http"
 license = "MIT/Apache-2.0"
 authors = [
   "Alex Crichton <alex@alexcrichton.com>",
@@ -39,10 +38,15 @@ rand = "0.4"
 seahash = "3.0.5"
 serde = "1.0"
 serde_json = "1.0"
+doc-comment = "0.3"
 
 [[bench]]
 name = "header_map"
 path = "benches/header_map/mod.rs"
+
+[[bench]]
+name = "header_name"
+path = "benches/header_name.rs"
 
 [[bench]]
 name = "header_value"

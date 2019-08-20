@@ -56,14 +56,16 @@
 
 // This file should be the first included by all BoringSSL headers.
 
-#if defined(_MSC_VER)
+#include <GFp/type_check.h>
+
+#if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(push, 3)
 #endif
 
 #include <stddef.h>
 #include <stdint.h>
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && !defined(__clang__)
 #pragma warning(pop)
 #endif
 
@@ -106,5 +108,12 @@
 // items.
 #define OPENSSL_EXPORT
 
+// `ring::c` would need to be customized on any platform where these assertions
+// fail. Keep in sync with `ring::c`.
+OPENSSL_STATIC_ASSERT(sizeof(int32_t) == sizeof(int), "int isn't 32 bits.");
+OPENSSL_STATIC_ASSERT(sizeof(uint32_t) == sizeof(unsigned int), "unsigned int isn't 32 bits.");
+OPENSSL_STATIC_ASSERT(sizeof(size_t) == sizeof(uintptr_t), "uintptr_t and size_t differ.");
+OPENSSL_STATIC_ASSERT(sizeof(size_t) <= sizeof(uint64_t), "size_t is larger than uint64_t.");
+OPENSSL_STATIC_ASSERT(sizeof(size_t) >= sizeof(uint32_t), "size_t is smaller than uint32_t.");
 
 #endif  // OPENSSL_HEADER_BASE_H

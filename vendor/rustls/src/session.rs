@@ -214,42 +214,6 @@ pub enum Protocol {
     Quic,
 }
 
-pub struct Labels {
-    pub client_early_traffic_secret: &'static str,
-    pub client_handshake_traffic_secret: &'static str,
-    pub server_handshake_traffic_secret: &'static str,
-    pub client_traffic_secret_0: &'static str,
-    pub server_traffic_secret_0: &'static str,
-    pub client_random: &'static str,
-    pub exporter_secret: &'static str,
-}
-
-impl Protocol {
-    pub fn labels(self) -> &'static Labels {
-        match self {
-            Protocol::Tls13 => &Labels {
-                client_early_traffic_secret: "CLIENT_EARLY_TRAFFIC_SECRET",
-                client_handshake_traffic_secret: "CLIENT_HANDSHAKE_TRAFFIC_SECRET",
-                server_handshake_traffic_secret: "SERVER_HANDSHAKE_TRAFFIC_SECRET",
-                client_traffic_secret_0: "CLIENT_TRAFFIC_SECRET_0",
-                server_traffic_secret_0: "SERVER_TRAFFIC_SECRET_0",
-                client_random: "CLIENT_RANDOM",
-                exporter_secret: "EXPORTER_SECRET",
-            },
-            #[cfg(feature = "quic")]
-            Protocol::Quic => &Labels {
-                client_early_traffic_secret: "QUIC_CLIENT_EARLY_TRAFFIC_SECRET",
-                client_handshake_traffic_secret: "QUIC_CLIENT_HANDSHAKE_TRAFFIC_SECRET",
-                server_handshake_traffic_secret: "QUIC_SERVER_HANDSHAKE_TRAFFIC_SECRET",
-                client_traffic_secret_0: "QUIC_CLIENT_TRAFFIC_SECRET_0",
-                server_traffic_secret_0: "QUIC_SERVER_TRAFFIC_SECRET_0",
-                client_random: "QUIC_CLIENT_RANDOM",
-                exporter_secret: "QUIC_EXPORTER_SECRET",
-            },
-        }
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct SessionRandoms {
     pub we_are_client: bool,
@@ -629,9 +593,9 @@ impl SessionCommon {
         self.set_message_encrypter(cipher::new_tls13_write(scs, &write_key));
 
         if self.is_client {
-            self.get_mut_key_schedule().current_client_traffic_secret = write_key;
+            self.get_mut_key_schedule().current_client_traffic_secret = Some(write_key);
         } else {
-            self.get_mut_key_schedule().current_server_traffic_secret = write_key;
+            self.get_mut_key_schedule().current_server_traffic_secret = Some(write_key);
         }
     }
 
@@ -899,9 +863,9 @@ impl SessionCommon {
         self.set_message_decrypter(cipher::new_tls13_read(suite, &new_read_key));
 
         if read_kind == SecretKind::ServerApplicationTrafficSecret {
-            self.get_mut_key_schedule().current_server_traffic_secret = new_read_key;
+            self.get_mut_key_schedule().current_server_traffic_secret = Some(new_read_key);
         } else {
-            self.get_mut_key_schedule().current_client_traffic_secret = new_read_key;
+            self.get_mut_key_schedule().current_client_traffic_secret = Some(new_read_key);
         }
 
         Ok(())
@@ -942,7 +906,7 @@ pub(crate) struct Quic {
     pub params: Option<Vec<u8>>,
     pub alert: Option<AlertDescription>,
     pub hs_queue: VecDeque<(bool, Vec<u8>)>,
-    pub early_secret: Option<Vec<u8>>,
+    pub early_secret: Option<ring::hkdf::Prk>,
     pub hs_secrets: Option<quic::Secrets>,
     pub traffic_secrets: Option<quic::Secrets>,
 }

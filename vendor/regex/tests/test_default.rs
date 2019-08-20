@@ -1,13 +1,3 @@
-// Copyright 2014-2015 The Rust Project Developers. See the COPYRIGHT
-// file at the top-level directory of this distribution and at
-// http://rust-lang.org/COPYRIGHT.
-//
-// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
-// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
-// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
-// option. This file may not be copied, modified, or distributed
-// except according to those terms.
-
 #![cfg_attr(feature = "pattern", feature(pattern))]
 
 extern crate rand;
@@ -24,26 +14,26 @@ macro_rules! regex_new {
     ($re:expr) => {{
         use regex::Regex;
         Regex::new($re)
-    }}
+    }};
 }
 
 macro_rules! regex {
     ($re:expr) => {
         regex_new!($re).unwrap()
-    }
+    };
 }
 
 macro_rules! regex_set_new {
     ($re:expr) => {{
         use regex::RegexSet;
         RegexSet::new($re)
-    }}
+    }};
 }
 
 macro_rules! regex_set {
     ($res:expr) => {
         regex_set_new!($res).unwrap()
-    }
+    };
 }
 
 // Must come before other module definitions.
@@ -88,9 +78,9 @@ fn allow_octal() {
 
 #[test]
 fn oibits() {
-    use std::panic::UnwindSafe;
-    use regex::{Regex, RegexBuilder};
     use regex::bytes;
+    use regex::{Regex, RegexBuilder};
+    use std::panic::UnwindSafe;
 
     fn assert_send<T: Send>() {}
     fn assert_sync<T: Sync>() {}
@@ -114,8 +104,8 @@ fn oibits() {
 // See: https://github.com/rust-lang/regex/issues/568
 #[test]
 fn oibits_regression() {
-    use std::panic;
     use regex::Regex;
+    use std::panic;
 
     let _ = panic::catch_unwind(|| Regex::new("a").unwrap());
 }

@@ -1,11 +1,12 @@
 #[cfg(feature = "parsing")]
-use buffer::Cursor;
+use crate::buffer::Cursor;
 #[cfg(feature = "parsing")]
-use parse::{Parse, ParseStream, Result};
+use crate::lookahead;
 #[cfg(feature = "parsing")]
-use token::Token;
+use crate::parse::{Parse, ParseStream, Result};
 #[cfg(feature = "parsing")]
-use {lookahead, private};
+use crate::token::Token;
+use unicode_xid::UnicodeXID;
 
 pub use proc_macro2::Ident;
 
@@ -85,16 +86,16 @@ impl From<Token![_]> for Ident {
     }
 }
 
-#[cfg(feature = "parsing")]
-impl private {
-    #[cfg(syn_can_use_associated_constants)]
-    pub fn peek_any_ident(input: ParseStream) -> bool {
-        use ext::IdentExt;
-        input.peek(Ident::peek_any)
+pub fn xid_ok(symbol: &str) -> bool {
+    let mut chars = symbol.chars();
+    let first = chars.next().unwrap();
+    if !(UnicodeXID::is_xid_start(first) || first == '_') {
+        return false;
     }
-
-    #[cfg(not(syn_can_use_associated_constants))]
-    pub fn peek_any_ident(input: ParseStream) -> bool {
-        input.cursor().ident().is_some()
+    for ch in chars {
+        if !UnicodeXID::is_xid_continue(ch) {
+            return false;
+        }
     }
+    true
 }

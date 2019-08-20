@@ -7,7 +7,7 @@
 /// module called `kw` or `keyword` and that the resulting parser be invoked
 /// with a `kw::` or `keyword::` prefix.
 ///
-/// ```edition2018
+/// ```
 /// mod kw {
 ///     syn::custom_keyword!(whatever);
 /// }
@@ -26,10 +26,10 @@
 ///
 /// - Field access to its span — `let sp = whatever_token.span`
 ///
-/// [Peeking]: parse/struct.ParseBuffer.html#method.peek
-/// [Parsing]: parse/struct.ParseBuffer.html#method.parse
-/// [Printing]: https://docs.rs/quote/0.6/quote/trait.ToTokens.html
-/// [`Span`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.Span.html
+/// [Peeking]: parse::ParseBuffer::peek
+/// [Parsing]: parse::ParseBuffer::parse
+/// [Printing]: quote::ToTokens
+/// [`Span`]: proc_macro2::Span
 ///
 /// # Example
 ///
@@ -43,7 +43,7 @@
 /// identifier that is not a keyword, these can be declared as custom keywords
 /// by crates that need to use them as such.
 ///
-/// ```edition2018
+/// ```
 /// use syn::{LitBool, LitStr, Result, Token};
 /// use syn::parse::{Parse, ParseStream};
 ///

@@ -1,6 +1,6 @@
 [package]
 name = "regex"
-version = "1.1.9"  #:version
+version = "1.2.1"  #:version
 authors = ["The Rust Project Developers"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
@@ -26,16 +26,14 @@ members = [
 
 [dependencies]
 # For very fast prefix literal matching.
-aho-corasick = { version = "0.7.4", git = "https://github.com/mesalock-linux/aho-corasick-sgx" }
+aho-corasick = { version = "0.7.6", git = "https://github.com/mesalock-linux/aho-corasick-sgx" }
 # For skipping along search text quickly when a leading byte is known.
 memchr = { git = "https://github.com/mesalock-linux/rust-memchr-sgx" }
 # For managing regex caches quickly across multiple threads.
 thread_local = { git = "https://github.com/mesalock-linux/thread_local-rs-sgx" }
 # For parsing regular expressions.
-regex-syntax = { path = "regex-syntax", version = "0.6.6" }
-# For compiling UTF-8 decoding into automata.
-utf8-ranges = { git = "https://github.com/mesalock-linux/utf8-ranges-sgx" }
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional=true}
+regex-syntax = { path = "regex-syntax", version = "0.6.11" }
+sgx_tstd = { rev = "v1.0.8", git="https://github.com/baidu/rust-sgx-sdk", optional = true }
 
 [dev-dependencies]
 # For examples.

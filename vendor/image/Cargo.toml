@@ -1,6 +1,6 @@
 [package]
 name = "image"
-version = "0.21.0"
+version = "0.22.1"
 license = "MIT"
 description = "Imaging library written in Rust. Provides basic filters and decoders for the most common image formats."
 authors = [
@@ -49,7 +49,7 @@ git = "https://github.com/mesalock-linux/jpeg-decoder-sgx"
 optional = true
 
 [dependencies.png]
-#version = "0.14"
+#version = "0.15"
 git = "https://github.com/mesalock-linux/image-png-sgx"
 optional = true
 

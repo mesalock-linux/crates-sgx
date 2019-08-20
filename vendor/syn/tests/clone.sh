@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REV=d132f544f9d74e3cc047ef211e57eae60b78e5c5
+REV=4560cb830fce63fcffdc4558f4281aaac6a3a1ba
 
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"

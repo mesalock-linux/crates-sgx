@@ -1,13 +1,3 @@
-// Copyright 2014-2015 The Rust Project Developers. See the COPYRIGHT
-// file at the top-level directory of this distribution and at
-// http://rust-lang.org/COPYRIGHT.
-//
-// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
-// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
-// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
-// option. This file may not be copied, modified, or distributed
-// except according to those terms.
-
 /*!
 This crate provides a library for parsing, compiling, and executing regular
 expressions. Its syntax is similar to Perl-style regular expressions, but lacks
@@ -518,7 +508,6 @@ another matching engine with fixed memory requirements.
 */
 
 #![deny(missing_docs)]
-#![allow(ellipsis_inclusive_range_patterns)]
 #![cfg_attr(test, deny(warnings))]
 #![cfg_attr(feature = "pattern", feature(pattern))]
 
@@ -541,10 +530,9 @@ extern crate thread_local;
 #[cfg(test)]
 #[macro_use]
 extern crate quickcheck;
-extern crate regex_syntax as syntax;
-extern crate utf8_ranges;
 #[cfg(test)]
 extern crate doc_comment;
+extern crate regex_syntax as syntax;
 
 #[cfg(test)]
 doc_comment::doctest!("../README.md");
@@ -552,19 +540,17 @@ doc_comment::doctest!("../README.md");
 #[cfg(feature = "use_std")]
 pub use error::Error;
 #[cfg(feature = "use_std")]
-pub use re_builder::unicode::*;
-#[cfg(feature = "use_std")]
 pub use re_builder::set_unicode::*;
+#[cfg(feature = "use_std")]
+pub use re_builder::unicode::*;
 #[cfg(feature = "use_std")]
 pub use re_set::unicode::*;
 #[cfg(feature = "use_std")]
 #[cfg(feature = "use_std")]
 pub use re_unicode::{
-    Regex, Match, Captures,
-    CaptureNames, Matches, CaptureMatches, SubCaptureMatches,
-    CaptureLocations, Locations,
-    Replacer, ReplacerRef, NoExpand, Split, SplitN,
-    escape,
+    escape, CaptureLocations, CaptureMatches, CaptureNames, Captures,
+    Locations, Match, Matches, NoExpand, Regex, Replacer, ReplacerRef, Split,
+    SplitN, SubCaptureMatches,
 };
 
 /**
@@ -663,7 +649,6 @@ pub mod bytes {
 }
 
 mod backtrack;
-mod utf8;
 mod compile;
 mod dfa;
 mod error;
@@ -682,8 +667,7 @@ mod re_set;
 mod re_trait;
 mod re_unicode;
 mod sparse;
-#[cfg(any(regex_runtime_teddy_ssse3, regex_runtime_teddy_avx2))]
-mod vector;
+mod utf8;
 
 /// The `internal` module exists to support suspicious activity, such as
 /// testing different matching engines and supporting the `regex-debug` CLI
@@ -693,7 +677,7 @@ mod vector;
 pub mod internal {
     pub use compile::Compiler;
     pub use exec::{Exec, ExecBuilder};
-    pub use input::{Char, Input, CharInput, InputAt};
+    pub use input::{Char, CharInput, Input, InputAt};
     pub use literal::LiteralSearcher;
-    pub use prog::{Program, Inst, EmptyLook, InstRanges};
+    pub use prog::{EmptyLook, Inst, InstRanges, Program};
 }

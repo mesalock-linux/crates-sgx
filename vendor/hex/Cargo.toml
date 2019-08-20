@@ -6,12 +6,22 @@ description = "Encoding and decoding data into/from hexadecimal representation."
 license = "MIT OR Apache-2.0"
 documentation = "https://docs.rs/hex/"
 repository = "https://github.com/KokaKiwi/rust-hex"
+edition = "2018"
 exclude = ["/sgx/*"]
 
 [features]
-default = ["mesalock_sgx"]
-benchmarks = []
-mesalock_sgx = ["sgx_tstd"]
+default = ["std", "mesalock_sgx"]
+std = ["mesalock_sgx"]
+mesalock_sgx = ["std", "sgx_tstd"]
+
+[[bench]]
+name = "hex"
+harness = false
+
+[dev-dependencies]
+criterion = "0.2"
+rustc-hex = "2.0"
+faster-hex = "0.3"
 
 [dependencies]
 sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }

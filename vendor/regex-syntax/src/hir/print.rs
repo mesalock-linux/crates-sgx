@@ -5,8 +5,8 @@ This module provides a regular expression printer for `Hir`.
 use std::prelude::v1::*;
 use std::fmt;
 
-use hir::{self, Hir, HirKind};
 use hir::visitor::{self, Visitor};
+use hir::{self, Hir, HirKind};
 use is_meta_character;
 
 /// A builder for constructing a printer.
@@ -26,15 +26,11 @@ impl Default for PrinterBuilder {
 
 impl PrinterBuilder {
     fn new() -> PrinterBuilder {
-        PrinterBuilder {
-            _priv: (),
-        }
+        PrinterBuilder { _priv: () }
     }
 
     fn build(&self) -> Printer {
-        Printer {
-            _priv: (),
-        }
+        Printer { _priv: () }
     }
 }
 
@@ -150,19 +146,17 @@ impl<'p, W: fmt::Write> Visitor for Writer<'p, W> {
             HirKind::WordBoundary(hir::WordBoundary::AsciiNegate) => {
                 self.wtr.write_str(r"(?-u:\B)")?;
             }
-            HirKind::Group(ref x) => {
-                match x.kind {
-                    hir::GroupKind::CaptureIndex(_) => {
-                        self.wtr.write_str("(")?;
-                    }
-                    hir::GroupKind::CaptureName { ref name, .. } => {
-                        write!(self.wtr, "(?P<{}>", name)?;
-                    }
-                    hir::GroupKind::NonCapturing => {
-                        self.wtr.write_str("(?:")?;
-                    }
+            HirKind::Group(ref x) => match x.kind {
+                hir::GroupKind::CaptureIndex(_) => {
+                    self.wtr.write_str("(")?;
                 }
-            }
+                hir::GroupKind::CaptureName { ref name, .. } => {
+                    write!(self.wtr, "(?P<{}>", name)?;
+                }
+                hir::GroupKind::NonCapturing => {
+                    self.wtr.write_str("(?:")?;
+                }
+            },
         }
         Ok(())
     }
@@ -188,19 +182,17 @@ impl<'p, W: fmt::Write> Visitor for Writer<'p, W> {
                     hir::RepetitionKind::OneOrMore => {
                         self.wtr.write_str("+")?;
                     }
-                    hir::RepetitionKind::Range(ref x) => {
-                        match *x {
-                            hir::RepetitionRange::Exactly(m) => {
-                                write!(self.wtr, "{{{}}}", m)?;
-                            }
-                            hir::RepetitionRange::AtLeast(m) => {
-                                write!(self.wtr, "{{{},}}", m)?;
-                            }
-                            hir::RepetitionRange::Bounded(m, n) => {
-                                write!(self.wtr, "{{{},{}}}", m, n)?;
-                            }
+                    hir::RepetitionKind::Range(ref x) => match *x {
+                        hir::RepetitionRange::Exactly(m) => {
+                            write!(self.wtr, "{{{}}}", m)?;
                         }
-                    }
+                        hir::RepetitionRange::AtLeast(m) => {
+                            write!(self.wtr, "{{{},}}", m)?;
+                        }
+                        hir::RepetitionRange::Bounded(m, n) => {
+                            write!(self.wtr, "{{{},{}}}", m, n)?;
+                        }
+                    },
                 }
                 if !x.greedy {
                     self.wtr.write_str("?")?;
@@ -247,8 +239,8 @@ impl<'p, W: fmt::Write> Writer<'p, W> {
 
 #[cfg(test)]
 mod tests {
-    use ParserBuilder;
     use super::Printer;
+    use ParserBuilder;
 
     fn roundtrip(given: &str, expected: &str) {
         roundtrip_with(|b| b, given, expected);
@@ -259,7 +251,8 @@ mod tests {
     }
 
     fn roundtrip_with<F>(mut f: F, given: &str, expected: &str)
-    where F: FnMut(&mut ParserBuilder) -> &mut ParserBuilder
+    where
+        F: FnMut(&mut ParserBuilder) -> &mut ParserBuilder,
     {
         let mut builder = ParserBuilder::new();
         f(&mut builder);

@@ -375,6 +375,7 @@ pub struct ClientSessionImpl {
     pub state: Option<Box<dyn hs::State + Send + Sync>>,
     pub server_cert_chain: CertificatePayload,
     pub early_data: EarlyData,
+    pub resumption_ciphersuite: Option<&'static SupportedCipherSuite>,
 }
 
 impl fmt::Debug for ClientSessionImpl {
@@ -393,6 +394,7 @@ impl ClientSessionImpl {
             state: None,
             server_cert_chain: Vec::new(),
             early_data: EarlyData::new(),
+            resumption_ciphersuite: None,
         }
     }
 
@@ -693,7 +695,7 @@ impl Session for ClientSession {
     }
 
     fn get_negotiated_ciphersuite(&self) -> Option<&'static SupportedCipherSuite> {
-        self.imp.get_negotiated_ciphersuite()
+        self.imp.get_negotiated_ciphersuite().or(self.imp.resumption_ciphersuite)
     }
 
 }

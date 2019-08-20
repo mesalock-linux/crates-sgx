@@ -12,7 +12,7 @@
 //!
 //! [`ItemStatic`]: ../struct.ItemStatic.html
 //!
-//! ```edition2018
+//! ```
 //! # use syn::{Attribute, Expr, Ident, Token, Type, Visibility};
 //! #
 //! pub struct ItemStatic {
@@ -40,7 +40,7 @@
 //! [`bracketed!`]: ../macro.bracketed.html
 //! [`braced!`]: ../macro.braced.html
 //!
-//! ```edition2018
+//! ```
 //! use syn::{Attribute, Result};
 //! use syn::parse::{Parse, ParseStream};
 //! #
@@ -85,8 +85,8 @@
 //!
 //! [Peeking]: ../parse/struct.ParseBuffer.html#method.peek
 //! [Parsing]: ../parse/struct.ParseBuffer.html#method.parse
-//! [Printing]: https://docs.rs/quote/0.6/quote/trait.ToTokens.html
-//! [`Span`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.Span.html
+//! [Printing]: https://docs.rs/quote/1.0/quote/trait.ToTokens.html
+//! [`Span`]: https://docs.rs/proc-macro2/1.0/proc_macro2/struct.Span.html
 
 use std;
 #[cfg(feature = "extra-traits")]
@@ -109,20 +109,20 @@ use quote::{ToTokens, TokenStreamExt};
 
 use self::private::WithSpan;
 #[cfg(feature = "parsing")]
-use buffer::Cursor;
+use crate::buffer::Cursor;
 #[cfg(feature = "parsing")]
-use error::Result;
+use crate::error::Result;
 #[cfg(any(feature = "full", feature = "derive"))]
 #[cfg(feature = "parsing")]
-use lifetime::Lifetime;
+use crate::lifetime::Lifetime;
 #[cfg(any(feature = "full", feature = "derive"))]
 #[cfg(feature = "parsing")]
-use lit::{Lit, LitBool, LitByte, LitByteStr, LitChar, LitFloat, LitInt, LitStr};
+use crate::lit::{Lit, LitBool, LitByte, LitByteStr, LitChar, LitFloat, LitInt, LitStr};
 #[cfg(feature = "parsing")]
-use lookahead;
+use crate::lookahead;
 #[cfg(feature = "parsing")]
-use parse::{Parse, ParseStream};
-use span::IntoSpans;
+use crate::parse::{Parse, ParseStream};
+use crate::span::IntoSpans;
 
 /// Marker trait for types that represent single tokens.
 ///
@@ -163,7 +163,7 @@ fn peek_impl(cursor: Cursor, peek: fn(ParseStream) -> bool) -> bool {
 
     let scope = Span::call_site();
     let unexpected = Rc::new(Cell::new(None));
-    let buffer = ::private::new_parse_buffer(scope, cursor, unexpected);
+    let buffer = crate::parse::new_parse_buffer(scope, cursor, unexpected);
     peek(&buffer)
 }
 
@@ -236,10 +236,10 @@ macro_rules! define_keywords {
             #[cfg_attr(feature = "clone-impls", derive(Copy, Clone))]
             #[$doc]
             ///
-            /// Don't try to remember the name of this type -- use the [`Token!`]
-            /// macro instead.
+            /// Don't try to remember the name of this type &mdash; use the
+            /// [`Token!`] macro instead.
             ///
-            /// [`Token!`]: index.html
+            /// [`Token!`]: crate::token
             pub struct $name {
                 pub span: Span,
             }
@@ -342,10 +342,10 @@ macro_rules! define_punctuation_structs {
             #[repr(C)]
             #[$doc]
             ///
-            /// Don't try to remember the name of this type -- use the [`Token!`]
-            /// macro instead.
+            /// Don't try to remember the name of this type &mdash; use the
+            /// [`Token!`] macro instead.
             ///
-            /// [`Token!`]: index.html
+            /// [`Token!`]: crate::token
             pub struct $name {
                 pub spans: [Span; $len],
             }
@@ -595,6 +595,7 @@ define_keywords! {
     "as"          pub struct As           /// `as`
     "async"       pub struct Async        /// `async`
     "auto"        pub struct Auto         /// `auto`
+    "await"       pub struct Await        /// `await`
     "become"      pub struct Become       /// `become`
     "box"         pub struct Box          /// `box`
     "break"       pub struct Break        /// `break`
@@ -606,7 +607,6 @@ define_keywords! {
     "dyn"         pub struct Dyn          /// `dyn`
     "else"        pub struct Else         /// `else`
     "enum"        pub struct Enum         /// `enum`
-    "existential" pub struct Existential  /// `existential`
     "extern"      pub struct Extern       /// `extern`
     "final"       pub struct Final        /// `final`
     "fn"          pub struct Fn           /// `fn`
@@ -702,13 +702,13 @@ define_delimiters! {
 }
 
 macro_rules! export_token_macro {
-    ($($dollar:tt)*) => {
+    ($($await_rule:tt)*) => {
         /// A type-macro that expands to the name of the Rust type representation of a
         /// given token.
         ///
         /// See the [token module] documentation for details and examples.
         ///
-        /// [token module]: token/index.html
+        /// [token module]: crate::token
         // Unfortunate duplication due to a rustdoc bug.
         // https://github.com/rust-lang/rust/issues/45939
         #[macro_export]
@@ -717,6 +717,7 @@ macro_rules! export_token_macro {
             (as)          => { $crate::token::As };
             (async)       => { $crate::token::Async };
             (auto)        => { $crate::token::Auto };
+            $($await_rule => { $crate::token::Await };)*
             (become)      => { $crate::token::Become };
             (box)         => { $crate::token::Box };
             (break)       => { $crate::token::Break };
@@ -728,7 +729,6 @@ macro_rules! export_token_macro {
             (dyn)         => { $crate::token::Dyn };
             (else)        => { $crate::token::Else };
             (enum)        => { $crate::token::Enum };
-            (existential) => { $crate::token::Existential };
             (extern)      => { $crate::token::Extern };
             (final)       => { $crate::token::Final };
             (fn)          => { $crate::token::Fn };
@@ -779,6 +779,7 @@ macro_rules! export_token_macro {
             (,)           => { $crate::token::Comma };
             (/)           => { $crate::token::Div };
             (/=)          => { $crate::token::DivEq };
+            ($)           => { $crate::token::Dollar };
             (.)           => { $crate::token::Dot };
             (..)          => { $crate::token::Dot2 };
             (...)         => { $crate::token::Dot3 };
@@ -811,24 +812,17 @@ macro_rules! export_token_macro {
             (-=)          => { $crate::token::SubEq };
             (~)           => { $crate::token::Tilde };
             (_)           => { $crate::token::Underscore };
-            $($dollar     => { $crate::token::Dollar };)*
         }
     };
 }
 
-#[cfg(syn_can_match_trailing_dollar)]
-export_token_macro![($)];
-
-// Old rustc does not support ($) => {...} as a macro rule.
-#[cfg(not(syn_can_match_trailing_dollar))]
+// Old rustc does not permit `await` appearing anywhere in the source file.
+// https://github.com/rust-lang/rust/issues/57919
+// We put the Token![await] rule in a place that is not lexed by old rustc.
+#[cfg(not(syn_omit_await_from_token_macro))]
+include!("await.rs"); // export_token_macro![(await)];
+#[cfg(syn_omit_await_from_token_macro)]
 export_token_macro![];
-
-// Old names. TODO: remove these re-exports in a breaking change.
-// https://github.com/dtolnay/syn/issues/486
-#[doc(hidden)]
-pub use self::SelfType as CapSelf;
-#[doc(hidden)]
-pub use self::SelfValue as Self_;
 
 // Not public API.
 #[doc(hidden)]
@@ -836,10 +830,10 @@ pub use self::SelfValue as Self_;
 pub mod parsing {
     use proc_macro2::{Spacing, Span};
 
-    use buffer::Cursor;
-    use error::{Error, Result};
-    use parse::ParseStream;
-    use span::FromSpans;
+    use crate::buffer::Cursor;
+    use crate::error::{Error, Result};
+    use crate::parse::ParseStream;
+    use crate::span::FromSpans;
 
     pub fn keyword(input: ParseStream, token: &str) -> Result<Span> {
         input.step(|cursor| {

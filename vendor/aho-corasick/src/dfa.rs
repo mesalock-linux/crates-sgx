@@ -5,9 +5,9 @@ use ahocorasick::MatchKind;
 use automaton::Automaton;
 use classes::ByteClasses;
 use error::Result;
-use nfa::{NFA, PatternID, PatternLength};
+use nfa::{PatternID, PatternLength, NFA};
 use prefilter::{Prefilter, PrefilterObj, PrefilterState};
-use state_id::{StateID, dead_id, fail_id, premultiply_overflow_error};
+use state_id::{dead_id, fail_id, premultiply_overflow_error, StateID};
 use Match;
 
 #[derive(Clone, Debug)]
@@ -58,26 +58,34 @@ impl<S: StateID> DFA<S> {
         match_index: &mut usize,
     ) -> Option<Match> {
         match *self {
-            DFA::Standard(ref dfa) => {
-                dfa.overlapping_find_at(
-                    prestate, haystack, at, state_id, match_index,
-                )
-            }
-            DFA::ByteClass(ref dfa) => {
-                dfa.overlapping_find_at(
-                    prestate, haystack, at, state_id, match_index,
-                )
-            }
-            DFA::Premultiplied(ref dfa) => {
-                dfa.overlapping_find_at(
-                    prestate, haystack, at, state_id, match_index,
-                )
-            }
-            DFA::PremultipliedByteClass(ref dfa) => {
-                dfa.overlapping_find_at(
-                    prestate, haystack, at, state_id, match_index,
-                )
-            }
+            DFA::Standard(ref dfa) => dfa.overlapping_find_at(
+                prestate,
+                haystack,
+                at,
+                state_id,
+                match_index,
+            ),
+            DFA::ByteClass(ref dfa) => dfa.overlapping_find_at(
+                prestate,
+                haystack,
+                at,
+                state_id,
+                match_index,
+            ),
+            DFA::Premultiplied(ref dfa) => dfa.overlapping_find_at(
+                prestate,
+                haystack,
+                at,
+                state_id,
+                match_index,
+            ),
+            DFA::PremultipliedByteClass(ref dfa) => dfa.overlapping_find_at(
+                prestate,
+                haystack,
+                at,
+                state_id,
+                match_index,
+            ),
         }
     }
 
@@ -106,25 +114,24 @@ impl<S: StateID> DFA<S> {
     }
 
     #[inline(always)]
-    pub fn find_at(
+    pub fn find_at_no_state(
         &self,
         prestate: &mut PrefilterState,
         haystack: &[u8],
         at: usize,
-        state_id: &mut S,
     ) -> Option<Match> {
         match *self {
             DFA::Standard(ref dfa) => {
-                dfa.find_at(prestate, haystack, at, state_id)
+                dfa.find_at_no_state(prestate, haystack, at)
             }
             DFA::ByteClass(ref dfa) => {
-                dfa.find_at(prestate, haystack, at, state_id)
+                dfa.find_at_no_state(prestate, haystack, at)
             }
             DFA::Premultiplied(ref dfa) => {
-                dfa.find_at(prestate, haystack, at, state_id)
+                dfa.find_at_no_state(prestate, haystack, at)
             }
             DFA::PremultipliedByteClass(ref dfa) => {
-                dfa.find_at(prestate, haystack, at, state_id)
+                dfa.find_at_no_state(prestate, haystack, at)
             }
         }
     }
@@ -146,7 +153,11 @@ impl<S: StateID> Automaton for Standard<S> {
         &self.repr().match_kind
     }
 
-    fn prefilter(&self) -> Option<&Prefilter> {
+    fn anchored(&self) -> bool {
+        self.repr().anchored
+    }
+
+    fn prefilter(&self) -> Option<&dyn Prefilter> {
         self.repr().prefilter.as_ref().map(|p| p.as_ref())
     }
 
@@ -201,7 +212,11 @@ impl<S: StateID> Automaton for ByteClass<S> {
         &self.repr().match_kind
     }
 
-    fn prefilter(&self) -> Option<&Prefilter> {
+    fn anchored(&self) -> bool {
+        self.repr().anchored
+    }
+
+    fn prefilter(&self) -> Option<&dyn Prefilter> {
         self.repr().prefilter.as_ref().map(|p| p.as_ref())
     }
 
@@ -236,7 +251,7 @@ impl<S: StateID> Automaton for ByteClass<S> {
 
     unsafe fn next_state_unchecked(&self, current: S, input: u8) -> S {
         let alphabet_len = self.repr().byte_classes.alphabet_len();
-        let input = self.repr().byte_classes.get_unchecked(input);
+        let input = self.repr().byte_classes.get(input);
         let o = current.to_usize() * alphabet_len + input as usize;
         *self.repr().trans.get_unchecked(o)
     }
@@ -258,7 +273,11 @@ impl<S: StateID> Automaton for Premultiplied<S> {
         &self.repr().match_kind
     }
 
-    fn prefilter(&self) -> Option<&Prefilter> {
+    fn anchored(&self) -> bool {
+        self.repr().anchored
+    }
+
+    fn prefilter(&self) -> Option<&dyn Prefilter> {
         self.repr().prefilter.as_ref().map(|p| p.as_ref())
     }
 
@@ -321,7 +340,11 @@ impl<S: StateID> Automaton for PremultipliedByteClass<S> {
         &self.repr().match_kind
     }
 
-    fn prefilter(&self) -> Option<&Prefilter> {
+    fn anchored(&self) -> bool {
+        self.repr().anchored
+    }
+
+    fn prefilter(&self) -> Option<&dyn Prefilter> {
         self.repr().prefilter.as_ref().map(|p| p.as_ref())
     }
 
@@ -363,7 +386,7 @@ impl<S: StateID> Automaton for PremultipliedByteClass<S> {
     }
 
     unsafe fn next_state_unchecked(&self, current: S, input: u8) -> S {
-        let input = self.repr().byte_classes.get_unchecked(input);
+        let input = self.repr().byte_classes.get(input);
         let o = current.to_usize() + input as usize;
         *self.repr().trans.get_unchecked(o)
     }
@@ -372,6 +395,7 @@ impl<S: StateID> Automaton for PremultipliedByteClass<S> {
 #[derive(Clone, Debug)]
 pub struct Repr<S> {
     match_kind: MatchKind,
+    anchored: bool,
     premultiplied: bool,
     start_id: S,
     /// The length, in bytes, of the longest pattern in this automaton. This
@@ -563,14 +587,14 @@ impl<S: StateID> Repr<S> {
 
     /// Computes the total amount of heap used by this NFA in bytes.
     fn calculate_size(&mut self) {
-        let mut size =
-            (self.trans.len() * size_of::<S>())
-            + (self.matches.len() *
-               size_of::<Vec<(PatternID, PatternLength)>>());
+        let mut size = (self.trans.len() * size_of::<S>())
+            + (self.matches.len()
+                * size_of::<Vec<(PatternID, PatternLength)>>());
         for state_matches in &self.matches {
             size +=
                 state_matches.len() * size_of::<(PatternID, PatternLength)>();
         }
+        size += self.prefilter.as_ref().map_or(0, |p| p.as_ref().heap_bytes());
         self.heap_bytes = size;
     }
 }
@@ -585,10 +609,7 @@ pub struct Builder {
 impl Builder {
     /// Create a new builder for a DFA.
     pub fn new() -> Builder {
-        Builder {
-            premultiply: true,
-            byte_classes: true,
-        }
+        Builder { premultiply: true, byte_classes: true }
     }
 
     /// Build a DFA from the given NFA.
@@ -597,17 +618,17 @@ impl Builder {
     /// representation size. This can only happen when state ids are
     /// premultiplied (which is enabled by default).
     pub fn build<S: StateID>(&self, nfa: &NFA<S>) -> Result<DFA<S>> {
-        let byte_classes =
-            if self.byte_classes {
-                nfa.byte_classes().clone()
-            } else {
-                ByteClasses::singletons()
-            };
+        let byte_classes = if self.byte_classes {
+            nfa.byte_classes().clone()
+        } else {
+            ByteClasses::singletons()
+        };
         let alphabet_len = byte_classes.alphabet_len();
         let trans = vec![fail_id(); alphabet_len * nfa.state_len()];
         let matches = vec![vec![]; nfa.state_len()];
         let mut repr = Repr {
             match_kind: nfa.match_kind().clone(),
+            anchored: nfa.anchored(),
             premultiplied: false,
             start_id: nfa.start_state(),
             max_pattern_len: nfa.max_pattern_len(),

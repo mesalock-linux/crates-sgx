@@ -233,7 +233,7 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/ring-sgx"]
 git = "https://github.com/mesalock-linux/ring-sgx"
-tag = "v0.14.6"
+tag = "v0.16.5"
 replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/rulinalg-sgx"]
@@ -318,16 +318,6 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/typetag-sgx"]
 git = "https://github.com/mesalock-linux/typetag-sgx"
-branch = "master"
-replace-with = "vendored-sources"
-
-[source."https://github.com/mesalock-linux/ucd-generate-sgx.git"]
-git = "https://github.com/mesalock-linux/ucd-generate-sgx.git"
-branch = "master"
-replace-with = "vendored-sources"
-
-[source."https://github.com/mesalock-linux/utf8-ranges-sgx"]
-git = "https://github.com/mesalock-linux/utf8-ranges-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 

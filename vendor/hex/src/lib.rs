@@ -1,5 +1,3 @@
-#![cfg_attr(feature = "benchmarks", feature(test))]
-
 // Copyright (c) 2013-2014 The Rust Project Developers.
 // Copyright (c) 2015-2018 The rust-hex Developers.
 //
@@ -25,20 +23,28 @@
 //! }
 //! ```
 
+#![cfg_attr(not(feature = "std"), no_std)]
+#![allow(clippy::unreadable_literal)]
+
 #![cfg_attr(all(feature = "mesalock_sgx",
                 not(target_env = "sgx")), no_std)]
 #![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
+
+#[cfg(not(feature = "std"))]
+extern crate alloc;
+#[cfg(not(feature = "std"))]
+use alloc::{string::String, vec::Vec};
 
 #[cfg(all(feature = "mesalock_sgx", not(target_env = "sgx")))]
 #[macro_use]
 extern crate sgx_tstd as std;
 
-use std::prelude::v1::*;
-
-#[cfg(target_env = "sgx")]
+#[cfg(all(feature = "mesalock_sgx", target_env = "sgx"))]
 extern crate core;
 
-use std::error;
+#[cfg(feature = "std")]
+use std::prelude::v1::*;
+
 use core::fmt;
 use core::iter;
 
@@ -66,8 +72,8 @@ pub trait ToHex {
     fn encode_hex_upper<T: iter::FromIterator<char>>(&self) -> T;
 }
 
-const HEX_CHARS_LOWER: &'static[u8; 16] = b"0123456789abcdef";
-const HEX_CHARS_UPPER: &'static[u8; 16] = b"0123456789ABCDEF";
+const HEX_CHARS_LOWER: &[u8; 16] = b"0123456789abcdef";
+const HEX_CHARS_UPPER: &[u8; 16] = b"0123456789ABCDEF";
 
 struct BytesToHexChars<'a> {
     inner: ::core::slice::Iter<'a, u8>,
@@ -79,7 +85,7 @@ impl<'a> BytesToHexChars<'a> {
     fn new(inner: &'a [u8], table: &'static [u8; 16]) -> BytesToHexChars<'a> {
         BytesToHexChars {
             inner: inner.iter(),
-            table: table,
+            table,
             next: None,
         }
     }
@@ -91,13 +97,11 @@ impl<'a> Iterator for BytesToHexChars<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         match self.next.take() {
             Some(current) => Some(current),
-            None => {
-                self.inner.next().map(|byte| {
-                    let current = self.table[(byte >> 4) as usize] as char;
-                    self.next = Some(self.table[(byte & 0xf) as usize] as char);
-                    current
-                })
-            }
+            None => self.inner.next().map(|byte| {
+                let current = self.table[(byte >> 4) as usize] as char;
+                self.next = Some(self.table[(byte & 0xf) as usize] as char);
+                current
+            }),
         }
     }
 
@@ -117,9 +121,7 @@ impl<'a> iter::ExactSizeIterator for BytesToHexChars<'a> {
     }
 }
 
-fn encode_to_iter<T: iter::FromIterator<char>>(table: &'static [u8; 16],
-                                               source: &[u8]) -> T
-{
+fn encode_to_iter<T: iter::FromIterator<char>>(table: &'static [u8; 16], source: &[u8]) -> T {
     BytesToHexChars::new(source, table).collect()
 }
 
@@ -138,10 +140,7 @@ impl<T: AsRef<[u8]>> ToHex for T {
 pub enum FromHexError {
     /// An invalid character was found. Valid ones are: `0...9`, `a...f`
     /// or `A...F`.
-    InvalidHexCharacter {
-        c: char,
-        index: usize,
-    },
+    InvalidHexCharacter { c: char, index: usize },
 
     /// A hex string's length needs to be even, as two digits correspond to
     /// one byte.
@@ -153,13 +152,13 @@ pub enum FromHexError {
     InvalidStringLength,
 }
 
-impl error::Error for FromHexError {
+#[cfg(feature = "std")]
+impl std::error::Error for FromHexError {
     fn description(&self) -> &str {
         match *self {
             FromHexError::InvalidHexCharacter { .. } => "invalid character",
             FromHexError::OddLength => "odd number of digits",
             FromHexError::InvalidStringLength => "invalid string length",
-
         }
     }
 }
@@ -167,12 +166,11 @@ impl error::Error for FromHexError {
 impl fmt::Display for FromHexError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            FromHexError::InvalidHexCharacter { c, index } =>
-                write!(f, "Invalid character '{}' at position {}", c, index),
-            FromHexError::OddLength =>
-                write!(f, "Odd number of digits"),
-            FromHexError::InvalidStringLength =>
-                write!(f, "Invalid string length"),
+            FromHexError::InvalidHexCharacter { c, index } => {
+                write!(f, "Invalid character '{}' at position {}", c, index)
+            }
+            FromHexError::OddLength => write!(f, "Odd number of digits"),
+            FromHexError::InvalidStringLength => write!(f, "Invalid string length"),
         }
     }
 }
@@ -213,12 +211,10 @@ fn val(c: u8, idx: usize) -> Result<u8, FromHexError> {
         b'A'..=b'F' => Ok(c - b'A' + 10),
         b'a'..=b'f' => Ok(c - b'a' + 10),
         b'0'..=b'9' => Ok(c - b'0'),
-        _ => {
-            Err(FromHexError::InvalidHexCharacter {
-                c: c as char,
-                index: idx,
-            })
-        }
+        _ => Err(FromHexError::InvalidHexCharacter {
+            c: c as char,
+            index: idx,
+        }),
     }
 }
 
@@ -231,9 +227,10 @@ impl FromHex for Vec<u8> {
             return Err(FromHexError::OddLength);
         }
 
-        hex.chunks(2).enumerate().map(|(i, pair)| {
-            Ok(val(pair[0], 2 * i)? << 4 | val(pair[1], 2 * i + 1)?)
-        }).collect()
+        hex.chunks(2)
+            .enumerate()
+            .map(|(i, pair)| Ok(val(pair[0], 2 * i)? << 4 | val(pair[1], 2 * i + 1)?))
+            .collect()
     }
 }
 
@@ -349,8 +346,7 @@ pub fn decode_to_slice<T: AsRef<[u8]>>(data: T, out: &mut [u8]) -> Result<(), Fr
     }
 
     for (i, byte) in out.iter_mut().enumerate() {
-        *byte = val(data[2 * i], 2 * i)? << 4
-            | val(data[2 * i + 1], 2 * i + 1)?;
+        *byte = val(data[2 * i], 2 * i)? << 4 | val(data[2 * i + 1], 2 * i + 1)?;
     }
 
     Ok(())
@@ -358,7 +354,7 @@ pub fn decode_to_slice<T: AsRef<[u8]>>(data: T, out: &mut [u8]) -> Result<(), Fr
 
 #[cfg(test)]
 mod test {
-    use super::{encode, decode, FromHex, FromHexError};
+    use super::*;
 
     #[test]
     fn test_encode() {
@@ -367,39 +363,27 @@ mod test {
 
     #[test]
     fn test_decode() {
-        assert_eq!(decode("666f6f626172"), Ok("foobar".to_owned().into_bytes()));
+        assert_eq!(
+            decode("666f6f626172"),
+            Ok(String::from("foobar").into_bytes())
+        );
     }
 
     #[test]
     pub fn test_from_hex_okay_str() {
-        assert_eq!(
-            Vec::from_hex("666f6f626172").unwrap(),
-            b"foobar"
-        );
-        assert_eq!(
-            Vec::from_hex("666F6F626172").unwrap(),
-            b"foobar"
-        );
+        assert_eq!(Vec::from_hex("666f6f626172").unwrap(), b"foobar");
+        assert_eq!(Vec::from_hex("666F6F626172").unwrap(), b"foobar");
     }
 
     #[test]
     pub fn test_from_hex_okay_bytes() {
-        assert_eq!(
-            Vec::from_hex(b"666f6f626172").unwrap(),
-            b"foobar"
-        );
-        assert_eq!(
-            Vec::from_hex(b"666F6F626172").unwrap(),
-            b"foobar"
-        );
+        assert_eq!(Vec::from_hex(b"666f6f626172").unwrap(), b"foobar");
+        assert_eq!(Vec::from_hex(b"666F6F626172").unwrap(), b"foobar");
     }
 
     #[test]
     pub fn test_invalid_length() {
-        assert_eq!(
-            Vec::from_hex("1").unwrap_err(),
-            FromHexError::OddLength
-        );
+        assert_eq!(Vec::from_hex("1").unwrap_err(), FromHexError::OddLength);
         assert_eq!(
             Vec::from_hex("666f6f6261721").unwrap_err(),
             FromHexError::OddLength
@@ -410,10 +394,7 @@ mod test {
     pub fn test_invalid_char() {
         assert_eq!(
             Vec::from_hex("66ag").unwrap_err(),
-            FromHexError::InvalidHexCharacter {
-                c: 'g',
-                index: 3
-            }
+            FromHexError::InvalidHexCharacter { c: 'g', index: 3 }
         );
     }
 
@@ -426,10 +407,7 @@ mod test {
     pub fn test_from_hex_whitespace() {
         assert_eq!(
             Vec::from_hex("666f 6f62617").unwrap_err(),
-            FromHexError::InvalidHexCharacter {
-                c: ' ',
-                index: 4
-            }
+            FromHexError::InvalidHexCharacter { c: ' ', index: 4 }
         );
     }
 
@@ -444,25 +422,5 @@ mod test {
             <[u8; 5] as FromHex>::from_hex("666f6f626172"),
             Err(FromHexError::InvalidStringLength)
         );
-    }
-}
-
-
-#[cfg(all(feature = "benchmarks", test))]
-mod bench {
-    extern crate test;
-    use self::test::Bencher;
-
-    use super::*;
-
-    const MY_OWN_SOURCE: &[u8] = include_bytes!("lib.rs");
-
-    #[bench]
-    fn a_bench(b: &mut Bencher) {
-        b.bytes = MY_OWN_SOURCE.len() as u64;
-
-        b.iter(|| {
-            encode(MY_OWN_SOURCE)
-        });
     }
 }

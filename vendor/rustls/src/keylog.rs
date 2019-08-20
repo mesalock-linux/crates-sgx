@@ -27,6 +27,8 @@ pub trait KeyLog : Send + Sync {
     /// `secret` means:
     ///
     /// - `CLIENT_RANDOM`: `secret` is the master secret for a TLSv1.2 session.
+    /// - `CLIENT_EARLY_TRAFFIC_SECRET`: `secret` encrypts early data
+    ///   transmitted by a client
     /// - `SERVER_HANDSHAKE_TRAFFIC_SECRET`: `secret` encrypts
     ///   handshake messages from the server during a TLSv1.3 handshake.
     /// - `CLIENT_HANDSHAKE_TRAFFIC_SECRET`: `secret` encrypts
@@ -41,6 +43,13 @@ pub trait KeyLog : Send + Sync {
     /// These strings are selected to match the NSS key log format:
     /// https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSS/Key_Log_Format
     fn log(&self, label: &str, client_random: &[u8], secret: &[u8]);
+
+    /// Indicates whether the secret with label `label` will be logged.
+    ///
+    /// If `will_log` returns true then `log` will be called with the secret.
+    /// Otherwise, `log` will not be called for the secret. This is a
+    /// performance optimization.
+    fn will_log(&self, _label: &str) -> bool { true }
 }
 
 /// KeyLog that does exactly nothing.
@@ -48,6 +57,8 @@ pub struct NoKeyLog;
 
 impl KeyLog for NoKeyLog {
     fn log(&self, _: &str, _: &[u8], _: &[u8]) {}
+    #[inline]
+    fn will_log(&self, _label: &str) -> bool { false }
 }
 
 // Internal mutable state for KeyLogFile

@@ -14,7 +14,7 @@
 
 use std::prelude::v1::*;
 use super::{der::*, writer::*, *};
-use std::boxed::Box;
+use alloc::boxed::Box;
 
 pub(crate) fn write_positive_integer(output: &mut dyn Accumulator, value: &Positive) {
     let first_byte = value.first_byte();

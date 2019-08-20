@@ -1,15 +1,15 @@
 use super::*;
+use crate::token::{Brace, Bracket, Paren};
 use proc_macro2::TokenStream;
 #[cfg(feature = "parsing")]
 use proc_macro2::{Delimiter, Span, TokenTree};
-use token::{Brace, Bracket, Paren};
 
 #[cfg(feature = "parsing")]
-use parse::{Parse, ParseStream, Parser, Result};
+use crate::parse::{Parse, ParseStream, Parser, Result};
+#[cfg(feature = "extra-traits")]
+use crate::tt::TokenStreamHelper;
 #[cfg(feature = "extra-traits")]
 use std::hash::{Hash, Hasher};
-#[cfg(feature = "extra-traits")]
-use tt::TokenStreamHelper;
 
 ast_struct! {
     /// A macro invocation: `println!("{}", mac)`.
@@ -20,7 +20,7 @@ ast_struct! {
         pub path: Path,
         pub bang_token: Token![!],
         pub delimiter: MacroDelimiter,
-        pub tts: TokenStream,
+        pub tokens: TokenStream,
     }
 }
 
@@ -45,7 +45,7 @@ impl PartialEq for Macro {
         self.path == other.path
             && self.bang_token == other.bang_token
             && self.delimiter == other.delimiter
-            && TokenStreamHelper(&self.tts) == TokenStreamHelper(&other.tts)
+            && TokenStreamHelper(&self.tokens) == TokenStreamHelper(&other.tokens)
     }
 }
 
@@ -58,16 +58,16 @@ impl Hash for Macro {
         self.path.hash(state);
         self.bang_token.hash(state);
         self.delimiter.hash(state);
-        TokenStreamHelper(&self.tts).hash(state);
+        TokenStreamHelper(&self.tokens).hash(state);
     }
 }
 
 #[cfg(feature = "parsing")]
 fn delimiter_span(delimiter: &MacroDelimiter) -> Span {
-    match *delimiter {
-        MacroDelimiter::Paren(ref token) => token.span,
-        MacroDelimiter::Brace(ref token) => token.span,
-        MacroDelimiter::Bracket(ref token) => token.span,
+    match delimiter {
+        MacroDelimiter::Paren(token) => token.span,
+        MacroDelimiter::Brace(token) => token.span,
+        MacroDelimiter::Bracket(token) => token.span,
     }
 }
 
@@ -75,12 +75,12 @@ impl Macro {
     /// Parse the tokens within the macro invocation's delimiters into a syntax
     /// tree.
     ///
-    /// This is equivalent to `syn::parse2::<T>(mac.tts)` except that it
-    /// produces a more useful span when `tts` is empty.
+    /// This is equivalent to `syn::parse2::<T>(mac.tokens)` except that it
+    /// produces a more useful span when `tokens` is empty.
     ///
     /// # Example
     ///
-    /// ```edition2018
+    /// ```
     /// use syn::{parse_quote, Expr, ExprLit, Ident, Lit, LitStr, Macro, Token};
     /// use syn::ext::IdentExt;
     /// use syn::parse::{Error, Parse, ParseStream, Result};
@@ -166,7 +166,7 @@ impl Macro {
         // TODO: see if we can get a group.span_close() span in here as the
         // scope, rather than the span of the whole group.
         let scope = delimiter_span(&self.delimiter);
-        private::parse_scoped(parser, scope, self.tts.clone())
+        crate::parse::parse_scoped(parser, scope, self.tokens.clone())
     }
 }
 
@@ -183,7 +183,7 @@ pub fn parse_delimiter(input: ParseStream) -> Result<(MacroDelimiter, TokenStrea
                     return Err(cursor.error("expected delimiter"));
                 }
             };
-            Ok(((delimiter, g.stream().clone()), rest))
+            Ok(((delimiter, g.stream()), rest))
         } else {
             Err(cursor.error("expected delimiter"))
         }
@@ -194,20 +194,20 @@ pub fn parse_delimiter(input: ParseStream) -> Result<(MacroDelimiter, TokenStrea
 pub mod parsing {
     use super::*;
 
-    use parse::{Parse, ParseStream, Result};
+    use crate::parse::{Parse, ParseStream, Result};
 
     impl Parse for Macro {
         fn parse(input: ParseStream) -> Result<Self> {
-            let tts;
+            let tokens;
             Ok(Macro {
                 path: input.call(Path::parse_mod_style)?,
                 bang_token: input.parse()?,
                 delimiter: {
                     let (delimiter, content) = parse_delimiter(input)?;
-                    tts = content;
+                    tokens = content;
                     delimiter
                 },
-                tts: tts,
+                tokens,
             })
         }
     }
@@ -223,15 +223,15 @@ mod printing {
         fn to_tokens(&self, tokens: &mut TokenStream) {
             self.path.to_tokens(tokens);
             self.bang_token.to_tokens(tokens);
-            match self.delimiter {
-                MacroDelimiter::Paren(ref paren) => {
-                    paren.surround(tokens, |tokens| self.tts.to_tokens(tokens));
+            match &self.delimiter {
+                MacroDelimiter::Paren(paren) => {
+                    paren.surround(tokens, |tokens| self.tokens.to_tokens(tokens));
                 }
-                MacroDelimiter::Brace(ref brace) => {
-                    brace.surround(tokens, |tokens| self.tts.to_tokens(tokens));
+                MacroDelimiter::Brace(brace) => {
+                    brace.surround(tokens, |tokens| self.tokens.to_tokens(tokens));
                 }
-                MacroDelimiter::Bracket(ref bracket) => {
-                    bracket.surround(tokens, |tokens| self.tts.to_tokens(tokens));
+                MacroDelimiter::Bracket(bracket) => {
+                    bracket.surround(tokens, |tokens| self.tokens.to_tokens(tokens));
                 }
             }
         }

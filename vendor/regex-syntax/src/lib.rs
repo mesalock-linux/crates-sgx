@@ -1,13 +1,3 @@
-// Copyright 2018 The Rust Project Developers. See the COPYRIGHT
-// file at the top-level directory of this distribution and at
-// http://rust-lang.org/COPYRIGHT.
-//
-// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
-// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
-// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
-// option. This file may not be copied, modified, or distributed
-// except according to those terms.
-
 /*!
 This crate provides a robust regular expression parser.
 
@@ -104,7 +94,6 @@ done automatically in the `regex` crate.
 */
 
 #![deny(missing_docs)]
-#![allow(ellipsis_inclusive_range_patterns)]
 
 #![cfg_attr(not(target_env = "sgx"), no_std)]
 #![cfg_attr(target_env = "sgx", feature(rustc_private))]
@@ -114,8 +103,6 @@ done automatically in the `regex` crate.
 extern crate sgx_tstd as std;
 
 use std::prelude::v1::*;
-
-extern crate ucd_util;
 
 pub use error::{Error, Result};
 pub use parser::{Parser, ParserBuilder};
@@ -127,6 +114,7 @@ pub mod hir;
 mod parser;
 mod unicode;
 mod unicode_tables;
+pub mod utf8;
 
 /// Escapes all regular expression meta characters in `text`.
 ///
@@ -162,8 +150,8 @@ pub fn escape_into(text: &str, buf: &mut String) {
 /// `false` is fixed and won't change in a semver compatible release.
 pub fn is_meta_character(c: char) -> bool {
     match c {
-        '\\' | '.' | '+' | '*' | '?' | '(' | ')' | '|' |
-        '[' | ']' | '{' | '}' | '^' | '$' | '#' | '&' | '-' | '~' => true,
+        '\\' | '.' | '+' | '*' | '?' | '(' | ')' | '|' | '[' | ']' | '{'
+        | '}' | '^' | '$' | '#' | '&' | '-' | '~' => true,
         _ => false,
     }
 }
@@ -193,7 +181,8 @@ pub fn is_word_character(c: char) -> bool {
             } else {
                 Ordering::Less
             }
-        }).is_ok()
+        })
+        .is_ok()
 }
 
 /// Returns true if and only if the given character is an ASCII word character.
@@ -202,7 +191,7 @@ pub fn is_word_character(c: char) -> bool {
 /// `[_0-9a-zA-Z]'.
 pub fn is_word_byte(c: u8) -> bool {
     match c {
-        b'_' | b'0' ... b'9' | b'a' ... b'z' | b'A' ... b'Z'  => true,
+        b'_' | b'0'..=b'9' | b'a'..=b'z' | b'A'..=b'Z' => true,
         _ => false,
     }
 }
@@ -215,7 +204,8 @@ mod tests {
     fn escape_meta() {
         assert_eq!(
             escape(r"\.+*?()|[]{}^$#&-~"),
-            r"\\\.\+\*\?\(\)\|\[\]\{\}\^\$\#\&\-\~".to_string());
+            r"\\\.\+\*\?\(\)\|\[\]\{\}\^\$\#\&\-\~".to_string()
+        );
     }
 
     #[test]

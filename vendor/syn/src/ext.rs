@@ -4,16 +4,12 @@
 
 use proc_macro2::Ident;
 
-use parse::{ParseStream, Result};
+use crate::parse::{ParseStream, Result};
 
-#[cfg(syn_can_use_associated_constants)]
-use buffer::Cursor;
-#[cfg(syn_can_use_associated_constants)]
-use parse::Peek;
-#[cfg(syn_can_use_associated_constants)]
-use sealed::lookahead;
-#[cfg(syn_can_use_associated_constants)]
-use token::CustomToken;
+use crate::buffer::Cursor;
+use crate::parse::Peek;
+use crate::sealed::lookahead;
+use crate::token::CustomToken;
 
 /// Additional methods for `Ident` not provided by proc-macro2 or libproc_macro.
 ///
@@ -29,7 +25,7 @@ pub trait IdentExt: Sized + private::Sealed {
     ///
     /// # Example
     ///
-    /// ```edition2018
+    /// ```
     /// use syn::{Error, Ident, Result, Token};
     /// use syn::ext::IdentExt;
     /// use syn::parse::ParseStream;
@@ -59,7 +55,6 @@ pub trait IdentExt: Sized + private::Sealed {
     ///
     /// This is different from `input.peek(Ident)` which only returns true in
     /// the case of an ident which is not a Rust keyword.
-    #[cfg(syn_can_use_associated_constants)]
     #[allow(non_upper_case_globals)]
     const peek_any: private::PeekFn = private::PeekFn;
 
@@ -80,7 +75,7 @@ pub trait IdentExt: Sized + private::Sealed {
     /// fixed prefix. Without using `unraw()`, this would tend to produce
     /// invalid identifiers like `__pyo3_get_r#move`.
     ///
-    /// ```edition2018
+    /// ```
     /// use proc_macro2::Span;
     /// use syn::Ident;
     /// use syn::ext::IdentExt;
@@ -111,12 +106,10 @@ impl IdentExt for Ident {
     }
 }
 
-#[cfg(syn_can_use_associated_constants)]
 impl Peek for private::PeekFn {
     type Token = private::IdentAny;
 }
 
-#[cfg(syn_can_use_associated_constants)]
 impl CustomToken for private::IdentAny {
     fn peek(cursor: Cursor) -> bool {
         cursor.ident().is_some()
@@ -127,7 +120,6 @@ impl CustomToken for private::IdentAny {
     }
 }
 
-#[cfg(syn_can_use_associated_constants)]
 impl lookahead::Sealed for private::PeekFn {}
 
 mod private {
@@ -137,9 +129,7 @@ mod private {
 
     impl Sealed for Ident {}
 
-    #[cfg(syn_can_use_associated_constants)]
     #[derive(Copy, Clone)]
     pub struct PeekFn;
-    #[cfg(syn_can_use_associated_constants)]
     pub struct IdentAny;
 }

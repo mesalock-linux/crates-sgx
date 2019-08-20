@@ -3,7 +3,7 @@
 # When uploading crates to the registry Cargo will automatically
 # "normalize" Cargo.toml files for maximal compatibility
 # with all versions of Cargo and also rewrite `path` dependencies
-# to registry (e.g. crates.io) dependencies
+# to registry (e.g., crates.io) dependencies
 #
 # If you believe there's an error in this file please file an
 # issue against the rust-lang/cargo repository. If you're
@@ -13,21 +13,21 @@
 [package]
 edition = "2018"
 name = "ghost"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 description = "Define your own PhantomData"
 documentation = "https://docs.rs/ghost"
 readme = "README.md"
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/dtolnay/ghost"
 
 [lib]
 proc-macro = true
 [dependencies.proc-macro2]
-version = "0.4"
+version = "1.0"
 
 [dependencies.quote]
-version = "0.6"
+version = "1.0"
 
 [dependencies.syn]
-version = "0.15"
+version = "1.0"

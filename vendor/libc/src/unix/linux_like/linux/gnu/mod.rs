@@ -193,6 +193,19 @@ impl siginfo_t {
         }
         (*(self as *const siginfo_t as *const siginfo_sigfault)).si_addr
     }
+
+    pub unsafe fn si_value(&self) -> ::sigval {
+        #[repr(C)]
+        struct siginfo_timer {
+            _si_signo: ::c_int,
+            _si_errno: ::c_int,
+            _si_code: ::c_int,
+            _si_tid: ::c_int,
+            _si_overrun: ::c_int,
+            si_sigval: ::sigval,
+        }
+        (*(self as *const siginfo_t as *const siginfo_timer)).si_sigval
+    }
 }
 
 s_no_extra_traits! {
@@ -598,64 +611,7 @@ pub const IFA_F_NOPREFIXROUTE: u32 = 0x200;
 pub const IFA_F_MCAUTOJOIN: u32 = 0x400;
 pub const IFA_F_STABLE_PRIVACY: u32 = 0x800;
 
-pub const NETLINK_ROUTE: ::c_int = 0;
-pub const NETLINK_UNUSED: ::c_int = 1;
-pub const NETLINK_USERSOCK: ::c_int = 2;
-pub const NETLINK_FIREWALL: ::c_int = 3;
-pub const NETLINK_SOCK_DIAG: ::c_int = 4;
-pub const NETLINK_NFLOG: ::c_int = 5;
-pub const NETLINK_XFRM: ::c_int = 6;
-pub const NETLINK_SELINUX: ::c_int = 7;
-pub const NETLINK_ISCSI: ::c_int = 8;
-pub const NETLINK_AUDIT: ::c_int = 9;
-pub const NETLINK_FIB_LOOKUP: ::c_int = 10;
-pub const NETLINK_CONNECTOR: ::c_int = 11;
-pub const NETLINK_NETFILTER: ::c_int = 12;
-pub const NETLINK_IP6_FW: ::c_int = 13;
-pub const NETLINK_DNRTMSG: ::c_int = 14;
-pub const NETLINK_KOBJECT_UEVENT: ::c_int = 15;
-pub const NETLINK_GENERIC: ::c_int = 16;
-pub const NETLINK_SCSITRANSPORT: ::c_int = 18;
-pub const NETLINK_ECRYPTFS: ::c_int = 19;
-pub const NETLINK_RDMA: ::c_int = 20;
-pub const NETLINK_CRYPTO: ::c_int = 21;
-pub const NETLINK_INET_DIAG: ::c_int = NETLINK_SOCK_DIAG;
-
 pub const MAX_LINKS: ::c_int = 32;
-
-pub const NLM_F_REQUEST: ::c_int = 1;
-pub const NLM_F_MULTI: ::c_int = 2;
-pub const NLM_F_ACK: ::c_int = 4;
-pub const NLM_F_ECHO: ::c_int = 8;
-pub const NLM_F_DUMP_INTR: ::c_int = 16;
-pub const NLM_F_DUMP_FILTERED: ::c_int = 32;
-
-pub const NLM_F_ROOT: ::c_int = 0x100;
-pub const NLM_F_MATCH: ::c_int = 0x200;
-pub const NLM_F_ATOMIC: ::c_int = 0x400;
-pub const NLM_F_DUMP: ::c_int = NLM_F_ROOT | NLM_F_MATCH;
-
-pub const NLM_F_REPLACE: ::c_int = 0x100;
-pub const NLM_F_EXCL: ::c_int = 0x200;
-pub const NLM_F_CREATE: ::c_int = 0x400;
-pub const NLM_F_APPEND: ::c_int = 0x800;
-
-pub const NETLINK_ADD_MEMBERSHIP: ::c_int = 1;
-pub const NETLINK_DROP_MEMBERSHIP: ::c_int = 2;
-pub const NETLINK_PKTINFO: ::c_int = 3;
-pub const NETLINK_BROADCAST_ERROR: ::c_int = 4;
-pub const NETLINK_NO_ENOBUFS: ::c_int = 5;
-pub const NETLINK_RX_RING: ::c_int = 6;
-pub const NETLINK_TX_RING: ::c_int = 7;
-pub const NETLINK_LISTEN_ALL_NSID: ::c_int = 8;
-pub const NETLINK_LIST_MEMBERSHIPS: ::c_int = 9;
-pub const NETLINK_CAP_ACK: ::c_int = 10;
-
-pub const NLA_F_NESTED: ::c_int = 1 << 15;
-pub const NLA_F_NET_BYTEORDER: ::c_int = 1 << 14;
-pub const NLA_TYPE_MASK: ::c_int = !(NLA_F_NESTED | NLA_F_NET_BYTEORDER);
-
-pub const NLA_ALIGNTO: ::c_int = 4;
 
 pub const GENL_UNS_ADMIN_PERM: ::c_int = 0x10;
 
@@ -916,12 +872,6 @@ cfg_if! {
 }
 pub const PTHREAD_MUTEX_ADAPTIVE_NP: ::c_int = 3;
 
-f! {
-    pub fn NLA_ALIGN(len: ::c_int) -> ::c_int {
-        return ((len) + NLA_ALIGNTO - 1) & !(NLA_ALIGNTO - 1)
-    }
-}
-
 extern {
     pub fn sendmmsg(sockfd: ::c_int, msgvec: *mut ::mmsghdr, vlen: ::c_uint,
                     flags: ::c_int) -> ::c_int;
@@ -1011,6 +961,11 @@ extern {
                       buf: *mut ::c_char,
                       buflen: ::size_t,
                       result: *mut *mut ::group) -> ::c_int;
+    pub fn pthread_getname_np(thread: ::pthread_t,
+                              name: *mut ::c_char,
+                              len: ::size_t) -> ::c_int;
+    pub fn pthread_setname_np(thread: ::pthread_t,
+                              name: *const ::c_char) -> ::c_int;
 }
 
 cfg_if! {

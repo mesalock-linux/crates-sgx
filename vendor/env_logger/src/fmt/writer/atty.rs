@@ -25,11 +25,11 @@ mod imp {
 #[cfg(not(feature = "atty"))]
 mod imp {
     pub(in ::fmt) fn is_stdout() -> bool {
-        false
+        true
     }
 
     pub(in ::fmt) fn is_stderr() -> bool {
-        false
+        true
     }
 }
 

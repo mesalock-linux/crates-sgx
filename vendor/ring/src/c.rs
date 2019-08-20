@@ -14,20 +14,38 @@
 
 //! C types.
 //!
-//! The libc crate provide the C types for most, but not all, targets that
-//! *ring* supports.
+//! Avoid using the `libc` crate to get C types since `libc` doesn't support
+//! all the targets we need to support. It turns out that the few types we need
+//! are all uniformly defined on the platforms we care about. This will
+//! probably change if/when we support 16-bit platforms or platforms where
+//! `usize` and `uintptr_t` are different sizes.
 
-use sgx_libc as libc;
+// Keep in sync with the checks in base.h that verify these assumptions.
 
-pub(crate) type size_t = libc::size_t;
-pub(crate) type int = libc::c_int;
-pub(crate) type uint = libc::c_uint;
+pub(crate) type int = sgx_types::c_int;
+pub(crate) type uint = sgx_types::c_uint;
+pub(crate) type size_t = sgx_types::size_t;
 
-#[cfg(all(
-    any(target_os = "android", target_os = "linux"),
-    any(target_arch = "aarch64", target_arch = "arm")
-))]
-pub(crate) type ulong = libc::c_ulong;
-
-#[cfg(all(not(feature = "mesalock_sgx"), any(target_os = "android", target_os = "linux")))]
-pub(crate) type long = libc::c_long;
+//#[cfg(all(test, any(unix, windows)))]
+//mod tests {
+//    use crate::c;
+//
+//    #[test]
+//    fn test_libc_compatible() {
+//        {
+//            let x: c::int = 1;
+//            let _x: libc::c_int = x;
+//        }
+//
+//        {
+//            let x: c::uint = 1;
+//            let _x: libc::c_uint = x;
+//        }
+//
+//        {
+//            let x: c::size_t = 1;
+//            let _x: libc::size_t = x;
+//            let _x: usize = x;
+//        }
+//    }
+//}

@@ -126,7 +126,9 @@ pub fn fill_in_psk_binder(sess: &mut ClientSessionImpl,
                           hmp: &mut HandshakeMessagePayload) {
     // We need to know the hash function of the suite we're trying to resume into.
     let resuming = handshake.resuming_session.as_ref().unwrap();
-    let suite_hash = sess.find_cipher_suite(resuming.cipher_suite).unwrap().get_hash();
+    let suite = sess.find_cipher_suite(resuming.cipher_suite).unwrap();
+    let hkdf_alg = suite.hkdf_algorithm;
+    let suite_hash = suite.get_hash();
 
     // The binder is calculated over the clienthello, but doesn't include itself or its
     // length, or the length of its container.
@@ -140,9 +142,8 @@ pub fn fill_in_psk_binder(sess: &mut ClientSessionImpl,
 
     // Run a fake key_schedule to simulate what the server will do if it choses
     // to resume.
-    let mut key_schedule = KeySchedule::new(suite_hash);
-    key_schedule.input_secret(&resuming.master_secret.0);
-    let base_key = key_schedule.derive(SecretKind::ResumptionPSKBinderKey, &empty_hash);
+    let key_schedule = KeySchedule::new(hkdf_alg, &resuming.master_secret.0);
+    let base_key = key_schedule.derive(hkdf_alg, SecretKind::ResumptionPSKBinderKey, &empty_hash);
     let real_binder = key_schedule.sign_verify_data(&base_key, &handshake_hash);
 
     if let HandshakePayload::ClientHello(ref mut ch) = hmp.payload {
@@ -184,9 +185,7 @@ pub fn start_handshake_traffic(sess: &mut ClientSessionImpl,
         // Discard the early data key schedule.
         sess.early_data.rejected();
         sess.common.early_traffic = false;
-        let mut key_schedule = KeySchedule::new(suite.get_hash());
-        key_schedule.input_empty();
-        sess.common.set_key_schedule(key_schedule);
+        sess.common.set_key_schedule(KeySchedule::new_with_empty_secret(suite.hkdf_algorithm));
         handshake.resuming_session.take();
     }
 
@@ -213,37 +212,36 @@ pub fn start_handshake_traffic(sess: &mut ClientSessionImpl,
     if !sess.early_data.is_enabled() {
         // Set the client encryption key for handshakes if early data is not used
         let write_key = sess.common.get_key_schedule()
-            .derive(SecretKind::ClientHandshakeTrafficSecret,
-                &handshake.hash_at_client_recvd_server_hello);
+            .derive_logged_secret(SecretKind::ClientHandshakeTrafficSecret,
+                                  &handshake.hash_at_client_recvd_server_hello,
+                                  &*sess.config.key_log,
+                                  &handshake.randoms.client);
         sess.common.set_message_encrypter(cipher::new_tls13_write(suite, &write_key));
-        sess.config.key_log.log(sess.common.protocol.labels().client_handshake_traffic_secret,
-                             &handshake.randoms.client,
-                             &write_key);
-        sess.common.get_mut_key_schedule().current_client_traffic_secret = write_key;
+        sess.common.get_mut_key_schedule().current_client_traffic_secret = Some(write_key);
     }
 
     let read_key = sess.common.get_key_schedule()
-        .derive(SecretKind::ServerHandshakeTrafficSecret,
-                &handshake.hash_at_client_recvd_server_hello);
+        .derive_logged_secret(SecretKind::ServerHandshakeTrafficSecret,
+                              &handshake.hash_at_client_recvd_server_hello,
+                              &*sess.config.key_log,
+                              &handshake.randoms.client);
     sess.common.set_message_decrypter(cipher::new_tls13_read(suite, &read_key));
-    sess.config.key_log.log(sess.common.protocol.labels().server_handshake_traffic_secret,
-                            &handshake.randoms.client,
-                            &read_key);
-    sess.common.get_mut_key_schedule().current_server_traffic_secret = read_key;
+    sess.common.get_mut_key_schedule().current_server_traffic_secret = Some(read_key);
 
     #[cfg(feature = "quic")] {
         let key_schedule = sess.common.key_schedule.as_ref().unwrap();
         let client = if sess.early_data.is_enabled() {
             // Traffic secret wasn't computed and stored above, so do it here.
-            sess.common.get_key_schedule()
-                .derive(SecretKind::ClientHandshakeTrafficSecret,
-                        &handshake.hash_at_client_recvd_server_hello)
+            sess.common.get_key_schedule().derive(
+                sess.common.get_key_schedule().algorithm(),
+                SecretKind::ClientHandshakeTrafficSecret,
+                &handshake.hash_at_client_recvd_server_hello)
         } else {
-            key_schedule.current_client_traffic_secret.clone()
+            key_schedule.current_client_traffic_secret.clone().unwrap()
         };
         sess.common.quic.hs_secrets = Some(quic::Secrets {
             client,
-            server: key_schedule.current_server_traffic_secret.clone(),
+            server: key_schedule.current_server_traffic_secret.clone().unwrap(),
         });
     }
 
@@ -260,6 +258,7 @@ pub fn prepare_resumption(sess: &mut ClientSessionImpl,
         .and_then(|resume| sess.find_cipher_suite(resume.cipher_suite));
 
     if hs::compatible_suite(sess, resuming_suite) {
+        sess.resumption_ciphersuite = resuming_suite;
         // The EarlyData extension MUST be supplied together with the
         // PreSharedKey extension.
         let max_early_data_size = handshake
@@ -401,14 +400,14 @@ impl hs::State for ExpectEncryptedExtensions {
                 // If no early traffic, set the encryption key for handshakes
                 let suite = sess.common.get_suite_assert();
                 let write_key = sess.common.get_key_schedule()
-                    .derive(SecretKind::ClientHandshakeTrafficSecret,
-                        &self.handshake.hash_at_client_recvd_server_hello);
+                    .derive_logged_secret(
+                        SecretKind::ClientHandshakeTrafficSecret,
+                        &self.handshake.hash_at_client_recvd_server_hello,
+                        &*sess.config.key_log,
+                        &self.handshake.randoms.client);
                 sess.common.set_message_encrypter(cipher::new_tls13_write(suite, &write_key));
-                sess.config.key_log.log(sess.common.protocol.labels().client_handshake_traffic_secret,
-                                &self.handshake.randoms.client,
-                                &write_key);
                 sess.common.get_mut_key_schedule()
-                    .current_client_traffic_secret = write_key;
+                    .current_client_traffic_secret = Some(write_key);
             }
             let certv = verify::ServerCertVerified::assertion();
             let sigv =  verify::HandshakeSignatureValid::assertion();
@@ -828,8 +827,11 @@ impl hs::State for ExpectFinished {
             /* Derive the client-to-server encryption key before key schedule update */
             let key = sess.common
                 .get_key_schedule()
-                .derive(SecretKind::ClientHandshakeTrafficSecret,
-                        &st.handshake.hash_at_client_recvd_server_hello);
+                .derive_logged_secret(
+                    SecretKind::ClientHandshakeTrafficSecret,
+                    &st.handshake.hash_at_client_recvd_server_hello,
+                    &*sess.config.key_log,
+                    &st.handshake.randoms.client);
             Some(key)
         } else {
             None
@@ -844,24 +846,25 @@ impl hs::State for ExpectFinished {
         let handshake_hash = st.handshake.transcript.get_current_hash();
         let read_key = sess.common
             .get_key_schedule()
-            .derive(SecretKind::ServerApplicationTrafficSecret, &handshake_hash);
-        sess.config.key_log.log(sess.common.protocol.labels().server_traffic_secret_0,
-                                &st.handshake.randoms.client,
-                                &read_key);
+            .derive_logged_secret(
+                SecretKind::ServerApplicationTrafficSecret,
+                &handshake_hash,
+                &*sess.config.key_log,
+                &st.handshake.randoms.client);
         sess.common.set_message_decrypter(cipher::new_tls13_read(suite, &read_key));
         sess.common
             .get_mut_key_schedule()
-            .current_server_traffic_secret = read_key;
+            .current_server_traffic_secret = Some(read_key);
 
         let exporter_secret = sess.common
             .get_key_schedule()
-            .derive(SecretKind::ExporterMasterSecret, &handshake_hash);
-        sess.config.key_log.log(sess.common.protocol.labels().exporter_secret,
-                                &st.handshake.randoms.client,
-                                &exporter_secret);
+            .derive_logged_secret(SecretKind::ExporterMasterSecret,
+                                  &handshake_hash,
+                                  &*sess.config.key_log,
+                                  &st.handshake.randoms.client);
         sess.common
             .get_mut_key_schedule()
-            .current_exporter_secret = exporter_secret;
+            .current_exporter_secret = Some(exporter_secret);
 
         /* The EndOfEarlyData message to server is still encrypted with early data keys,
          * but appears in the transcript after the server Finished. */
@@ -870,10 +873,7 @@ impl hs::State for ExpectFinished {
             sess.common.early_traffic = false;
             sess.early_data.finished();
             sess.common.set_message_encrypter(cipher::new_tls13_write(suite, &write_key));
-            sess.config.key_log.log(sess.common.protocol.labels().client_handshake_traffic_secret,
-                                &st.handshake.randoms.client,
-                                &write_key);
-            sess.common.get_mut_key_schedule().current_client_traffic_secret = write_key;
+            sess.common.get_mut_key_schedule().current_client_traffic_secret = Some(write_key);
         }
 
         /* Send our authentication/finished messages.  These are still encrypted
@@ -893,14 +893,14 @@ impl hs::State for ExpectFinished {
         hs::check_aligned_handshake(sess)?;
         let write_key = sess.common
             .get_key_schedule()
-            .derive(SecretKind::ClientApplicationTrafficSecret, &handshake_hash);
-        sess.config.key_log.log(sess.common.protocol.labels().client_traffic_secret_0,
-                                &st.handshake.randoms.client,
-                                &write_key);
+            .derive_logged_secret(SecretKind::ClientApplicationTrafficSecret,
+                                  &handshake_hash,
+                                  &*sess.config.key_log,
+                                  &st.handshake.randoms.client);
         sess.common.set_message_encrypter(cipher::new_tls13_write(suite, &write_key));
         sess.common
             .get_mut_key_schedule()
-            .current_client_traffic_secret = write_key;
+            .current_client_traffic_secret = Some(write_key);
 
         sess.common.we_now_encrypting();
         sess.common.start_traffic();
@@ -910,8 +910,8 @@ impl hs::State for ExpectFinished {
             if sess.common.protocol == Protocol::Quic {
                 let key_schedule = sess.common.key_schedule.as_ref().unwrap();
                 sess.common.quic.traffic_secrets = Some(quic::Secrets {
-                    client: key_schedule.current_client_traffic_secret.clone(),
-                    server: key_schedule.current_server_traffic_secret.clone(),
+                    client: key_schedule.current_client_traffic_secret.clone().unwrap(),
+                    server: key_schedule.current_server_traffic_secret.clone().unwrap(),
                 });
                 return Ok(Box::new(ExpectQUICTraffic(st)));
             }
@@ -935,9 +935,9 @@ impl ExpectTraffic {
     fn handle_new_ticket_tls13(&mut self, sess: &mut ClientSessionImpl, m: Message) -> Result<(), TLSError> {
         let nst = extract_handshake!(m, HandshakePayload::NewSessionTicketTLS13).unwrap();
         let handshake_hash = self.handshake.transcript.get_current_hash();
-        let resumption_master_secret = sess.common
-            .get_key_schedule()
-            .derive(SecretKind::ResumptionMasterSecret, &handshake_hash);
+        let key_schedule = sess.common.get_key_schedule();
+        let resumption_master_secret =
+            key_schedule.derive(key_schedule.algorithm(), SecretKind::ResumptionMasterSecret, &handshake_hash);
         let secret = sess.common
             .get_key_schedule()
             .derive_ticket_psk(&resumption_master_secret, &nst.nonce.0);

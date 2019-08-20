@@ -51,7 +51,7 @@ fn test_struct() {
    ⋮                    },
    ⋮                ],
    ⋮            },
-   ⋮            tts: `( Debug , Clone )`,
+   ⋮            tokens: `( Debug , Clone )`,
    ⋮        },
    ⋮    ],
    ⋮    vis: Visibility::Public,
@@ -109,12 +109,33 @@ fn test_struct() {
    ⋮}
     "###);
 
-    snapshot!(input.attrs[0].interpret_meta().unwrap(), @r###"
+    snapshot!(input.attrs[0].parse_meta().unwrap(), @r###"
    ⋮Meta::List {
-   ⋮    ident: "derive",
+   ⋮    path: Path {
+   ⋮        segments: [
+   ⋮            PathSegment {
+   ⋮                ident: "derive",
+   ⋮                arguments: None,
+   ⋮            },
+   ⋮        ],
+   ⋮    },
    ⋮    nested: [
-   ⋮        Meta(Word("Debug")),
-   ⋮        Meta(Word("Clone")),
+   ⋮        Meta(Path(Path {
+   ⋮            segments: [
+   ⋮                PathSegment {
+   ⋮                    ident: "Debug",
+   ⋮                    arguments: None,
+   ⋮                },
+   ⋮            ],
+   ⋮        })),
+   ⋮        Meta(Path(Path {
+   ⋮            segments: [
+   ⋮                PathSegment {
+   ⋮                    ident: "Clone",
+   ⋮                    arguments: None,
+   ⋮                },
+   ⋮            ],
+   ⋮        })),
    ⋮    ],
    ⋮}
     "###);
@@ -203,7 +224,7 @@ fn test_enum() {
    ⋮                    },
    ⋮                ],
    ⋮            },
-   ⋮            tts: `= r" See the std::result module documentation for details."`,
+   ⋮            tokens: `= r" See the std::result module documentation for details."`,
    ⋮        },
    ⋮        Attribute {
    ⋮            style: Outer,
@@ -215,7 +236,7 @@ fn test_enum() {
    ⋮                    },
    ⋮                ],
    ⋮            },
-   ⋮            tts: ``,
+   ⋮            tokens: ``,
    ⋮        },
    ⋮    ],
    ⋮    vis: Visibility::Public,
@@ -278,7 +299,7 @@ fn test_enum() {
    ⋮                ident: "Surprise",
    ⋮                fields: Unit,
    ⋮                discriminant: Some(Expr::Lit {
-   ⋮                    lit: 0,
+   ⋮                    lit: 0isize,
    ⋮                }),
    ⋮            },
    ⋮            Variant {
@@ -308,16 +329,30 @@ fn test_enum() {
     let meta_items: Vec<_> = input
         .attrs
         .into_iter()
-        .map(|attr| attr.interpret_meta().unwrap())
+        .map(|attr| attr.parse_meta().unwrap())
         .collect();
 
     snapshot!(meta_items, @r###"
    ⋮[
    ⋮    Meta::NameValue {
-   ⋮        ident: "doc",
+   ⋮        path: Path {
+   ⋮            segments: [
+   ⋮                PathSegment {
+   ⋮                    ident: "doc",
+   ⋮                    arguments: None,
+   ⋮                },
+   ⋮            ],
+   ⋮        },
    ⋮        lit: " See the std::result module documentation for details.",
    ⋮    },
-   ⋮    Word("must_use"),
+   ⋮    Path(Path {
+   ⋮        segments: [
+   ⋮            PathSegment {
+   ⋮                ident: "must_use",
+   ⋮                arguments: None,
+   ⋮            },
+   ⋮        ],
+   ⋮    }),
    ⋮]
     "###);
 }
@@ -348,7 +383,7 @@ fn test_attr_with_path() {
    ⋮                    },
    ⋮                ],
    ⋮            },
-   ⋮            tts: `fn main ( ) { assert_eq ! ( foo ( ) , "Hello, world!" ) ; }`,
+   ⋮            tokens: `fn main ( ) { assert_eq ! ( foo ( ) , "Hello, world!" ) ; }`,
    ⋮        },
    ⋮    ],
    ⋮    vis: Inherited,
@@ -361,7 +396,7 @@ fn test_attr_with_path() {
    ⋮}
     "###);
 
-    assert!(input.attrs[0].interpret_meta().is_none());
+    assert!(input.attrs[0].parse_meta().is_err());
 }
 
 #[test]
@@ -384,7 +419,7 @@ fn test_attr_with_non_mod_style_path() {
    ⋮                    },
    ⋮                ],
    ⋮            },
-   ⋮            tts: `< T >`,
+   ⋮            tokens: `< T >`,
    ⋮        },
    ⋮    ],
    ⋮    vis: Inherited,
@@ -397,7 +432,7 @@ fn test_attr_with_non_mod_style_path() {
    ⋮}
     "###);
 
-    assert!(input.attrs[0].interpret_meta().is_none());
+    assert!(input.attrs[0].parse_meta().is_err());
 }
 
 #[test]
@@ -424,7 +459,7 @@ fn test_attr_with_mod_style_path_with_self() {
    ⋮                    },
    ⋮                ],
    ⋮            },
-   ⋮            tts: ``,
+   ⋮            tokens: ``,
    ⋮        },
    ⋮    ],
    ⋮    vis: Inherited,
@@ -437,7 +472,20 @@ fn test_attr_with_mod_style_path_with_self() {
    ⋮}
     "###);
 
-    assert!(input.attrs[0].interpret_meta().is_none());
+    snapshot!(input.attrs[0].parse_meta().unwrap(), @r###"
+   ⋮Path(Path {
+   ⋮    segments: [
+   ⋮        PathSegment {
+   ⋮            ident: "foo",
+   ⋮            arguments: None,
+   ⋮        },
+   ⋮        PathSegment {
+   ⋮            ident: "self",
+   ⋮            arguments: None,
+   ⋮        },
+   ⋮    ],
+   ⋮})
+    "###);
 }
 
 #[test]

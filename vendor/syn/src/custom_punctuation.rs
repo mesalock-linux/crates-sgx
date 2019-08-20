@@ -3,7 +3,7 @@
 ///
 /// # Usage
 ///
-/// ```edition2018
+/// ```
 /// syn::custom_punctuation!(LeftRightArrow, <=>);
 /// ```
 ///
@@ -22,14 +22,14 @@
 ///
 /// - Field access to its spans — `let spans = lrarrow.spans`
 ///
-/// [Peeking]: parse/struct.ParseBuffer.html#method.peek
-/// [Parsing]: parse/struct.ParseBuffer.html#method.parse
-/// [Printing]: https://docs.rs/quote/0.6/quote/trait.ToTokens.html
-/// [`Span`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.Span.html
+/// [Peeking]: parse::ParseBuffer::peek
+/// [Parsing]: parse::ParseBuffer::parse
+/// [Printing]: quote::ToTokens
+/// [`Span`]: proc_macro2::Span
 ///
 /// # Example
 ///
-/// ```edition2018
+/// ```
 /// use proc_macro2::{TokenStream, TokenTree};
 /// use syn::parse::{Parse, ParseStream, Peek, Result};
 /// use syn::punctuated::Punctuated;
@@ -231,7 +231,7 @@ macro_rules! custom_punctuation_repr {
 // Not public API.
 #[doc(hidden)]
 #[macro_export(local_inner_macros)]
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 macro_rules! custom_punctuation_len {
     ($mode:ident, +)     => { 1 };
     ($mode:ident, +=)    => { 2 };

@@ -1,13 +1,3 @@
-// Copyright 2018 The Rust Project Developers. See the COPYRIGHT
-// file at the top-level directory of this distribution and at
-// http://rust-lang.org/COPYRIGHT.
-//
-// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
-// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
-// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
-// option. This file may not be copied, modified, or distributed
-// except according to those terms.
-
 /*!
 This module provides a regular expression parser.
 */
@@ -71,8 +61,8 @@ impl Primitive {
         self,
         p: &ParserI<P>,
     ) -> Result<ast::ClassSetItem> {
-        use ast::ClassSetItem;
         use self::Primitive::*;
+        use ast::ClassSetItem;
 
         match self {
             Literal(lit) => Ok(ClassSetItem::Literal(lit)),
@@ -111,8 +101,10 @@ fn is_hex(c: char) -> bool {
 /// If `first` is true, then `c` is treated as the first character in the
 /// group name (which is not allowed to be a digit).
 fn is_capture_char(c: char, first: bool) -> bool {
-    c == '_' || (!first && c >= '0' && c <= '9')
-    || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+    c == '_'
+        || (!first && c >= '0' && c <= '9')
+        || (c >= 'a' && c <= 'z')
+        || (c >= 'A' && c <= 'Z')
 }
 
 /// A builder for a regular expression parser.
@@ -363,7 +355,7 @@ impl Parser {
     fn reset(&self) {
         // These settings should be in line with the construction
         // in `ParserBuilder::build`.
-        self.pos.set(Position { offset: 0, line: 1, column: 1});
+        self.pos.set(Position { offset: 0, line: 1, column: 1 });
         self.ignore_whitespace.set(self.initial_ignore_whitespace);
         self.comments.borrow_mut().clear();
         self.stack_group.borrow_mut().clear();
@@ -438,19 +430,17 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// already been used, then an error is returned.
     fn add_capture_name(&self, cap: &ast::CaptureName) -> Result<()> {
         let mut names = self.parser().capture_names.borrow_mut();
-        match names.binary_search_by_key(
-            &cap.name.as_str(),
-            |c| c.name.as_str(),
-        ) {
+        match names
+            .binary_search_by_key(&cap.name.as_str(), |c| c.name.as_str())
+        {
             Err(i) => {
                 names.insert(i, cap.clone());
                 Ok(())
             }
-            Ok(i) => {
-                Err(self.error(cap.span, ast::ErrorKind::GroupNameDuplicate {
-                    original: names[i].span,
-                }))
-            }
+            Ok(i) => Err(self.error(
+                cap.span,
+                ast::ErrorKind::GroupNameDuplicate { original: names[i].span },
+            )),
         }
     }
 
@@ -470,10 +460,10 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     ///
     /// This panics if the given position does not point to a valid char.
     fn char_at(&self, i: usize) -> char {
-        self.pattern()[i..].chars().next()
-            .unwrap_or_else(|| {
-                panic!("expected char at offset {}", i)
-            })
+        self.pattern()[i..]
+            .chars()
+            .next()
+            .unwrap_or_else(|| panic!("expected char at offset {}", i))
     }
 
     /// Bump the parser to the next Unicode scalar value.
@@ -523,9 +513,9 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// a group or a set of flags.
     fn is_lookaround_prefix(&self) -> bool {
         self.bump_if("?=")
-        || self.bump_if("?!")
-        || self.bump_if("?<=")
-        || self.bump_if("?<!")
+            || self.bump_if("?!")
+            || self.bump_if("?<=")
+            || self.bump_if("?<!")
     }
 
     /// Bump the parser, and if the `x` flag is enabled, bump through any
@@ -659,10 +649,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
         concat.span.end = self.pos();
         self.push_or_add_alternation(concat);
         self.bump();
-        Ok(ast::Concat {
-            span: self.span(),
-            asts: vec![],
-        })
+        Ok(ast::Concat { span: self.span(), asts: vec![] })
     }
 
     /// Pushes or adds the given branch of an alternation to the parser's
@@ -712,16 +699,15 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
                     .flags()
                     .and_then(|f| f.flag_state(ast::Flag::IgnoreWhitespace))
                     .unwrap_or(old_ignore_whitespace);
-                self.parser().stack_group.borrow_mut().push(GroupState::Group {
-                    concat: concat,
-                    group: group,
-                    ignore_whitespace: old_ignore_whitespace,
-                });
+                self.parser().stack_group.borrow_mut().push(
+                    GroupState::Group {
+                        concat: concat,
+                        group: group,
+                        ignore_whitespace: old_ignore_whitespace,
+                    },
+                );
                 self.parser().ignore_whitespace.set(new_ignore_whitespace);
-                Ok(ast::Concat {
-                    span: self.span(),
-                    asts: vec![],
-                })
+                Ok(ast::Concat { span: self.span(), asts: vec![] })
             }
         }
     }
@@ -740,31 +726,28 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
 
         assert_eq!(self.char(), ')');
         let mut stack = self.parser().stack_group.borrow_mut();
-        let (mut prior_concat, mut group, ignore_whitespace, alt) =
-            match stack.pop() {
+        let (mut prior_concat, mut group, ignore_whitespace, alt) = match stack
+            .pop()
+        {
+            Some(Group { concat, group, ignore_whitespace }) => {
+                (concat, group, ignore_whitespace, None)
+            }
+            Some(Alternation(alt)) => match stack.pop() {
                 Some(Group { concat, group, ignore_whitespace }) => {
-                    (concat, group, ignore_whitespace, None)
+                    (concat, group, ignore_whitespace, Some(alt))
                 }
-                Some(Alternation(alt)) => {
-                    match stack.pop() {
-                        Some(Group { concat, group, ignore_whitespace }) => {
-                            (concat, group, ignore_whitespace, Some(alt))
-                        }
-                        None | Some(Alternation(_)) => {
-                            return Err(self.error(
-                                self.span_char(),
-                                ast::ErrorKind::GroupUnopened,
-                            ));
-                        }
-                    }
-                }
-                None => {
+                None | Some(Alternation(_)) => {
                     return Err(self.error(
                         self.span_char(),
                         ast::ErrorKind::GroupUnopened,
                     ));
                 }
-            };
+            },
+            None => {
+                return Err(self
+                    .error(self.span_char(), ast::ErrorKind::GroupUnopened));
+            }
+        };
         self.parser().ignore_whitespace.set(ignore_whitespace);
         group_concat.span.end = self.pos();
         self.bump();
@@ -800,10 +783,9 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
                 Ok(Ast::Alternation(alt))
             }
             Some(GroupState::Group { group, .. }) => {
-                return Err(self.error(
-                    group.span,
-                    ast::ErrorKind::GroupUnclosed,
-                ));
+                return Err(
+                    self.error(group.span, ast::ErrorKind::GroupUnclosed)
+                );
             }
         };
         // If we try to pop again, there should be nothing.
@@ -839,10 +821,10 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
         assert_eq!(self.char(), '[');
 
         let (nested_set, nested_union) = self.parse_set_class_open()?;
-        self.parser().stack_class.borrow_mut().push(ClassState::Open {
-            union: parent_union,
-            set: nested_set,
-        });
+        self.parser()
+            .stack_class
+            .borrow_mut()
+            .push(ClassState::Open { union: parent_union, set: nested_set });
         Ok(nested_union)
     }
 
@@ -880,7 +862,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
                 //    seeing a `]`, then we signal the character class parser
                 //    to terminate.
                 panic!("unexpected empty character class stack")
-            },
+            }
             Some(ClassState::Op { .. }) => {
                 // This panic is unfortunate, but this case is impossible
                 // since we already popped the Op state if one exists above.
@@ -912,7 +894,8 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
         for state in self.parser().stack_class.borrow().iter().rev() {
             match *state {
                 ClassState::Open { ref set, .. } => {
-                    return self.error(set.span, ast::ErrorKind::ClassUnclosed);
+                    return self
+                        .error(set.span, ast::ErrorKind::ClassUnclosed);
                 }
                 _ => {}
             }
@@ -932,13 +915,12 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
         next_kind: ast::ClassSetBinaryOpKind,
         next_union: ast::ClassSetUnion,
     ) -> ast::ClassSetUnion {
-
         let item = ast::ClassSet::Item(next_union.into_item());
         let new_lhs = self.pop_class_op(item);
-        self.parser().stack_class.borrow_mut().push(ClassState::Op {
-            kind: next_kind,
-            lhs: new_lhs,
-        });
+        self.parser()
+            .stack_class
+            .borrow_mut()
+            .push(ClassState::Op { kind: next_kind, lhs: new_lhs });
         ast::ClassSetUnion { span: self.span(), items: vec![] }
     }
 
@@ -978,10 +960,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     fn parse_with_comments(&self) -> Result<ast::WithComments> {
         assert_eq!(self.offset(), 0, "parser can only be used once");
         self.parser().reset();
-        let mut concat = ast::Concat {
-            span: self.span(),
-            asts: vec![],
-        };
+        let mut concat = ast::Concat { span: self.span(), asts: vec![] };
         loop {
             self.bump_space();
             if self.is_eof() {
@@ -997,15 +976,21 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
                 }
                 '?' => {
                     concat = self.parse_uncounted_repetition(
-                        concat, ast::RepetitionKind::ZeroOrOne)?;
+                        concat,
+                        ast::RepetitionKind::ZeroOrOne,
+                    )?;
                 }
                 '*' => {
                     concat = self.parse_uncounted_repetition(
-                        concat, ast::RepetitionKind::ZeroOrMore)?;
+                        concat,
+                        ast::RepetitionKind::ZeroOrMore,
+                    )?;
                 }
                 '+' => {
                     concat = self.parse_uncounted_repetition(
-                        concat, ast::RepetitionKind::OneOrMore)?;
+                        concat,
+                        ast::RepetitionKind::OneOrMore,
+                    )?;
                 }
                 '{' => {
                     concat = self.parse_counted_repetition(concat)?;
@@ -1043,20 +1028,23 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
         kind: ast::RepetitionKind,
     ) -> Result<ast::Concat> {
         assert!(
-            self.char() == '?' || self.char() == '*' || self.char() == '+');
+            self.char() == '?' || self.char() == '*' || self.char() == '+'
+        );
         let op_start = self.pos();
         let ast = match concat.asts.pop() {
             Some(ast) => ast,
-            None => return Err(self.error(
-                self.span(),
-                ast::ErrorKind::RepetitionMissing,
-            )),
+            None => {
+                return Err(
+                    self.error(self.span(), ast::ErrorKind::RepetitionMissing)
+                )
+            }
         };
         match ast {
-            Ast::Empty(_) | Ast::Flags(_) => return Err(self.error(
-                self.span(),
-                ast::ErrorKind::RepetitionMissing,
-            )),
+            Ast::Empty(_) | Ast::Flags(_) => {
+                return Err(
+                    self.error(self.span(), ast::ErrorKind::RepetitionMissing)
+                )
+            }
             _ => {}
         }
         let mut greedy = true;
@@ -1096,16 +1084,18 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
         let start = self.pos();
         let ast = match concat.asts.pop() {
             Some(ast) => ast,
-            None => return Err(self.error(
-                self.span(),
-                ast::ErrorKind::RepetitionMissing,
-            )),
+            None => {
+                return Err(
+                    self.error(self.span(), ast::ErrorKind::RepetitionMissing)
+                )
+            }
         };
         match ast {
-            Ast::Empty(_) | Ast::Flags(_) => return Err(self.error(
-                self.span(),
-                ast::ErrorKind::RepetitionMissing,
-            )),
+            Ast::Empty(_) | Ast::Flags(_) => {
+                return Err(
+                    self.error(self.span(), ast::ErrorKind::RepetitionMissing)
+                )
+            }
             _ => {}
         }
         if !self.bump_and_bump_space() {
@@ -1159,10 +1149,9 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
 
         let op_span = Span::new(start, self.pos());
         if !range.is_valid() {
-            return Err(self.error(
-                op_span,
-                ast::ErrorKind::RepetitionCountInvalid,
-            ));
+            return Err(
+                self.error(op_span, ast::ErrorKind::RepetitionCountInvalid)
+            );
         }
         concat.asts.push(Ast::Repetition(ast::Repetition {
             span: ast.span().with_end(self.pos()),
@@ -1216,10 +1205,9 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
             }))
         } else if self.bump_if("?") {
             if self.is_eof() {
-                return Err(self.error(
-                    open_span,
-                    ast::ErrorKind::GroupUnclosed,
-                ));
+                return Err(
+                    self.error(open_span, ast::ErrorKind::GroupUnclosed)
+                );
             }
             let flags = self.parse_flags()?;
             let char_end = self.char();
@@ -1266,10 +1254,8 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
         capture_index: u32,
     ) -> Result<ast::CaptureName> {
         if self.is_eof() {
-            return Err(self.error(
-                self.span(),
-                ast::ErrorKind::GroupNameUnexpectedEof,
-            ));
+            return Err(self
+                .error(self.span(), ast::ErrorKind::GroupNameUnexpectedEof));
         }
         let start = self.pos();
         loop {
@@ -1288,10 +1274,8 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
         }
         let end = self.pos();
         if self.is_eof() {
-            return Err(self.error(
-                self.span(),
-                ast::ErrorKind::GroupNameUnexpectedEof,
-            ));
+            return Err(self
+                .error(self.span(), ast::ErrorKind::GroupNameUnexpectedEof));
         }
         assert_eq!(self.char(), '>');
         self.bump();
@@ -1326,10 +1310,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// If no flags could be found or if the negation operation is not followed
     /// by any flags, then an error is returned.
     fn parse_flags(&self) -> Result<ast::Flags> {
-        let mut flags = ast::Flags {
-            span: self.span(),
-            items: vec![],
-        };
+        let mut flags = ast::Flags { span: self.span(), items: vec![] };
         let mut last_was_negation = None;
         while self.char() != ':' && self.char() != ')' {
             if self.char() == '-' {
@@ -1362,10 +1343,9 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
                 }
             }
             if !self.bump() {
-                return Err(self.error(
-                    self.span(),
-                    ast::ErrorKind::FlagUnexpectedEof,
-                ));
+                return Err(
+                    self.error(self.span(), ast::ErrorKind::FlagUnexpectedEof)
+                );
             }
         }
         if let Some(span) = last_was_negation {
@@ -1388,10 +1368,10 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
             'U' => Ok(ast::Flag::SwapGreed),
             'u' => Ok(ast::Flag::Unicode),
             'x' => Ok(ast::Flag::IgnoreWhitespace),
-            _ => Err(self.error(
-                self.span_char(),
-                ast::ErrorKind::FlagUnrecognized,
-            )),
+            _ => {
+                Err(self
+                    .error(self.span_char(), ast::ErrorKind::FlagUnrecognized))
+            }
         }
     }
 
@@ -1458,7 +1438,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
         let c = self.char();
         // Put some of the more complicated routines into helpers.
         match c {
-            '0'...'7' => {
+            '0'..='7' => {
                 if !self.parser().octal {
                     return Err(self.error(
                         Span::new(start, self.span_char().end),
@@ -1469,7 +1449,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
                 lit.span.start = start;
                 return Ok(Primitive::Literal(lit));
             }
-            '8'...'9' if !self.parser().octal => {
+            '8'..='9' if !self.parser().octal => {
                 return Err(self.error(
                     Span::new(start, self.span_char().end),
                     ast::ErrorKind::UnsupportedBackreference,
@@ -1503,11 +1483,13 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
                 c: c,
             }));
         }
-        let special = |kind, c| Ok(Primitive::Literal(ast::Literal {
-            span: span,
-            kind: ast::LiteralKind::Special(kind),
-            c: c,
-        }));
+        let special = |kind, c| {
+            Ok(Primitive::Literal(ast::Literal {
+                span: span,
+                kind: ast::LiteralKind::Special(kind),
+                c: c,
+            }))
+        };
         match c {
             'a' => special(ast::SpecialLiteralKind::Bell, '\x07'),
             'f' => special(ast::SpecialLiteralKind::FormFeed, '\x0C'),
@@ -1553,10 +1535,10 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
         assert!('0' <= self.char() && self.char() <= '7');
         let start = self.pos();
         // Parse up to two more digits.
-        while
-            self.bump() &&
-            '0' <= self.char() && self.char() <= '7' &&
-            self.pos().offset - start.offset <= 2
+        while self.bump()
+            && '0' <= self.char()
+            && self.char() <= '7'
+            && self.pos().offset - start.offset <= 2
         {}
         let end = self.pos();
         let octal = &self.pattern()[start.offset..end.offset];
@@ -1579,9 +1561,9 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// be positioned at the `x`, `u` or `U` prefix. The parser is advanced to
     /// the first character immediately following the hexadecimal literal.
     fn parse_hex(&self) -> Result<ast::Literal> {
-        assert!(self.char() == 'x'
-                || self.char() == 'u'
-                || self.char() == 'U');
+        assert!(
+            self.char() == 'x' || self.char() == 'u' || self.char() == 'U'
+        );
 
         let hex_kind = match self.char() {
             'x' => ast::HexLiteralKind::X,
@@ -1589,10 +1571,9 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
             _ => ast::HexLiteralKind::UnicodeLong,
         };
         if !self.bump_and_bump_space() {
-            return Err(self.error(
-                self.span(),
-                ast::ErrorKind::EscapeUnexpectedEof,
-            ));
+            return Err(
+                self.error(self.span(), ast::ErrorKind::EscapeUnexpectedEof)
+            );
         }
         if self.char() == '{' {
             self.parse_hex_brace(hex_kind)
@@ -1621,10 +1602,8 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
         let start = self.pos();
         for i in 0..kind.digits() {
             if i > 0 && !self.bump_and_bump_space() {
-                return Err(self.error(
-                    self.span(),
-                    ast::ErrorKind::EscapeUnexpectedEof,
-                ));
+                return Err(self
+                    .error(self.span(), ast::ErrorKind::EscapeUnexpectedEof));
             }
             if !is_hex(self.char()) {
                 return Err(self.error(
@@ -1751,10 +1730,8 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     fn parse_set_class(&self) -> Result<ast::Class> {
         assert_eq!(self.char(), '[');
 
-        let mut union = ast::ClassSetUnion {
-            span: self.span(),
-            items: vec![],
-        };
+        let mut union =
+            ast::ClassSetUnion { span: self.span(), items: vec![] };
         loop {
             self.bump_space();
             if self.is_eof() {
@@ -1774,26 +1751,32 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
                     }
                     union = self.push_class_open(union)?;
                 }
-                ']' => {
-                    match self.pop_class(union)? {
-                        Either::Left(nested_union) => { union = nested_union; }
-                        Either::Right(class) => return Ok(class),
+                ']' => match self.pop_class(union)? {
+                    Either::Left(nested_union) => {
+                        union = nested_union;
                     }
-                }
+                    Either::Right(class) => return Ok(class),
+                },
                 '&' if self.peek() == Some('&') => {
                     assert!(self.bump_if("&&"));
                     union = self.push_class_op(
-                        ast::ClassSetBinaryOpKind::Intersection, union);
+                        ast::ClassSetBinaryOpKind::Intersection,
+                        union,
+                    );
                 }
                 '-' if self.peek() == Some('-') => {
                     assert!(self.bump_if("--"));
                     union = self.push_class_op(
-                        ast::ClassSetBinaryOpKind::Difference, union);
+                        ast::ClassSetBinaryOpKind::Difference,
+                        union,
+                    );
                 }
                 '~' if self.peek() == Some('~') => {
                     assert!(self.bump_if("~~"));
                     union = self.push_class_op(
-                        ast::ClassSetBinaryOpKind::SymmetricDifference, union);
+                        ast::ClassSetBinaryOpKind::SymmetricDifference,
+                        union,
+                    );
                 }
                 _ => {
                     union.push(self.parse_set_class_range()?);
@@ -1839,10 +1822,9 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
             end: prim2.into_class_literal(self)?,
         };
         if !range.is_valid() {
-            return Err(self.error(
-                range.span,
-                ast::ErrorKind::ClassRangeInvalid,
-            ));
+            return Err(
+                self.error(range.span, ast::ErrorKind::ClassRangeInvalid)
+            );
         }
         Ok(ast::ClassSetItem::Range(range))
     }
@@ -1899,23 +1881,20 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
             ));
         }
 
-        let negated =
-            if self.char() != '^' {
-                false
-            } else {
-                if !self.bump_and_bump_space() {
-                    return Err(self.error(
-                        Span::new(start, self.pos()),
-                        ast::ErrorKind::ClassUnclosed,
-                    ));
-                }
-                true
-            };
-        // Accept any number of `-` as literal `-`.
-        let mut union = ast::ClassSetUnion {
-            span: self.span(),
-            items: vec![],
+        let negated = if self.char() != '^' {
+            false
+        } else {
+            if !self.bump_and_bump_space() {
+                return Err(self.error(
+                    Span::new(start, self.pos()),
+                    ast::ErrorKind::ClassUnclosed,
+                ));
+            }
+            true
         };
+        // Accept any number of `-` as literal `-`.
+        let mut union =
+            ast::ClassSetUnion { span: self.span(), items: vec![] };
         while self.char() == '-' {
             union.push(ast::ClassSetItem::Literal(ast::Literal {
                 span: self.span_char(),
@@ -2041,55 +2020,60 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
 
         let negated = self.char() == 'P';
         if !self.bump_and_bump_space() {
-            return Err(self.error(
-                self.span(),
-                ast::ErrorKind::EscapeUnexpectedEof,
-            ));
+            return Err(
+                self.error(self.span(), ast::ErrorKind::EscapeUnexpectedEof)
+            );
         }
-        let (start, kind) =
-            if self.char() == '{' {
-                let start = self.span_char().end;
-                while self.bump_and_bump_space() && self.char() != '}' {
-                    scratch.push(self.char());
-                }
-                if self.is_eof() {
-                    return Err(self.error(
-                        self.span(),
-                        ast::ErrorKind::EscapeUnexpectedEof,
-                    ));
-                }
-                assert_eq!(self.char(), '}');
-                self.bump();
+        let (start, kind) = if self.char() == '{' {
+            let start = self.span_char().end;
+            while self.bump_and_bump_space() && self.char() != '}' {
+                scratch.push(self.char());
+            }
+            if self.is_eof() {
+                return Err(self
+                    .error(self.span(), ast::ErrorKind::EscapeUnexpectedEof));
+            }
+            assert_eq!(self.char(), '}');
+            self.bump();
 
-                let name = scratch.as_str();
-                if let Some(i) = name.find("!=") {
-                    (start, ast::ClassUnicodeKind::NamedValue {
+            let name = scratch.as_str();
+            if let Some(i) = name.find("!=") {
+                (
+                    start,
+                    ast::ClassUnicodeKind::NamedValue {
                         op: ast::ClassUnicodeOpKind::NotEqual,
                         name: name[..i].to_string(),
-                        value: name[i+2..].to_string(),
-                    })
-                } else if let Some(i) = name.find(':') {
-                    (start, ast::ClassUnicodeKind::NamedValue {
+                        value: name[i + 2..].to_string(),
+                    },
+                )
+            } else if let Some(i) = name.find(':') {
+                (
+                    start,
+                    ast::ClassUnicodeKind::NamedValue {
                         op: ast::ClassUnicodeOpKind::Colon,
                         name: name[..i].to_string(),
-                        value: name[i+1..].to_string(),
-                    })
-                } else if let Some(i) = name.find('=') {
-                    (start, ast::ClassUnicodeKind::NamedValue {
+                        value: name[i + 1..].to_string(),
+                    },
+                )
+            } else if let Some(i) = name.find('=') {
+                (
+                    start,
+                    ast::ClassUnicodeKind::NamedValue {
                         op: ast::ClassUnicodeOpKind::Equal,
                         name: name[..i].to_string(),
-                        value: name[i+1..].to_string(),
-                    })
-                } else {
-                    (start, ast::ClassUnicodeKind::Named(name.to_string()))
-                }
+                        value: name[i + 1..].to_string(),
+                    },
+                )
             } else {
-                let start = self.pos();
-                let c = self.char();
-                self.bump_and_bump_space();
-                let kind = ast::ClassUnicodeKind::OneLetter(c);
-                (start, kind)
-            };
+                (start, ast::ClassUnicodeKind::Named(name.to_string()))
+            }
+        } else {
+            let start = self.pos();
+            let c = self.char();
+            self.bump_and_bump_space();
+            let kind = ast::ClassUnicodeKind::OneLetter(c);
+            (start, kind)
+        };
         Ok(ast::ClassUnicode {
             span: Span::new(start, self.pos()),
             negated: negated,
@@ -2137,10 +2121,12 @@ impl<'p, 's, P: Borrow<Parser>> NestLimiter<'p, 's, P> {
     }
 
     fn increment_depth(&mut self, span: &Span) -> Result<()> {
-        let new = self.depth.checked_add(1).ok_or_else(|| self.p.error(
-            span.clone(),
-            ast::ErrorKind::NestLimitExceeded(::std::u32::MAX),
-        ))?;
+        let new = self.depth.checked_add(1).ok_or_else(|| {
+            self.p.error(
+                span.clone(),
+                ast::ErrorKind::NestLimitExceeded(::std::u32::MAX),
+            )
+        })?;
         let limit = self.p.parser().nest_limit;
         if new > limit {
             return Err(self.p.error(
@@ -2245,8 +2231,7 @@ impl<'p, 's, P: Borrow<Parser>> ast::Visitor for NestLimiter<'p, 's, P> {
                 // These are all base cases, so we don't decrement depth.
                 Ok(())
             }
-            ast::ClassSetItem::Bracketed(_)
-            | ast::ClassSetItem::Union(_) => {
+            ast::ClassSetItem::Bracketed(_) | ast::ClassSetItem::Union(_) => {
                 self.decrement_depth();
                 Ok(())
             }
@@ -2279,11 +2264,7 @@ fn specialize_err<T>(
 ) -> Result<T> {
     if let Err(e) = result {
         if e.kind == from {
-            Err(ast::Error {
-                kind: to,
-                pattern: e.pattern,
-                span: e.span,
-            })
+            Err(ast::Error { kind: to, pattern: e.pattern, span: e.span })
         } else {
             Err(e)
         }
@@ -2296,23 +2277,25 @@ fn specialize_err<T>(
 mod tests {
     use std::ops::Range;
 
+    use super::{Parser, ParserBuilder, ParserI, Primitive};
     use ast::{self, Ast, Position, Span};
-    use super::{Parser, ParserI, ParserBuilder, Primitive};
 
     // Our own assert_eq, which has slightly better formatting (but honestly
     // still kind of crappy).
     macro_rules! assert_eq {
-        ($left:expr, $right:expr) => ({
+        ($left:expr, $right:expr) => {{
             match (&$left, &$right) {
                 (left_val, right_val) => {
                     if !(*left_val == *right_val) {
-                        panic!("assertion failed: `(left == right)`\n\n\
-                               left:  `{:?}`\nright: `{:?}`\n\n",
-                               left_val, right_val)
+                        panic!(
+                            "assertion failed: `(left == right)`\n\n\
+                             left:  `{:?}`\nright: `{:?}`\n\n",
+                            left_val, right_val
+                        )
                     }
                 }
             }
-        });
+        }};
     }
 
     // We create these errors to compare with real ast::Errors in the tests.
@@ -2461,17 +2444,18 @@ mod tests {
         flag: ast::Flag,
         negated: bool,
     ) -> Ast {
-        let mut items = vec![
-            ast::FlagsItem {
-                span: span_range(pat, (range.end - 2)..(range.end - 1)),
-                kind: ast::FlagsItemKind::Flag(flag),
-            },
-        ];
+        let mut items = vec![ast::FlagsItem {
+            span: span_range(pat, (range.end - 2)..(range.end - 1)),
+            kind: ast::FlagsItemKind::Flag(flag),
+        }];
         if negated {
-            items.insert(0, ast::FlagsItem {
-                span: span_range(pat, (range.start + 2)..(range.end - 2)),
-                kind: ast::FlagsItemKind::Negation,
-            });
+            items.insert(
+                0,
+                ast::FlagsItem {
+                    span: span_range(pat, (range.start + 2)..(range.end - 2)),
+                    kind: ast::FlagsItemKind::Negation,
+                },
+            );
         }
         Ast::Flags(ast::SetFlags {
             span: span_range(pat, range.clone()),
@@ -2487,10 +2471,9 @@ mod tests {
         // A nest limit of 0 still allows some types of regexes.
         assert_eq!(
             parser_nest_limit("", 0).parse(),
-            Ok(Ast::Empty(span(0..0))));
-        assert_eq!(
-            parser_nest_limit("a", 0).parse(),
-            Ok(lit('a', 0)));
+            Ok(Ast::Empty(span(0..0)))
+        );
+        assert_eq!(parser_nest_limit("a", 0).parse(), Ok(lit('a', 0)));
 
         // Test repetition operations, which require one level of nesting.
         assert_eq!(
@@ -2498,7 +2481,8 @@ mod tests {
             TestError {
                 span: span(0..2),
                 kind: ast::ErrorKind::NestLimitExceeded(0),
-            });
+            }
+        );
         assert_eq!(
             parser_nest_limit("a+", 1).parse(),
             Ok(Ast::Repetition(ast::Repetition {
@@ -2509,19 +2493,22 @@ mod tests {
                 },
                 greedy: true,
                 ast: Box::new(lit('a', 0)),
-            })));
+            }))
+        );
         assert_eq!(
             parser_nest_limit("(a)+", 1).parse().unwrap_err(),
             TestError {
                 span: span(0..3),
                 kind: ast::ErrorKind::NestLimitExceeded(1),
-            });
+            }
+        );
         assert_eq!(
             parser_nest_limit("a+*", 1).parse().unwrap_err(),
             TestError {
                 span: span(0..2),
                 kind: ast::ErrorKind::NestLimitExceeded(1),
-            });
+            }
+        );
         assert_eq!(
             parser_nest_limit("a+*", 2).parse(),
             Ok(Ast::Repetition(ast::Repetition {
@@ -2540,7 +2527,8 @@ mod tests {
                     greedy: true,
                     ast: Box::new(lit('a', 0)),
                 })),
-            })));
+            }))
+        );
 
         // Test concatenations. A concatenation requires one level of nesting.
         assert_eq!(
@@ -2548,13 +2536,16 @@ mod tests {
             TestError {
                 span: span(0..2),
                 kind: ast::ErrorKind::NestLimitExceeded(0),
-            });
+            }
+        );
         assert_eq!(
             parser_nest_limit("ab", 1).parse(),
-            Ok(concat(0..2, vec![lit('a', 0), lit('b', 1)])));
+            Ok(concat(0..2, vec![lit('a', 0), lit('b', 1)]))
+        );
         assert_eq!(
             parser_nest_limit("abc", 1).parse(),
-            Ok(concat(0..3, vec![lit('a', 0), lit('b', 1), lit('c', 2)])));
+            Ok(concat(0..3, vec![lit('a', 0), lit('b', 1), lit('c', 2)]))
+        );
 
         // Test alternations. An alternation requires one level of nesting.
         assert_eq!(
@@ -2562,13 +2553,16 @@ mod tests {
             TestError {
                 span: span(0..3),
                 kind: ast::ErrorKind::NestLimitExceeded(0),
-            });
+            }
+        );
         assert_eq!(
             parser_nest_limit("a|b", 1).parse(),
-            Ok(alt(0..3, vec![lit('a', 0), lit('b', 2)])));
+            Ok(alt(0..3, vec![lit('a', 0), lit('b', 2)]))
+        );
         assert_eq!(
             parser_nest_limit("a|b|c", 1).parse(),
-            Ok(alt(0..5, vec![lit('a', 0), lit('b', 2), lit('c', 4)])));
+            Ok(alt(0..5, vec![lit('a', 0), lit('b', 2), lit('c', 4)]))
+        );
 
         // Test character classes. Classes form their own mini-recursive
         // syntax!
@@ -2577,50 +2571,57 @@ mod tests {
             TestError {
                 span: span(0..3),
                 kind: ast::ErrorKind::NestLimitExceeded(0),
-            });
+            }
+        );
         assert_eq!(
             parser_nest_limit("[a]", 1).parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
                 span: span(0..3),
                 negated: false,
-                kind: ast::ClassSet::Item(
-                    ast::ClassSetItem::Literal(ast::Literal {
+                kind: ast::ClassSet::Item(ast::ClassSetItem::Literal(
+                    ast::Literal {
                         span: span(1..2),
                         kind: ast::LiteralKind::Verbatim,
                         c: 'a',
-                    })
-                ),
-            }))));
+                    }
+                )),
+            })))
+        );
         assert_eq!(
             parser_nest_limit("[ab]", 1).parse().unwrap_err(),
             TestError {
                 span: span(1..3),
                 kind: ast::ErrorKind::NestLimitExceeded(1),
-            });
+            }
+        );
         assert_eq!(
             parser_nest_limit("[ab[cd]]", 2).parse().unwrap_err(),
             TestError {
                 span: span(3..7),
                 kind: ast::ErrorKind::NestLimitExceeded(2),
-            });
+            }
+        );
         assert_eq!(
             parser_nest_limit("[ab[cd]]", 3).parse().unwrap_err(),
             TestError {
                 span: span(4..6),
                 kind: ast::ErrorKind::NestLimitExceeded(3),
-            });
+            }
+        );
         assert_eq!(
             parser_nest_limit("[a--b]", 1).parse().unwrap_err(),
             TestError {
                 span: span(1..5),
                 kind: ast::ErrorKind::NestLimitExceeded(1),
-            });
+            }
+        );
         assert_eq!(
             parser_nest_limit("[a--bc]", 2).parse().unwrap_err(),
             TestError {
                 span: span(4..6),
                 kind: ast::ErrorKind::NestLimitExceeded(2),
-            });
+            }
+        );
     }
 
     #[test]
@@ -2634,62 +2635,71 @@ bar
         let astc = parser(pat).parse_with_comments().unwrap();
         assert_eq!(
             astc.ast,
-            concat_with(span_range(pat, 0..pat.len()), vec![
-                flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
-                lit_with('f', span_range(pat, 26..27)),
-                lit_with('o', span_range(pat, 27..28)),
-                lit_with('o', span_range(pat, 28..29)),
-                lit_with('b', span_range(pat, 74..75)),
-                lit_with('a', span_range(pat, 75..76)),
-                lit_with('r', span_range(pat, 76..77)),
-            ]));
-        assert_eq!(astc.comments, vec![
-            ast::Comment {
-                span: span_range(pat, 5..26),
-                comment: s(" This is comment 1."),
-            },
-            ast::Comment {
-                span: span_range(pat, 30..51),
-                comment: s(" This is comment 2."),
-            },
-            ast::Comment {
-                span: span_range(pat, 53..74),
-                comment: s(" This is comment 3."),
-            },
-            ast::Comment {
-                span: span_range(pat, 78..98),
-                comment: s(" This is comment 4."),
-            },
-        ]);
+            concat_with(
+                span_range(pat, 0..pat.len()),
+                vec![
+                    flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
+                    lit_with('f', span_range(pat, 26..27)),
+                    lit_with('o', span_range(pat, 27..28)),
+                    lit_with('o', span_range(pat, 28..29)),
+                    lit_with('b', span_range(pat, 74..75)),
+                    lit_with('a', span_range(pat, 75..76)),
+                    lit_with('r', span_range(pat, 76..77)),
+                ]
+            )
+        );
+        assert_eq!(
+            astc.comments,
+            vec![
+                ast::Comment {
+                    span: span_range(pat, 5..26),
+                    comment: s(" This is comment 1."),
+                },
+                ast::Comment {
+                    span: span_range(pat, 30..51),
+                    comment: s(" This is comment 2."),
+                },
+                ast::Comment {
+                    span: span_range(pat, 53..74),
+                    comment: s(" This is comment 3."),
+                },
+                ast::Comment {
+                    span: span_range(pat, 78..98),
+                    comment: s(" This is comment 4."),
+                },
+            ]
+        );
     }
 
     #[test]
     fn parse_holistic() {
-        assert_eq!(
-            parser("]").parse(),
-            Ok(lit(']', 0)));
+        assert_eq!(parser("]").parse(), Ok(lit(']', 0)));
         assert_eq!(
             parser(r"\\\.\+\*\?\(\)\|\[\]\{\}\^\$\#\&\-\~").parse(),
-            Ok(concat(0..36, vec![
-                punct_lit('\\', span(0..2)),
-                punct_lit('.', span(2..4)),
-                punct_lit('+', span(4..6)),
-                punct_lit('*', span(6..8)),
-                punct_lit('?', span(8..10)),
-                punct_lit('(', span(10..12)),
-                punct_lit(')', span(12..14)),
-                punct_lit('|', span(14..16)),
-                punct_lit('[', span(16..18)),
-                punct_lit(']', span(18..20)),
-                punct_lit('{', span(20..22)),
-                punct_lit('}', span(22..24)),
-                punct_lit('^', span(24..26)),
-                punct_lit('$', span(26..28)),
-                punct_lit('#', span(28..30)),
-                punct_lit('&', span(30..32)),
-                punct_lit('-', span(32..34)),
-                punct_lit('~', span(34..36)),
-            ])));
+            Ok(concat(
+                0..36,
+                vec![
+                    punct_lit('\\', span(0..2)),
+                    punct_lit('.', span(2..4)),
+                    punct_lit('+', span(4..6)),
+                    punct_lit('*', span(6..8)),
+                    punct_lit('?', span(8..10)),
+                    punct_lit('(', span(10..12)),
+                    punct_lit(')', span(12..14)),
+                    punct_lit('|', span(14..16)),
+                    punct_lit('[', span(16..18)),
+                    punct_lit(']', span(18..20)),
+                    punct_lit('{', span(20..22)),
+                    punct_lit('}', span(22..24)),
+                    punct_lit('^', span(24..26)),
+                    punct_lit('$', span(26..28)),
+                    punct_lit('#', span(28..30)),
+                    punct_lit('&', span(30..32)),
+                    punct_lit('-', span(32..34)),
+                    punct_lit('~', span(34..36)),
+                ]
+            ))
+        );
     }
 
     #[test]
@@ -2698,117 +2708,151 @@ bar
         let pat = "(?x)a b";
         assert_eq!(
             parser(pat).parse(),
-            Ok(concat_with(nspan(npos(0, 1, 1), npos(7, 1, 8)), vec![
-                flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
-                lit_with('a', nspan(npos(4, 1, 5), npos(5, 1, 6))),
-                lit_with('b', nspan(npos(6, 1, 7), npos(7, 1, 8))),
-            ])));
+            Ok(concat_with(
+                nspan(npos(0, 1, 1), npos(7, 1, 8)),
+                vec![
+                    flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
+                    lit_with('a', nspan(npos(4, 1, 5), npos(5, 1, 6))),
+                    lit_with('b', nspan(npos(6, 1, 7), npos(7, 1, 8))),
+                ]
+            ))
+        );
 
         // Test that we can toggle whitespace insensitivity.
         let pat = "(?x)a b(?-x)a b";
         assert_eq!(
             parser(pat).parse(),
-            Ok(concat_with(nspan(npos(0, 1, 1), npos(15, 1, 16)), vec![
-                flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
-                lit_with('a', nspan(npos(4, 1, 5), npos(5, 1, 6))),
-                lit_with('b', nspan(npos(6, 1, 7), npos(7, 1, 8))),
-                flag_set(pat, 7..12, ast::Flag::IgnoreWhitespace, true),
-                lit_with('a', nspan(npos(12, 1, 13), npos(13, 1, 14))),
-                lit_with(' ', nspan(npos(13, 1, 14), npos(14, 1, 15))),
-                lit_with('b', nspan(npos(14, 1, 15), npos(15, 1, 16))),
-            ])));
+            Ok(concat_with(
+                nspan(npos(0, 1, 1), npos(15, 1, 16)),
+                vec![
+                    flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
+                    lit_with('a', nspan(npos(4, 1, 5), npos(5, 1, 6))),
+                    lit_with('b', nspan(npos(6, 1, 7), npos(7, 1, 8))),
+                    flag_set(pat, 7..12, ast::Flag::IgnoreWhitespace, true),
+                    lit_with('a', nspan(npos(12, 1, 13), npos(13, 1, 14))),
+                    lit_with(' ', nspan(npos(13, 1, 14), npos(14, 1, 15))),
+                    lit_with('b', nspan(npos(14, 1, 15), npos(15, 1, 16))),
+                ]
+            ))
+        );
 
         // Test that nesting whitespace insensitive flags works.
         let pat = "a (?x:a )a ";
         assert_eq!(
             parser(pat).parse(),
-            Ok(concat_with(span_range(pat, 0..11), vec![
-                lit_with('a', span_range(pat, 0..1)),
-                lit_with(' ', span_range(pat, 1..2)),
-                Ast::Group(ast::Group {
-                    span: span_range(pat, 2..9),
-                    kind: ast::GroupKind::NonCapturing(ast::Flags {
-                        span: span_range(pat, 4..5),
-                        items: vec![
-                            ast::FlagsItem {
+            Ok(concat_with(
+                span_range(pat, 0..11),
+                vec![
+                    lit_with('a', span_range(pat, 0..1)),
+                    lit_with(' ', span_range(pat, 1..2)),
+                    Ast::Group(ast::Group {
+                        span: span_range(pat, 2..9),
+                        kind: ast::GroupKind::NonCapturing(ast::Flags {
+                            span: span_range(pat, 4..5),
+                            items: vec![ast::FlagsItem {
                                 span: span_range(pat, 4..5),
                                 kind: ast::FlagsItemKind::Flag(
-                                    ast::Flag::IgnoreWhitespace),
-                            },
-                        ],
+                                    ast::Flag::IgnoreWhitespace
+                                ),
+                            },],
+                        }),
+                        ast: Box::new(lit_with('a', span_range(pat, 6..7))),
                     }),
-                    ast: Box::new(lit_with('a', span_range(pat, 6..7))),
-                }),
-                lit_with('a', span_range(pat, 9..10)),
-                lit_with(' ', span_range(pat, 10..11)),
-            ])));
+                    lit_with('a', span_range(pat, 9..10)),
+                    lit_with(' ', span_range(pat, 10..11)),
+                ]
+            ))
+        );
 
         // Test that whitespace after an opening paren is insignificant.
         let pat = "(?x)( ?P<foo> a )";
         assert_eq!(
             parser(pat).parse(),
-            Ok(concat_with(span_range(pat, 0..pat.len()), vec![
-                flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
-                Ast::Group(ast::Group {
-                    span: span_range(pat, 4..pat.len()),
-                    kind: ast::GroupKind::CaptureName(ast::CaptureName {
-                        span: span_range(pat, 9..12),
-                        name: s("foo"),
-                        index: 1,
+            Ok(concat_with(
+                span_range(pat, 0..pat.len()),
+                vec![
+                    flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
+                    Ast::Group(ast::Group {
+                        span: span_range(pat, 4..pat.len()),
+                        kind: ast::GroupKind::CaptureName(ast::CaptureName {
+                            span: span_range(pat, 9..12),
+                            name: s("foo"),
+                            index: 1,
+                        }),
+                        ast: Box::new(lit_with('a', span_range(pat, 14..15))),
                     }),
-                    ast: Box::new(lit_with('a', span_range(pat, 14..15))),
-                }),
-            ])));
+                ]
+            ))
+        );
         let pat = "(?x)(  a )";
         assert_eq!(
             parser(pat).parse(),
-            Ok(concat_with(span_range(pat, 0..pat.len()), vec![
-                flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
-                Ast::Group(ast::Group {
-                    span: span_range(pat, 4..pat.len()),
-                    kind: ast::GroupKind::CaptureIndex(1),
-                    ast: Box::new(lit_with('a', span_range(pat, 7..8))),
-                }),
-            ])));
+            Ok(concat_with(
+                span_range(pat, 0..pat.len()),
+                vec![
+                    flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
+                    Ast::Group(ast::Group {
+                        span: span_range(pat, 4..pat.len()),
+                        kind: ast::GroupKind::CaptureIndex(1),
+                        ast: Box::new(lit_with('a', span_range(pat, 7..8))),
+                    }),
+                ]
+            ))
+        );
         let pat = "(?x)(  ?:  a )";
         assert_eq!(
             parser(pat).parse(),
-            Ok(concat_with(span_range(pat, 0..pat.len()), vec![
-                flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
-                Ast::Group(ast::Group {
-                    span: span_range(pat, 4..pat.len()),
-                    kind: ast::GroupKind::NonCapturing(ast::Flags {
-                        span: span_range(pat, 8..8),
-                        items: vec![],
+            Ok(concat_with(
+                span_range(pat, 0..pat.len()),
+                vec![
+                    flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
+                    Ast::Group(ast::Group {
+                        span: span_range(pat, 4..pat.len()),
+                        kind: ast::GroupKind::NonCapturing(ast::Flags {
+                            span: span_range(pat, 8..8),
+                            items: vec![],
+                        }),
+                        ast: Box::new(lit_with('a', span_range(pat, 11..12))),
                     }),
-                    ast: Box::new(lit_with('a', span_range(pat, 11..12))),
-                }),
-            ])));
+                ]
+            ))
+        );
         let pat = r"(?x)\x { 53 }";
         assert_eq!(
             parser(pat).parse(),
-            Ok(concat_with(span_range(pat, 0..pat.len()), vec![
-                flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
-                Ast::Literal(ast::Literal {
-                    span: span(4..13),
-                    kind: ast::LiteralKind::HexBrace(ast::HexLiteralKind::X),
-                    c: 'S',
-                }),
-            ])));
+            Ok(concat_with(
+                span_range(pat, 0..pat.len()),
+                vec![
+                    flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
+                    Ast::Literal(ast::Literal {
+                        span: span(4..13),
+                        kind: ast::LiteralKind::HexBrace(
+                            ast::HexLiteralKind::X
+                        ),
+                        c: 'S',
+                    }),
+                ]
+            ))
+        );
 
         // Test that whitespace after an escape is OK.
         let pat = r"(?x)\ ";
         assert_eq!(
             parser(pat).parse(),
-            Ok(concat_with(span_range(pat, 0..pat.len()), vec![
-                flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
-                Ast::Literal(ast::Literal {
-                    span: span_range(pat, 4..6),
-                    kind: ast::LiteralKind::Special(
-                        ast::SpecialLiteralKind::Space),
-                    c: ' ',
-                }),
-            ])));
+            Ok(concat_with(
+                span_range(pat, 0..pat.len()),
+                vec![
+                    flag_set(pat, 0..4, ast::Flag::IgnoreWhitespace, false),
+                    Ast::Literal(ast::Literal {
+                        span: span_range(pat, 4..6),
+                        kind: ast::LiteralKind::Special(
+                            ast::SpecialLiteralKind::Space
+                        ),
+                        c: ' ',
+                    }),
+                ]
+            ))
+        );
         // ... but only when `x` mode is enabled.
         let pat = r"\ ";
         assert_eq!(
@@ -2816,7 +2860,8 @@ bar
             TestError {
                 span: span_range(pat, 0..2),
                 kind: ast::ErrorKind::EscapeUnrecognized,
-            });
+            }
+        );
     }
 
     #[test]
@@ -2824,33 +2869,41 @@ bar
         let pat = ".\n.";
         assert_eq!(
             parser(pat).parse(),
-            Ok(concat_with(span_range(pat, 0..3), vec![
-                Ast::Dot(span_range(pat, 0..1)),
-                lit_with('\n', span_range(pat, 1..2)),
-                Ast::Dot(span_range(pat, 2..3)),
-            ])));
+            Ok(concat_with(
+                span_range(pat, 0..3),
+                vec![
+                    Ast::Dot(span_range(pat, 0..1)),
+                    lit_with('\n', span_range(pat, 1..2)),
+                    Ast::Dot(span_range(pat, 2..3)),
+                ]
+            ))
+        );
 
         let pat = "foobar\nbaz\nquux\n";
         assert_eq!(
             parser(pat).parse(),
-            Ok(concat_with(span_range(pat, 0..pat.len()), vec![
-                lit_with('f', nspan(npos(0, 1, 1), npos(1, 1, 2))),
-                lit_with('o', nspan(npos(1, 1, 2), npos(2, 1, 3))),
-                lit_with('o', nspan(npos(2, 1, 3), npos(3, 1, 4))),
-                lit_with('b', nspan(npos(3, 1, 4), npos(4, 1, 5))),
-                lit_with('a', nspan(npos(4, 1, 5), npos(5, 1, 6))),
-                lit_with('r', nspan(npos(5, 1, 6), npos(6, 1, 7))),
-                lit_with('\n', nspan(npos(6, 1, 7), npos(7, 2, 1))),
-                lit_with('b', nspan(npos(7, 2, 1), npos(8, 2, 2))),
-                lit_with('a', nspan(npos(8, 2, 2), npos(9, 2, 3))),
-                lit_with('z', nspan(npos(9, 2, 3), npos(10, 2, 4))),
-                lit_with('\n', nspan(npos(10, 2, 4), npos(11, 3, 1))),
-                lit_with('q', nspan(npos(11, 3, 1), npos(12, 3, 2))),
-                lit_with('u', nspan(npos(12, 3, 2), npos(13, 3, 3))),
-                lit_with('u', nspan(npos(13, 3, 3), npos(14, 3, 4))),
-                lit_with('x', nspan(npos(14, 3, 4), npos(15, 3, 5))),
-                lit_with('\n', nspan(npos(15, 3, 5), npos(16, 4, 1))),
-            ])));
+            Ok(concat_with(
+                span_range(pat, 0..pat.len()),
+                vec![
+                    lit_with('f', nspan(npos(0, 1, 1), npos(1, 1, 2))),
+                    lit_with('o', nspan(npos(1, 1, 2), npos(2, 1, 3))),
+                    lit_with('o', nspan(npos(2, 1, 3), npos(3, 1, 4))),
+                    lit_with('b', nspan(npos(3, 1, 4), npos(4, 1, 5))),
+                    lit_with('a', nspan(npos(4, 1, 5), npos(5, 1, 6))),
+                    lit_with('r', nspan(npos(5, 1, 6), npos(6, 1, 7))),
+                    lit_with('\n', nspan(npos(6, 1, 7), npos(7, 2, 1))),
+                    lit_with('b', nspan(npos(7, 2, 1), npos(8, 2, 2))),
+                    lit_with('a', nspan(npos(8, 2, 2), npos(9, 2, 3))),
+                    lit_with('z', nspan(npos(9, 2, 3), npos(10, 2, 4))),
+                    lit_with('\n', nspan(npos(10, 2, 4), npos(11, 3, 1))),
+                    lit_with('q', nspan(npos(11, 3, 1), npos(12, 3, 2))),
+                    lit_with('u', nspan(npos(12, 3, 2), npos(13, 3, 3))),
+                    lit_with('u', nspan(npos(13, 3, 3), npos(14, 3, 4))),
+                    lit_with('x', nspan(npos(14, 3, 4), npos(15, 3, 5))),
+                    lit_with('\n', nspan(npos(15, 3, 5), npos(16, 4, 1))),
+                ]
+            ))
+        );
     }
 
     #[test]
@@ -2865,7 +2918,8 @@ bar
                 },
                 greedy: true,
                 ast: Box::new(lit('a', 0)),
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"a+").parse(),
             Ok(Ast::Repetition(ast::Repetition {
@@ -2876,7 +2930,8 @@ bar
                 },
                 greedy: true,
                 ast: Box::new(lit('a', 0)),
-            })));
+            }))
+        );
 
         assert_eq!(
             parser(r"a?").parse(),
@@ -2888,7 +2943,8 @@ bar
                 },
                 greedy: true,
                 ast: Box::new(lit('a', 0)),
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"a??").parse(),
             Ok(Ast::Repetition(ast::Repetition {
@@ -2899,7 +2955,8 @@ bar
                 },
                 greedy: false,
                 ast: Box::new(lit('a', 0)),
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"a?").parse(),
             Ok(Ast::Repetition(ast::Repetition {
@@ -2910,49 +2967,62 @@ bar
                 },
                 greedy: true,
                 ast: Box::new(lit('a', 0)),
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"a?b").parse(),
-            Ok(concat(0..3, vec![
-                Ast::Repetition(ast::Repetition {
-                    span: span(0..2),
-                    op: ast::RepetitionOp {
-                        span: span(1..2),
-                        kind: ast::RepetitionKind::ZeroOrOne,
-                    },
-                    greedy: true,
-                    ast: Box::new(lit('a', 0)),
-                }),
-                lit('b', 2),
-            ])));
+            Ok(concat(
+                0..3,
+                vec![
+                    Ast::Repetition(ast::Repetition {
+                        span: span(0..2),
+                        op: ast::RepetitionOp {
+                            span: span(1..2),
+                            kind: ast::RepetitionKind::ZeroOrOne,
+                        },
+                        greedy: true,
+                        ast: Box::new(lit('a', 0)),
+                    }),
+                    lit('b', 2),
+                ]
+            ))
+        );
         assert_eq!(
             parser(r"a??b").parse(),
-            Ok(concat(0..4, vec![
-                Ast::Repetition(ast::Repetition {
-                    span: span(0..3),
-                    op: ast::RepetitionOp {
-                        span: span(1..3),
-                        kind: ast::RepetitionKind::ZeroOrOne,
-                    },
-                    greedy: false,
-                    ast: Box::new(lit('a', 0)),
-                }),
-                lit('b', 3),
-            ])));
+            Ok(concat(
+                0..4,
+                vec![
+                    Ast::Repetition(ast::Repetition {
+                        span: span(0..3),
+                        op: ast::RepetitionOp {
+                            span: span(1..3),
+                            kind: ast::RepetitionKind::ZeroOrOne,
+                        },
+                        greedy: false,
+                        ast: Box::new(lit('a', 0)),
+                    }),
+                    lit('b', 3),
+                ]
+            ))
+        );
         assert_eq!(
             parser(r"ab?").parse(),
-            Ok(concat(0..3, vec![
-                lit('a', 0),
-                Ast::Repetition(ast::Repetition {
-                    span: span(1..3),
-                    op: ast::RepetitionOp {
-                        span: span(2..3),
-                        kind: ast::RepetitionKind::ZeroOrOne,
-                    },
-                    greedy: true,
-                    ast: Box::new(lit('b', 1)),
-                }),
-            ])));
+            Ok(concat(
+                0..3,
+                vec![
+                    lit('a', 0),
+                    Ast::Repetition(ast::Repetition {
+                        span: span(1..3),
+                        op: ast::RepetitionOp {
+                            span: span(2..3),
+                            kind: ast::RepetitionKind::ZeroOrOne,
+                        },
+                        greedy: true,
+                        ast: Box::new(lit('b', 1)),
+                    }),
+                ]
+            ))
+        );
         assert_eq!(
             parser(r"(ab)?").parse(),
             Ok(Ast::Repetition(ast::Repetition {
@@ -2962,86 +3032,102 @@ bar
                     kind: ast::RepetitionKind::ZeroOrOne,
                 },
                 greedy: true,
-                ast: Box::new(group(0..4, 1, concat(1..3, vec![
-                    lit('a', 1),
-                    lit('b', 2),
-                ]))),
-            })));
+                ast: Box::new(group(
+                    0..4,
+                    1,
+                    concat(1..3, vec![lit('a', 1), lit('b', 2),])
+                )),
+            }))
+        );
         assert_eq!(
             parser(r"|a?").parse(),
-            Ok(alt(0..3, vec![
-                Ast::Empty(span(0..0)),
-                Ast::Repetition(ast::Repetition {
-                    span: span(1..3),
-                    op: ast::RepetitionOp {
-                        span: span(2..3),
-                        kind: ast::RepetitionKind::ZeroOrOne,
-                    },
-                    greedy: true,
-                    ast: Box::new(lit('a', 1)),
-                }),
-            ])));
+            Ok(alt(
+                0..3,
+                vec![
+                    Ast::Empty(span(0..0)),
+                    Ast::Repetition(ast::Repetition {
+                        span: span(1..3),
+                        op: ast::RepetitionOp {
+                            span: span(2..3),
+                            kind: ast::RepetitionKind::ZeroOrOne,
+                        },
+                        greedy: true,
+                        ast: Box::new(lit('a', 1)),
+                    }),
+                ]
+            ))
+        );
 
         assert_eq!(
             parser(r"*").parse().unwrap_err(),
             TestError {
                 span: span(0..0),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
         assert_eq!(
             parser(r"(?i)*").parse().unwrap_err(),
             TestError {
                 span: span(4..4),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
         assert_eq!(
             parser(r"(*)").parse().unwrap_err(),
             TestError {
                 span: span(1..1),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
         assert_eq!(
             parser(r"(?:?)").parse().unwrap_err(),
             TestError {
                 span: span(3..3),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
         assert_eq!(
             parser(r"+").parse().unwrap_err(),
             TestError {
                 span: span(0..0),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
         assert_eq!(
             parser(r"?").parse().unwrap_err(),
             TestError {
                 span: span(0..0),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
         assert_eq!(
             parser(r"(?)").parse().unwrap_err(),
             TestError {
                 span: span(1..1),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
         assert_eq!(
             parser(r"|*").parse().unwrap_err(),
             TestError {
                 span: span(1..1),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
         assert_eq!(
             parser(r"|+").parse().unwrap_err(),
             TestError {
                 span: span(1..1),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
         assert_eq!(
             parser(r"|?").parse().unwrap_err(),
             TestError {
                 span: span(1..1),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
     }
 
     #[test]
@@ -3053,11 +3139,13 @@ bar
                 op: ast::RepetitionOp {
                     span: span(1..4),
                     kind: ast::RepetitionKind::Range(
-                        ast::RepetitionRange::Exactly(5)),
+                        ast::RepetitionRange::Exactly(5)
+                    ),
                 },
                 greedy: true,
                 ast: Box::new(lit('a', 0)),
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"a{5,}").parse(),
             Ok(Ast::Repetition(ast::Repetition {
@@ -3065,11 +3153,13 @@ bar
                 op: ast::RepetitionOp {
                     span: span(1..5),
                     kind: ast::RepetitionKind::Range(
-                        ast::RepetitionRange::AtLeast(5)),
+                        ast::RepetitionRange::AtLeast(5)
+                    ),
                 },
                 greedy: true,
                 ast: Box::new(lit('a', 0)),
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"a{5,9}").parse(),
             Ok(Ast::Repetition(ast::Repetition {
@@ -3077,11 +3167,13 @@ bar
                 op: ast::RepetitionOp {
                     span: span(1..6),
                     kind: ast::RepetitionKind::Range(
-                        ast::RepetitionRange::Bounded(5, 9)),
+                        ast::RepetitionRange::Bounded(5, 9)
+                    ),
                 },
                 greedy: true,
                 ast: Box::new(lit('a', 0)),
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"a{5}?").parse(),
             Ok(Ast::Repetition(ast::Repetition {
@@ -3089,42 +3181,54 @@ bar
                 op: ast::RepetitionOp {
                     span: span(1..5),
                     kind: ast::RepetitionKind::Range(
-                        ast::RepetitionRange::Exactly(5)),
+                        ast::RepetitionRange::Exactly(5)
+                    ),
                 },
                 greedy: false,
                 ast: Box::new(lit('a', 0)),
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"ab{5}").parse(),
-            Ok(concat(0..5, vec![
-                lit('a', 0),
-                Ast::Repetition(ast::Repetition {
-                    span: span(1..5),
-                    op: ast::RepetitionOp {
-                        span: span(2..5),
-                        kind: ast::RepetitionKind::Range(
-                            ast::RepetitionRange::Exactly(5)),
-                    },
-                    greedy: true,
-                    ast: Box::new(lit('b', 1)),
-                }),
-            ])));
+            Ok(concat(
+                0..5,
+                vec![
+                    lit('a', 0),
+                    Ast::Repetition(ast::Repetition {
+                        span: span(1..5),
+                        op: ast::RepetitionOp {
+                            span: span(2..5),
+                            kind: ast::RepetitionKind::Range(
+                                ast::RepetitionRange::Exactly(5)
+                            ),
+                        },
+                        greedy: true,
+                        ast: Box::new(lit('b', 1)),
+                    }),
+                ]
+            ))
+        );
         assert_eq!(
             parser(r"ab{5}c").parse(),
-            Ok(concat(0..6, vec![
-                lit('a', 0),
-                Ast::Repetition(ast::Repetition {
-                    span: span(1..5),
-                    op: ast::RepetitionOp {
-                        span: span(2..5),
-                        kind: ast::RepetitionKind::Range(
-                            ast::RepetitionRange::Exactly(5)),
-                    },
-                    greedy: true,
-                    ast: Box::new(lit('b', 1)),
-                }),
-                lit('c', 5),
-            ])));
+            Ok(concat(
+                0..6,
+                vec![
+                    lit('a', 0),
+                    Ast::Repetition(ast::Repetition {
+                        span: span(1..5),
+                        op: ast::RepetitionOp {
+                            span: span(2..5),
+                            kind: ast::RepetitionKind::Range(
+                                ast::RepetitionRange::Exactly(5)
+                            ),
+                        },
+                        greedy: true,
+                        ast: Box::new(lit('b', 1)),
+                    }),
+                    lit('c', 5),
+                ]
+            ))
+        );
 
         assert_eq!(
             parser(r"a{ 5 }").parse(),
@@ -3133,11 +3237,13 @@ bar
                 op: ast::RepetitionOp {
                     span: span(1..6),
                     kind: ast::RepetitionKind::Range(
-                        ast::RepetitionRange::Exactly(5)),
+                        ast::RepetitionRange::Exactly(5)
+                    ),
                 },
                 greedy: true,
                 ast: Box::new(lit('a', 0)),
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"a{ 5 , 9 }").parse(),
             Ok(Ast::Repetition(ast::Repetition {
@@ -3145,11 +3251,13 @@ bar
                 op: ast::RepetitionOp {
                     span: span(1..10),
                     kind: ast::RepetitionKind::Range(
-                        ast::RepetitionRange::Bounded(5, 9)),
+                        ast::RepetitionRange::Bounded(5, 9)
+                    ),
                 },
                 greedy: true,
                 ast: Box::new(lit('a', 0)),
-            })));
+            }))
+        );
         assert_eq!(
             parser_ignore_whitespace(r"a{5,9} ?").parse(),
             Ok(Ast::Repetition(ast::Repetition {
@@ -3157,108 +3265,126 @@ bar
                 op: ast::RepetitionOp {
                     span: span(1..8),
                     kind: ast::RepetitionKind::Range(
-                        ast::RepetitionRange::Bounded(5, 9)),
+                        ast::RepetitionRange::Bounded(5, 9)
+                    ),
                 },
                 greedy: false,
                 ast: Box::new(lit('a', 0)),
-            })));
+            }))
+        );
 
         assert_eq!(
             parser(r"(?i){0}").parse().unwrap_err(),
             TestError {
                 span: span(4..4),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
         assert_eq!(
             parser(r"(?m){1,1}").parse().unwrap_err(),
             TestError {
                 span: span(4..4),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
         assert_eq!(
             parser(r"a{]}").parse().unwrap_err(),
             TestError {
                 span: span(2..2),
                 kind: ast::ErrorKind::RepetitionCountDecimalEmpty,
-            });
+            }
+        );
         assert_eq!(
             parser(r"a{1,]}").parse().unwrap_err(),
             TestError {
                 span: span(4..4),
                 kind: ast::ErrorKind::RepetitionCountDecimalEmpty,
-            });
+            }
+        );
         assert_eq!(
             parser(r"a{").parse().unwrap_err(),
             TestError {
                 span: span(1..2),
                 kind: ast::ErrorKind::RepetitionCountUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser(r"a{}").parse().unwrap_err(),
             TestError {
                 span: span(2..2),
                 kind: ast::ErrorKind::RepetitionCountDecimalEmpty,
-            });
+            }
+        );
         assert_eq!(
             parser(r"a{a").parse().unwrap_err(),
             TestError {
                 span: span(2..2),
                 kind: ast::ErrorKind::RepetitionCountDecimalEmpty,
-            });
+            }
+        );
         assert_eq!(
             parser(r"a{9999999999}").parse().unwrap_err(),
             TestError {
                 span: span(2..12),
                 kind: ast::ErrorKind::DecimalInvalid,
-            });
+            }
+        );
         assert_eq!(
             parser(r"a{9").parse().unwrap_err(),
             TestError {
                 span: span(1..3),
                 kind: ast::ErrorKind::RepetitionCountUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser(r"a{9,a").parse().unwrap_err(),
             TestError {
                 span: span(4..4),
                 kind: ast::ErrorKind::RepetitionCountDecimalEmpty,
-            });
+            }
+        );
         assert_eq!(
             parser(r"a{9,9999999999}").parse().unwrap_err(),
             TestError {
                 span: span(4..14),
                 kind: ast::ErrorKind::DecimalInvalid,
-            });
+            }
+        );
         assert_eq!(
             parser(r"a{9,").parse().unwrap_err(),
             TestError {
                 span: span(1..4),
                 kind: ast::ErrorKind::RepetitionCountUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser(r"a{9,11").parse().unwrap_err(),
             TestError {
                 span: span(1..6),
                 kind: ast::ErrorKind::RepetitionCountUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser(r"a{2,1}").parse().unwrap_err(),
             TestError {
                 span: span(1..6),
                 kind: ast::ErrorKind::RepetitionCountInvalid,
-            });
+            }
+        );
         assert_eq!(
             parser(r"{5}").parse().unwrap_err(),
             TestError {
                 span: span(0..0),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
         assert_eq!(
             parser(r"|{5}").parse().unwrap_err(),
             TestError {
                 span: span(1..1),
                 kind: ast::ErrorKind::RepetitionMissing,
-            });
+            }
+        );
     }
 
     #[test]
@@ -3268,20 +3394,27 @@ bar
             Ok(Ast::Alternation(ast::Alternation {
                 span: span(0..3),
                 asts: vec![lit('a', 0), lit('b', 2)],
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"(a|b)").parse(),
-            Ok(group(0..5, 1, Ast::Alternation(ast::Alternation {
-                span: span(1..4),
-                asts: vec![lit('a', 1), lit('b', 3)],
-            }))));
+            Ok(group(
+                0..5,
+                1,
+                Ast::Alternation(ast::Alternation {
+                    span: span(1..4),
+                    asts: vec![lit('a', 1), lit('b', 3)],
+                })
+            ))
+        );
 
         assert_eq!(
             parser(r"a|b|c").parse(),
             Ok(Ast::Alternation(ast::Alternation {
                 span: span(0..5),
                 asts: vec![lit('a', 0), lit('b', 2), lit('c', 4)],
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"ax|by|cz").parse(),
             Ok(Ast::Alternation(ast::Alternation {
@@ -3291,74 +3424,127 @@ bar
                     concat(3..5, vec![lit('b', 3), lit('y', 4)]),
                     concat(6..8, vec![lit('c', 6), lit('z', 7)]),
                 ],
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"(ax|by|cz)").parse(),
-            Ok(group(0..10, 1, Ast::Alternation(ast::Alternation {
-                span: span(1..9),
-                asts: vec![
-                    concat(1..3, vec![lit('a', 1), lit('x', 2)]),
-                    concat(4..6, vec![lit('b', 4), lit('y', 5)]),
-                    concat(7..9, vec![lit('c', 7), lit('z', 8)]),
-                ],
-            }))));
+            Ok(group(
+                0..10,
+                1,
+                Ast::Alternation(ast::Alternation {
+                    span: span(1..9),
+                    asts: vec![
+                        concat(1..3, vec![lit('a', 1), lit('x', 2)]),
+                        concat(4..6, vec![lit('b', 4), lit('y', 5)]),
+                        concat(7..9, vec![lit('c', 7), lit('z', 8)]),
+                    ],
+                })
+            ))
+        );
         assert_eq!(
             parser(r"(ax|(by|(cz)))").parse(),
-            Ok(group(0..14, 1, alt(1..13, vec![
-                concat(1..3, vec![lit('a', 1), lit('x', 2)]),
-                group(4..13, 2, alt(5..12, vec![
-                    concat(5..7, vec![lit('b', 5), lit('y', 6)]),
-                    group(8..12, 3, concat(9..11, vec![
-                        lit('c', 9),
-                        lit('z', 10),
-                    ])),
-                ])),
-            ]))));
+            Ok(group(
+                0..14,
+                1,
+                alt(
+                    1..13,
+                    vec![
+                        concat(1..3, vec![lit('a', 1), lit('x', 2)]),
+                        group(
+                            4..13,
+                            2,
+                            alt(
+                                5..12,
+                                vec![
+                                    concat(
+                                        5..7,
+                                        vec![lit('b', 5), lit('y', 6)]
+                                    ),
+                                    group(
+                                        8..12,
+                                        3,
+                                        concat(
+                                            9..11,
+                                            vec![lit('c', 9), lit('z', 10),]
+                                        )
+                                    ),
+                                ]
+                            )
+                        ),
+                    ]
+                )
+            ))
+        );
 
         assert_eq!(
-            parser(r"|").parse(), Ok(alt(0..1, vec![
-                Ast::Empty(span(0..0)), Ast::Empty(span(1..1)),
-            ])));
+            parser(r"|").parse(),
+            Ok(alt(
+                0..1,
+                vec![Ast::Empty(span(0..0)), Ast::Empty(span(1..1)),]
+            ))
+        );
         assert_eq!(
-            parser(r"||").parse(), Ok(alt(0..2, vec![
-                Ast::Empty(span(0..0)),
-                Ast::Empty(span(1..1)),
-                Ast::Empty(span(2..2)),
-            ])));
+            parser(r"||").parse(),
+            Ok(alt(
+                0..2,
+                vec![
+                    Ast::Empty(span(0..0)),
+                    Ast::Empty(span(1..1)),
+                    Ast::Empty(span(2..2)),
+                ]
+            ))
+        );
         assert_eq!(
-            parser(r"a|").parse(), Ok(alt(0..2, vec![
-                lit('a', 0), Ast::Empty(span(2..2)),
-            ])));
+            parser(r"a|").parse(),
+            Ok(alt(0..2, vec![lit('a', 0), Ast::Empty(span(2..2)),]))
+        );
         assert_eq!(
-            parser(r"|a").parse(), Ok(alt(0..2, vec![
-                Ast::Empty(span(0..0)), lit('a', 1),
-            ])));
+            parser(r"|a").parse(),
+            Ok(alt(0..2, vec![Ast::Empty(span(0..0)), lit('a', 1),]))
+        );
 
         assert_eq!(
-            parser(r"(|)").parse(), Ok(group(0..3, 1, alt(1..2, vec![
-                Ast::Empty(span(1..1)), Ast::Empty(span(2..2)),
-            ]))));
+            parser(r"(|)").parse(),
+            Ok(group(
+                0..3,
+                1,
+                alt(
+                    1..2,
+                    vec![Ast::Empty(span(1..1)), Ast::Empty(span(2..2)),]
+                )
+            ))
+        );
         assert_eq!(
-            parser(r"(a|)").parse(), Ok(group(0..4, 1, alt(1..3, vec![
-                lit('a', 1), Ast::Empty(span(3..3)),
-            ]))));
+            parser(r"(a|)").parse(),
+            Ok(group(
+                0..4,
+                1,
+                alt(1..3, vec![lit('a', 1), Ast::Empty(span(3..3)),])
+            ))
+        );
         assert_eq!(
-            parser(r"(|a)").parse(), Ok(group(0..4, 1, alt(1..3, vec![
-                Ast::Empty(span(1..1)), lit('a', 2),
-            ]))));
+            parser(r"(|a)").parse(),
+            Ok(group(
+                0..4,
+                1,
+                alt(1..3, vec![Ast::Empty(span(1..1)), lit('a', 2),])
+            ))
+        );
 
         assert_eq!(
             parser(r"a|b)").parse().unwrap_err(),
             TestError {
                 span: span(3..4),
                 kind: ast::ErrorKind::GroupUnopened,
-            });
+            }
+        );
         assert_eq!(
             parser(r"(a|b").parse().unwrap_err(),
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::GroupUnclosed,
-            });
+            }
+        );
     }
 
     #[test]
@@ -3368,257 +3554,319 @@ bar
             TestError {
                 span: span(0..3),
                 kind: ast::ErrorKind::UnsupportedLookAround,
-            });
+            }
+        );
         assert_eq!(
             parser(r"(?!a)").parse().unwrap_err(),
             TestError {
                 span: span(0..3),
                 kind: ast::ErrorKind::UnsupportedLookAround,
-            });
+            }
+        );
         assert_eq!(
             parser(r"(?<=a)").parse().unwrap_err(),
             TestError {
                 span: span(0..4),
                 kind: ast::ErrorKind::UnsupportedLookAround,
-            });
+            }
+        );
         assert_eq!(
             parser(r"(?<!a)").parse().unwrap_err(),
             TestError {
                 span: span(0..4),
                 kind: ast::ErrorKind::UnsupportedLookAround,
-            });
+            }
+        );
     }
 
     #[test]
     fn parse_group() {
-        assert_eq!(parser("(?i)").parse(), Ok(Ast::Flags(ast::SetFlags {
-            span: span(0..4),
-            flags: ast::Flags {
-                span: span(2..3),
-                items: vec![ast::FlagsItem {
+        assert_eq!(
+            parser("(?i)").parse(),
+            Ok(Ast::Flags(ast::SetFlags {
+                span: span(0..4),
+                flags: ast::Flags {
                     span: span(2..3),
-                    kind: ast::FlagsItemKind::Flag(ast::Flag::CaseInsensitive),
-                }],
-            },
-        })));
-        assert_eq!(parser("(?iU)").parse(), Ok(Ast::Flags(ast::SetFlags {
-            span: span(0..5),
-            flags: ast::Flags {
-                span: span(2..4),
-                items: vec![
-                    ast::FlagsItem {
+                    items: vec![ast::FlagsItem {
                         span: span(2..3),
                         kind: ast::FlagsItemKind::Flag(
-                            ast::Flag::CaseInsensitive),
-                    },
-                    ast::FlagsItem {
-                        span: span(3..4),
-                        kind: ast::FlagsItemKind::Flag(ast::Flag::SwapGreed),
-                    },
-                ],
-            },
-        })));
-        assert_eq!(parser("(?i-U)").parse(), Ok(Ast::Flags(ast::SetFlags {
-            span: span(0..6),
-            flags: ast::Flags {
-                span: span(2..5),
-                items: vec![
-                    ast::FlagsItem {
-                        span: span(2..3),
-                        kind: ast::FlagsItemKind::Flag(
-                            ast::Flag::CaseInsensitive),
-                    },
-                    ast::FlagsItem {
-                        span: span(3..4),
-                        kind: ast::FlagsItemKind::Negation,
-                    },
-                    ast::FlagsItem {
-                        span: span(4..5),
-                        kind: ast::FlagsItemKind::Flag(ast::Flag::SwapGreed),
-                    },
-                ],
-            },
-        })));
+                            ast::Flag::CaseInsensitive
+                        ),
+                    }],
+                },
+            }))
+        );
+        assert_eq!(
+            parser("(?iU)").parse(),
+            Ok(Ast::Flags(ast::SetFlags {
+                span: span(0..5),
+                flags: ast::Flags {
+                    span: span(2..4),
+                    items: vec![
+                        ast::FlagsItem {
+                            span: span(2..3),
+                            kind: ast::FlagsItemKind::Flag(
+                                ast::Flag::CaseInsensitive
+                            ),
+                        },
+                        ast::FlagsItem {
+                            span: span(3..4),
+                            kind: ast::FlagsItemKind::Flag(
+                                ast::Flag::SwapGreed
+                            ),
+                        },
+                    ],
+                },
+            }))
+        );
+        assert_eq!(
+            parser("(?i-U)").parse(),
+            Ok(Ast::Flags(ast::SetFlags {
+                span: span(0..6),
+                flags: ast::Flags {
+                    span: span(2..5),
+                    items: vec![
+                        ast::FlagsItem {
+                            span: span(2..3),
+                            kind: ast::FlagsItemKind::Flag(
+                                ast::Flag::CaseInsensitive
+                            ),
+                        },
+                        ast::FlagsItem {
+                            span: span(3..4),
+                            kind: ast::FlagsItemKind::Negation,
+                        },
+                        ast::FlagsItem {
+                            span: span(4..5),
+                            kind: ast::FlagsItemKind::Flag(
+                                ast::Flag::SwapGreed
+                            ),
+                        },
+                    ],
+                },
+            }))
+        );
 
-        assert_eq!(parser("()").parse(), Ok(Ast::Group(ast::Group {
-            span: span(0..2),
-            kind: ast::GroupKind::CaptureIndex(1),
-            ast: Box::new(Ast::Empty(span(1..1))),
-        })));
-        assert_eq!(parser("(a)").parse(), Ok(Ast::Group(ast::Group {
-            span: span(0..3),
-            kind: ast::GroupKind::CaptureIndex(1),
-            ast: Box::new(lit('a', 1)),
-        })));
-        assert_eq!(parser("(())").parse(), Ok(Ast::Group(ast::Group {
-            span: span(0..4),
-            kind: ast::GroupKind::CaptureIndex(1),
-            ast: Box::new(Ast::Group(ast::Group {
-                span: span(1..3),
-                kind: ast::GroupKind::CaptureIndex(2),
-                ast: Box::new(Ast::Empty(span(2..2))),
-            })),
-        })));
+        assert_eq!(
+            parser("()").parse(),
+            Ok(Ast::Group(ast::Group {
+                span: span(0..2),
+                kind: ast::GroupKind::CaptureIndex(1),
+                ast: Box::new(Ast::Empty(span(1..1))),
+            }))
+        );
+        assert_eq!(
+            parser("(a)").parse(),
+            Ok(Ast::Group(ast::Group {
+                span: span(0..3),
+                kind: ast::GroupKind::CaptureIndex(1),
+                ast: Box::new(lit('a', 1)),
+            }))
+        );
+        assert_eq!(
+            parser("(())").parse(),
+            Ok(Ast::Group(ast::Group {
+                span: span(0..4),
+                kind: ast::GroupKind::CaptureIndex(1),
+                ast: Box::new(Ast::Group(ast::Group {
+                    span: span(1..3),
+                    kind: ast::GroupKind::CaptureIndex(2),
+                    ast: Box::new(Ast::Empty(span(2..2))),
+                })),
+            }))
+        );
 
-        assert_eq!(parser("(?:a)").parse(), Ok(Ast::Group(ast::Group {
-            span: span(0..5),
-            kind: ast::GroupKind::NonCapturing(ast::Flags {
-                span: span(2..2),
-                items: vec![],
-            }),
-            ast: Box::new(lit('a', 3)),
-        })));
+        assert_eq!(
+            parser("(?:a)").parse(),
+            Ok(Ast::Group(ast::Group {
+                span: span(0..5),
+                kind: ast::GroupKind::NonCapturing(ast::Flags {
+                    span: span(2..2),
+                    items: vec![],
+                }),
+                ast: Box::new(lit('a', 3)),
+            }))
+        );
 
-        assert_eq!(parser("(?i:a)").parse(), Ok(Ast::Group(ast::Group {
-            span: span(0..6),
-            kind: ast::GroupKind::NonCapturing(ast::Flags {
-                span: span(2..3),
-                items: vec![
-                    ast::FlagsItem {
+        assert_eq!(
+            parser("(?i:a)").parse(),
+            Ok(Ast::Group(ast::Group {
+                span: span(0..6),
+                kind: ast::GroupKind::NonCapturing(ast::Flags {
+                    span: span(2..3),
+                    items: vec![ast::FlagsItem {
                         span: span(2..3),
                         kind: ast::FlagsItemKind::Flag(
-                            ast::Flag::CaseInsensitive),
-                    },
-                ],
-            }),
-            ast: Box::new(lit('a', 4)),
-        })));
-        assert_eq!(parser("(?i-U:a)").parse(), Ok(Ast::Group(ast::Group {
-            span: span(0..8),
-            kind: ast::GroupKind::NonCapturing(ast::Flags {
-                span: span(2..5),
-                items: vec![
-                    ast::FlagsItem {
-                        span: span(2..3),
-                        kind: ast::FlagsItemKind::Flag(
-                            ast::Flag::CaseInsensitive),
-                    },
-                    ast::FlagsItem {
-                        span: span(3..4),
-                        kind: ast::FlagsItemKind::Negation,
-                    },
-                    ast::FlagsItem {
-                        span: span(4..5),
-                        kind: ast::FlagsItemKind::Flag(ast::Flag::SwapGreed),
-                    },
-                ],
-            }),
-            ast: Box::new(lit('a', 6)),
-        })));
+                            ast::Flag::CaseInsensitive
+                        ),
+                    },],
+                }),
+                ast: Box::new(lit('a', 4)),
+            }))
+        );
+        assert_eq!(
+            parser("(?i-U:a)").parse(),
+            Ok(Ast::Group(ast::Group {
+                span: span(0..8),
+                kind: ast::GroupKind::NonCapturing(ast::Flags {
+                    span: span(2..5),
+                    items: vec![
+                        ast::FlagsItem {
+                            span: span(2..3),
+                            kind: ast::FlagsItemKind::Flag(
+                                ast::Flag::CaseInsensitive
+                            ),
+                        },
+                        ast::FlagsItem {
+                            span: span(3..4),
+                            kind: ast::FlagsItemKind::Negation,
+                        },
+                        ast::FlagsItem {
+                            span: span(4..5),
+                            kind: ast::FlagsItemKind::Flag(
+                                ast::Flag::SwapGreed
+                            ),
+                        },
+                    ],
+                }),
+                ast: Box::new(lit('a', 6)),
+            }))
+        );
 
         assert_eq!(
             parser("(").parse().unwrap_err(),
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::GroupUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser("(?").parse().unwrap_err(),
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::GroupUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser("(?P").parse().unwrap_err(),
             TestError {
                 span: span(2..3),
                 kind: ast::ErrorKind::FlagUnrecognized,
-            });
+            }
+        );
         assert_eq!(
             parser("(?P<").parse().unwrap_err(),
             TestError {
                 span: span(4..4),
                 kind: ast::ErrorKind::GroupNameUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser("(a").parse().unwrap_err(),
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::GroupUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser("(()").parse().unwrap_err(),
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::GroupUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser(")").parse().unwrap_err(),
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::GroupUnopened,
-            });
+            }
+        );
         assert_eq!(
             parser("a)").parse().unwrap_err(),
             TestError {
                 span: span(1..2),
                 kind: ast::ErrorKind::GroupUnopened,
-            });
+            }
+        );
     }
 
     #[test]
     fn parse_capture_name() {
-        assert_eq!(parser("(?P<a>z)").parse(), Ok(Ast::Group(ast::Group {
-            span: span(0..8),
-            kind: ast::GroupKind::CaptureName(ast::CaptureName {
-                span: span(4..5),
-                name: s("a"),
-                index: 1,
-            }),
-            ast: Box::new(lit('z', 6)),
-        })));
-        assert_eq!(parser("(?P<abc>z)").parse(), Ok(Ast::Group(ast::Group {
-            span: span(0..10),
-            kind: ast::GroupKind::CaptureName(ast::CaptureName {
-                span: span(4..7),
-                name: s("abc"),
-                index: 1,
-            }),
-            ast: Box::new(lit('z', 8)),
-        })));
+        assert_eq!(
+            parser("(?P<a>z)").parse(),
+            Ok(Ast::Group(ast::Group {
+                span: span(0..8),
+                kind: ast::GroupKind::CaptureName(ast::CaptureName {
+                    span: span(4..5),
+                    name: s("a"),
+                    index: 1,
+                }),
+                ast: Box::new(lit('z', 6)),
+            }))
+        );
+        assert_eq!(
+            parser("(?P<abc>z)").parse(),
+            Ok(Ast::Group(ast::Group {
+                span: span(0..10),
+                kind: ast::GroupKind::CaptureName(ast::CaptureName {
+                    span: span(4..7),
+                    name: s("abc"),
+                    index: 1,
+                }),
+                ast: Box::new(lit('z', 8)),
+            }))
+        );
 
         assert_eq!(
             parser("(?P<").parse().unwrap_err(),
             TestError {
                 span: span(4..4),
                 kind: ast::ErrorKind::GroupNameUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser("(?P<>z)").parse().unwrap_err(),
             TestError {
                 span: span(4..4),
                 kind: ast::ErrorKind::GroupNameEmpty,
-            });
+            }
+        );
         assert_eq!(
             parser("(?P<a").parse().unwrap_err(),
             TestError {
                 span: span(5..5),
                 kind: ast::ErrorKind::GroupNameUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser("(?P<ab").parse().unwrap_err(),
             TestError {
                 span: span(6..6),
                 kind: ast::ErrorKind::GroupNameUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser("(?P<0a").parse().unwrap_err(),
             TestError {
                 span: span(4..5),
                 kind: ast::ErrorKind::GroupNameInvalid,
-            });
+            }
+        );
         assert_eq!(
             parser("(?P<~").parse().unwrap_err(),
             TestError {
                 span: span(4..5),
                 kind: ast::ErrorKind::GroupNameInvalid,
-            });
+            }
+        );
         assert_eq!(
             parser("(?P<abc~").parse().unwrap_err(),
             TestError {
                 span: span(7..8),
                 kind: ast::ErrorKind::GroupNameInvalid,
-            });
+            }
+        );
         assert_eq!(
             parser("(?P<a>y)(?P<a>z)").parse().unwrap_err(),
             TestError {
@@ -3626,110 +3874,136 @@ bar
                 kind: ast::ErrorKind::GroupNameDuplicate {
                     original: span(4..5),
                 },
-            });
+            }
+        );
     }
 
     #[test]
     fn parse_flags() {
-        assert_eq!(parser("i:").parse_flags(), Ok(ast::Flags {
-            span: span(0..1),
-            items: vec![ast::FlagsItem {
+        assert_eq!(
+            parser("i:").parse_flags(),
+            Ok(ast::Flags {
                 span: span(0..1),
-                kind: ast::FlagsItemKind::Flag(ast::Flag::CaseInsensitive),
-            }],
-        }));
-        assert_eq!(parser("i)").parse_flags(), Ok(ast::Flags {
-            span: span(0..1),
-            items: vec![ast::FlagsItem {
+                items: vec![ast::FlagsItem {
+                    span: span(0..1),
+                    kind: ast::FlagsItemKind::Flag(ast::Flag::CaseInsensitive),
+                }],
+            })
+        );
+        assert_eq!(
+            parser("i)").parse_flags(),
+            Ok(ast::Flags {
                 span: span(0..1),
-                kind: ast::FlagsItemKind::Flag(ast::Flag::CaseInsensitive),
-            }],
-        }));
+                items: vec![ast::FlagsItem {
+                    span: span(0..1),
+                    kind: ast::FlagsItemKind::Flag(ast::Flag::CaseInsensitive),
+                }],
+            })
+        );
 
-        assert_eq!(parser("isU:").parse_flags(), Ok(ast::Flags {
-            span: span(0..3),
-            items: vec![
-                ast::FlagsItem {
-                    span: span(0..1),
-                    kind: ast::FlagsItemKind::Flag(ast::Flag::CaseInsensitive),
-                },
-                ast::FlagsItem {
-                    span: span(1..2),
-                    kind: ast::FlagsItemKind::Flag(
-                        ast::Flag::DotMatchesNewLine),
-                },
-                ast::FlagsItem {
-                    span: span(2..3),
-                    kind: ast::FlagsItemKind::Flag(ast::Flag::SwapGreed),
-                },
-            ],
-        }));
+        assert_eq!(
+            parser("isU:").parse_flags(),
+            Ok(ast::Flags {
+                span: span(0..3),
+                items: vec![
+                    ast::FlagsItem {
+                        span: span(0..1),
+                        kind: ast::FlagsItemKind::Flag(
+                            ast::Flag::CaseInsensitive
+                        ),
+                    },
+                    ast::FlagsItem {
+                        span: span(1..2),
+                        kind: ast::FlagsItemKind::Flag(
+                            ast::Flag::DotMatchesNewLine
+                        ),
+                    },
+                    ast::FlagsItem {
+                        span: span(2..3),
+                        kind: ast::FlagsItemKind::Flag(ast::Flag::SwapGreed),
+                    },
+                ],
+            })
+        );
 
-        assert_eq!(parser("-isU:").parse_flags(), Ok(ast::Flags {
-            span: span(0..4),
-            items: vec![
-                ast::FlagsItem {
-                    span: span(0..1),
-                    kind: ast::FlagsItemKind::Negation,
-                },
-                ast::FlagsItem {
-                    span: span(1..2),
-                    kind: ast::FlagsItemKind::Flag(ast::Flag::CaseInsensitive),
-                },
-                ast::FlagsItem {
-                    span: span(2..3),
-                    kind: ast::FlagsItemKind::Flag(
-                        ast::Flag::DotMatchesNewLine),
-                },
-                ast::FlagsItem {
-                    span: span(3..4),
-                    kind: ast::FlagsItemKind::Flag(ast::Flag::SwapGreed),
-                },
-            ],
-        }));
-        assert_eq!(parser("i-sU:").parse_flags(), Ok(ast::Flags {
-            span: span(0..4),
-            items: vec![
-                ast::FlagsItem {
-                    span: span(0..1),
-                    kind: ast::FlagsItemKind::Flag(ast::Flag::CaseInsensitive),
-                },
-                ast::FlagsItem {
-                    span: span(1..2),
-                    kind: ast::FlagsItemKind::Negation,
-                },
-                ast::FlagsItem {
-                    span: span(2..3),
-                    kind: ast::FlagsItemKind::Flag(
-                        ast::Flag::DotMatchesNewLine),
-                },
-                ast::FlagsItem {
-                    span: span(3..4),
-                    kind: ast::FlagsItemKind::Flag(ast::Flag::SwapGreed),
-                },
-            ],
-        }));
+        assert_eq!(
+            parser("-isU:").parse_flags(),
+            Ok(ast::Flags {
+                span: span(0..4),
+                items: vec![
+                    ast::FlagsItem {
+                        span: span(0..1),
+                        kind: ast::FlagsItemKind::Negation,
+                    },
+                    ast::FlagsItem {
+                        span: span(1..2),
+                        kind: ast::FlagsItemKind::Flag(
+                            ast::Flag::CaseInsensitive
+                        ),
+                    },
+                    ast::FlagsItem {
+                        span: span(2..3),
+                        kind: ast::FlagsItemKind::Flag(
+                            ast::Flag::DotMatchesNewLine
+                        ),
+                    },
+                    ast::FlagsItem {
+                        span: span(3..4),
+                        kind: ast::FlagsItemKind::Flag(ast::Flag::SwapGreed),
+                    },
+                ],
+            })
+        );
+        assert_eq!(
+            parser("i-sU:").parse_flags(),
+            Ok(ast::Flags {
+                span: span(0..4),
+                items: vec![
+                    ast::FlagsItem {
+                        span: span(0..1),
+                        kind: ast::FlagsItemKind::Flag(
+                            ast::Flag::CaseInsensitive
+                        ),
+                    },
+                    ast::FlagsItem {
+                        span: span(1..2),
+                        kind: ast::FlagsItemKind::Negation,
+                    },
+                    ast::FlagsItem {
+                        span: span(2..3),
+                        kind: ast::FlagsItemKind::Flag(
+                            ast::Flag::DotMatchesNewLine
+                        ),
+                    },
+                    ast::FlagsItem {
+                        span: span(3..4),
+                        kind: ast::FlagsItemKind::Flag(ast::Flag::SwapGreed),
+                    },
+                ],
+            })
+        );
 
         assert_eq!(
             parser("isU").parse_flags().unwrap_err(),
             TestError {
                 span: span(3..3),
                 kind: ast::ErrorKind::FlagUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser("isUa:").parse_flags().unwrap_err(),
             TestError {
                 span: span(3..4),
                 kind: ast::ErrorKind::FlagUnrecognized,
-            });
+            }
+        );
         assert_eq!(
             parser("isUi:").parse_flags().unwrap_err(),
             TestError {
                 span: span(3..4),
-                kind: ast::ErrorKind::FlagDuplicate {
-                    original: span(0..1),
-                },
-            });
+                kind: ast::ErrorKind::FlagDuplicate { original: span(0..1) },
+            }
+        );
         assert_eq!(
             parser("i-sU-i:").parse_flags().unwrap_err(),
             TestError {
@@ -3737,25 +4011,29 @@ bar
                 kind: ast::ErrorKind::FlagRepeatedNegation {
                     original: span(1..2),
                 },
-            });
+            }
+        );
         assert_eq!(
             parser("-)").parse_flags().unwrap_err(),
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::FlagDanglingNegation,
-            });
+            }
+        );
         assert_eq!(
             parser("i-)").parse_flags().unwrap_err(),
             TestError {
                 span: span(1..2),
                 kind: ast::ErrorKind::FlagDanglingNegation,
-            });
+            }
+        );
         assert_eq!(
             parser("iU-)").parse_flags().unwrap_err(),
             TestError {
                 span: span(2..3),
                 kind: ast::ErrorKind::FlagDanglingNegation,
-            });
+            }
+        );
     }
 
     #[test]
@@ -3772,32 +4050,37 @@ bar
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::FlagUnrecognized,
-            });
+            }
+        );
         assert_eq!(
             parser("☃").parse_flag().unwrap_err(),
             TestError {
                 span: span_range("☃", 0..3),
                 kind: ast::ErrorKind::FlagUnrecognized,
-            });
+            }
+        );
     }
 
     #[test]
     fn parse_primitive_non_escape() {
         assert_eq!(
             parser(r".").parse_primitive(),
-            Ok(Primitive::Dot(span(0..1))));
+            Ok(Primitive::Dot(span(0..1)))
+        );
         assert_eq!(
             parser(r"^").parse_primitive(),
             Ok(Primitive::Assertion(ast::Assertion {
                 span: span(0..1),
                 kind: ast::AssertionKind::StartLine,
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"$").parse_primitive(),
             Ok(Primitive::Assertion(ast::Assertion {
                 span: span(0..1),
                 kind: ast::AssertionKind::EndLine,
-            })));
+            }))
+        );
 
         assert_eq!(
             parser(r"a").parse_primitive(),
@@ -3805,21 +4088,24 @@ bar
                 span: span(0..1),
                 kind: ast::LiteralKind::Verbatim,
                 c: 'a',
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"|").parse_primitive(),
             Ok(Primitive::Literal(ast::Literal {
                 span: span(0..1),
                 kind: ast::LiteralKind::Verbatim,
                 c: '|',
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"☃").parse_primitive(),
             Ok(Primitive::Literal(ast::Literal {
                 span: span_range("☃", 0..3),
                 kind: ast::LiteralKind::Verbatim,
                 c: '☃',
-            })));
+            }))
+        );
     }
 
     #[test]
@@ -3830,7 +4116,8 @@ bar
                 span: span(0..2),
                 kind: ast::LiteralKind::Punctuation,
                 c: '|',
-            })));
+            }))
+        );
         let specials = &[
             (r"\a", '\x07', ast::SpecialLiteralKind::Bell),
             (r"\f", '\x0C', ast::SpecialLiteralKind::FormFeed),
@@ -3846,45 +4133,52 @@ bar
                     span: span(0..2),
                     kind: ast::LiteralKind::Special(kind.clone()),
                     c: c,
-                })));
+                }))
+            );
         }
         assert_eq!(
             parser(r"\A").parse_primitive(),
             Ok(Primitive::Assertion(ast::Assertion {
                 span: span(0..2),
                 kind: ast::AssertionKind::StartText,
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\z").parse_primitive(),
             Ok(Primitive::Assertion(ast::Assertion {
                 span: span(0..2),
                 kind: ast::AssertionKind::EndText,
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\b").parse_primitive(),
             Ok(Primitive::Assertion(ast::Assertion {
                 span: span(0..2),
                 kind: ast::AssertionKind::WordBoundary,
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\B").parse_primitive(),
             Ok(Primitive::Assertion(ast::Assertion {
                 span: span(0..2),
                 kind: ast::AssertionKind::NotWordBoundary,
-            })));
+            }))
+        );
 
         assert_eq!(
             parser(r"\").parse_escape().unwrap_err(),
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::EscapeUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\y").parse_escape().unwrap_err(),
             TestError {
                 span: span(0..2),
                 kind: ast::ErrorKind::EscapeUnrecognized,
-            });
+            }
+        );
     }
 
     #[test]
@@ -3894,13 +4188,15 @@ bar
             TestError {
                 span: span(0..2),
                 kind: ast::ErrorKind::UnsupportedBackreference,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\9").parse_escape().unwrap_err(),
             TestError {
                 span: span(0..2),
                 kind: ast::ErrorKind::UnsupportedBackreference,
-            });
+            }
+        );
     }
 
     #[test]
@@ -3913,7 +4209,8 @@ bar
                     span: span(0..pat.len()),
                     kind: ast::LiteralKind::Octal,
                     c: ::std::char::from_u32(i).unwrap(),
-                })));
+                }))
+            );
         }
         assert_eq!(
             parser_octal(r"\778").parse_escape(),
@@ -3921,14 +4218,16 @@ bar
                 span: span(0..3),
                 kind: ast::LiteralKind::Octal,
                 c: '?',
-            })));
+            }))
+        );
         assert_eq!(
             parser_octal(r"\7777").parse_escape(),
             Ok(Primitive::Literal(ast::Literal {
                 span: span(0..4),
                 kind: ast::LiteralKind::Octal,
                 c: '\u{01FF}',
-            })));
+            }))
+        );
         assert_eq!(
             parser_octal(r"\778").parse(),
             Ok(Ast::Concat(ast::Concat {
@@ -3945,7 +4244,8 @@ bar
                         c: '8',
                     }),
                 ],
-            })));
+            }))
+        );
         assert_eq!(
             parser_octal(r"\7777").parse(),
             Ok(Ast::Concat(ast::Concat {
@@ -3962,14 +4262,16 @@ bar
                         c: '7',
                     }),
                 ],
-            })));
+            }))
+        );
 
         assert_eq!(
             parser_octal(r"\8").parse_escape().unwrap_err(),
             TestError {
                 span: span(0..2),
                 kind: ast::ErrorKind::EscapeUnrecognized,
-            });
+            }
+        );
     }
 
     #[test]
@@ -3982,7 +4284,8 @@ bar
                     span: span(0..pat.len()),
                     kind: ast::LiteralKind::HexFixed(ast::HexLiteralKind::X),
                     c: ::std::char::from_u32(i).unwrap(),
-                })));
+                }))
+            );
         }
 
         assert_eq!(
@@ -3990,19 +4293,22 @@ bar
             TestError {
                 span: span(3..3),
                 kind: ast::ErrorKind::EscapeUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\xG").parse_escape().unwrap_err(),
             TestError {
                 span: span(2..3),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\xFG").parse_escape().unwrap_err(),
             TestError {
                 span: span(3..4),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
     }
 
     #[test]
@@ -4018,9 +4324,11 @@ bar
                 Ok(Primitive::Literal(ast::Literal {
                     span: span(0..pat.len()),
                     kind: ast::LiteralKind::HexFixed(
-                        ast::HexLiteralKind::UnicodeShort),
+                        ast::HexLiteralKind::UnicodeShort
+                    ),
                     c: c,
-                })));
+                }))
+            );
         }
 
         assert_eq!(
@@ -4028,37 +4336,43 @@ bar
             TestError {
                 span: span(3..3),
                 kind: ast::ErrorKind::EscapeUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\uG").parse_escape().unwrap_err(),
             TestError {
                 span: span(2..3),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\uFG").parse_escape().unwrap_err(),
             TestError {
                 span: span(3..4),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\uFFG").parse_escape().unwrap_err(),
             TestError {
                 span: span(4..5),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\uFFFG").parse_escape().unwrap_err(),
             TestError {
                 span: span(5..6),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\uD800").parse_escape().unwrap_err(),
             TestError {
                 span: span(2..6),
                 kind: ast::ErrorKind::EscapeHexInvalid,
-            });
+            }
+        );
     }
 
     #[test]
@@ -4074,9 +4388,11 @@ bar
                 Ok(Primitive::Literal(ast::Literal {
                     span: span(0..pat.len()),
                     kind: ast::LiteralKind::HexFixed(
-                        ast::HexLiteralKind::UnicodeLong),
+                        ast::HexLiteralKind::UnicodeLong
+                    ),
                     c: c,
-                })));
+                }))
+            );
         }
 
         assert_eq!(
@@ -4084,55 +4400,64 @@ bar
             TestError {
                 span: span(3..3),
                 kind: ast::ErrorKind::EscapeUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\UG").parse_escape().unwrap_err(),
             TestError {
                 span: span(2..3),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\UFG").parse_escape().unwrap_err(),
             TestError {
                 span: span(3..4),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\UFFG").parse_escape().unwrap_err(),
             TestError {
                 span: span(4..5),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\UFFFG").parse_escape().unwrap_err(),
             TestError {
                 span: span(5..6),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\UFFFFG").parse_escape().unwrap_err(),
             TestError {
                 span: span(6..7),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\UFFFFFG").parse_escape().unwrap_err(),
             TestError {
                 span: span(7..8),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\UFFFFFFG").parse_escape().unwrap_err(),
             TestError {
                 span: span(8..9),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\UFFFFFFFG").parse_escape().unwrap_err(),
             TestError {
                 span: span(9..10),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
     }
 
     #[test]
@@ -4142,87 +4467,102 @@ bar
             Ok(Primitive::Literal(ast::Literal {
                 span: span(0..8),
                 kind: ast::LiteralKind::HexBrace(
-                    ast::HexLiteralKind::UnicodeShort),
+                    ast::HexLiteralKind::UnicodeShort
+                ),
                 c: '⛄',
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\U{26c4}").parse_escape(),
             Ok(Primitive::Literal(ast::Literal {
                 span: span(0..8),
                 kind: ast::LiteralKind::HexBrace(
-                    ast::HexLiteralKind::UnicodeLong),
+                    ast::HexLiteralKind::UnicodeLong
+                ),
                 c: '⛄',
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\x{26c4}").parse_escape(),
             Ok(Primitive::Literal(ast::Literal {
                 span: span(0..8),
                 kind: ast::LiteralKind::HexBrace(ast::HexLiteralKind::X),
                 c: '⛄',
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\x{26C4}").parse_escape(),
             Ok(Primitive::Literal(ast::Literal {
                 span: span(0..8),
                 kind: ast::LiteralKind::HexBrace(ast::HexLiteralKind::X),
                 c: '⛄',
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\x{10fFfF}").parse_escape(),
             Ok(Primitive::Literal(ast::Literal {
                 span: span(0..10),
                 kind: ast::LiteralKind::HexBrace(ast::HexLiteralKind::X),
                 c: '\u{10FFFF}',
-            })));
+            }))
+        );
 
         assert_eq!(
             parser(r"\x").parse_escape().unwrap_err(),
             TestError {
                 span: span(2..2),
                 kind: ast::ErrorKind::EscapeUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\x{").parse_escape().unwrap_err(),
             TestError {
                 span: span(2..3),
                 kind: ast::ErrorKind::EscapeUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\x{FF").parse_escape().unwrap_err(),
             TestError {
                 span: span(2..5),
                 kind: ast::ErrorKind::EscapeUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\x{}").parse_escape().unwrap_err(),
             TestError {
                 span: span(2..4),
                 kind: ast::ErrorKind::EscapeHexEmpty,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\x{FGF}").parse_escape().unwrap_err(),
             TestError {
                 span: span(4..5),
                 kind: ast::ErrorKind::EscapeHexInvalidDigit,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\x{FFFFFF}").parse_escape().unwrap_err(),
             TestError {
                 span: span(3..9),
                 kind: ast::ErrorKind::EscapeHexInvalid,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\x{D800}").parse_escape().unwrap_err(),
             TestError {
                 span: span(3..7),
                 kind: ast::ErrorKind::EscapeHexInvalid,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\x{FFFFFFFFF}").parse_escape().unwrap_err(),
             TestError {
                 span: span(3..12),
                 kind: ast::ErrorKind::EscapeHexInvalid,
-            });
+            }
+        );
     }
 
     #[test]
@@ -4233,22 +4573,19 @@ bar
 
         assert_eq!(
             parser("-1").parse_decimal().unwrap_err(),
-            TestError {
-                span: span(0..0),
-                kind: ast::ErrorKind::DecimalEmpty,
-            });
+            TestError { span: span(0..0), kind: ast::ErrorKind::DecimalEmpty }
+        );
         assert_eq!(
             parser("").parse_decimal().unwrap_err(),
-            TestError {
-                span: span(0..0),
-                kind: ast::ErrorKind::DecimalEmpty,
-            });
+            TestError { span: span(0..0), kind: ast::ErrorKind::DecimalEmpty }
+        );
         assert_eq!(
             parser("9999999999").parse_decimal().unwrap_err(),
             TestError {
                 span: span(0..10),
                 kind: ast::ErrorKind::DecimalInvalid,
-            });
+            }
+        );
     }
 
     #[test]
@@ -4379,7 +4716,8 @@ bar
                 span: span(0..11),
                 negated: false,
                 kind: itemset(item_ascii(alnum(span(1..10), false))),
-            }))));
+            })))
+        );
         assert_eq!(
             parser("[[[:alnum:]]]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
@@ -4390,7 +4728,8 @@ bar
                     negated: false,
                     kind: itemset(item_ascii(alnum(span(2..11), false))),
                 })),
-            }))));
+            })))
+        );
         assert_eq!(
             parser("[[:alnum:]&&[:lower:]]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
@@ -4401,7 +4740,8 @@ bar
                     itemset(item_ascii(alnum(span(1..10), false))),
                     itemset(item_ascii(lower(span(12..21), false))),
                 ),
-            }))));
+            })))
+        );
         assert_eq!(
             parser("[[:alnum:]--[:lower:]]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
@@ -4412,7 +4752,8 @@ bar
                     itemset(item_ascii(alnum(span(1..10), false))),
                     itemset(item_ascii(lower(span(12..21), false))),
                 ),
-            }))));
+            })))
+        );
         assert_eq!(
             parser("[[:alnum:]~~[:lower:]]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
@@ -4423,7 +4764,8 @@ bar
                     itemset(item_ascii(alnum(span(1..10), false))),
                     itemset(item_ascii(lower(span(12..21), false))),
                 ),
-            }))));
+            })))
+        );
 
         assert_eq!(
             parser("[a]").parse(),
@@ -4431,66 +4773,78 @@ bar
                 span: span(0..3),
                 negated: false,
                 kind: itemset(lit(span(1..2), 'a')),
-            }))));
+            })))
+        );
         assert_eq!(
             parser(r"[a\]]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
                 span: span(0..5),
                 negated: false,
-                kind: union(span(1..4), vec![
-                    lit(span(1..2), 'a'),
-                    ast::ClassSetItem::Literal(ast::Literal {
-                        span: span(2..4),
-                        kind: ast::LiteralKind::Punctuation,
-                        c: ']',
-                    }),
-                ]),
-            }))));
+                kind: union(
+                    span(1..4),
+                    vec![
+                        lit(span(1..2), 'a'),
+                        ast::ClassSetItem::Literal(ast::Literal {
+                            span: span(2..4),
+                            kind: ast::LiteralKind::Punctuation,
+                            c: ']',
+                        }),
+                    ]
+                ),
+            })))
+        );
         assert_eq!(
             parser(r"[a\-z]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
                 span: span(0..6),
                 negated: false,
-                kind: union(span(1..5), vec![
-                    lit(span(1..2), 'a'),
-                    ast::ClassSetItem::Literal(ast::Literal {
-                        span: span(2..4),
-                        kind: ast::LiteralKind::Punctuation,
-                        c: '-',
-                    }),
-                    lit(span(4..5), 'z'),
-                ]),
-            }))));
+                kind: union(
+                    span(1..5),
+                    vec![
+                        lit(span(1..2), 'a'),
+                        ast::ClassSetItem::Literal(ast::Literal {
+                            span: span(2..4),
+                            kind: ast::LiteralKind::Punctuation,
+                            c: '-',
+                        }),
+                        lit(span(4..5), 'z'),
+                    ]
+                ),
+            })))
+        );
         assert_eq!(
             parser("[ab]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
                 span: span(0..4),
                 negated: false,
-                kind: union(span(1..3), vec![
-                    lit(span(1..2), 'a'),
-                    lit(span(2..3), 'b'),
-                ]),
-            }))));
+                kind: union(
+                    span(1..3),
+                    vec![lit(span(1..2), 'a'), lit(span(2..3), 'b'),]
+                ),
+            })))
+        );
         assert_eq!(
             parser("[a-]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
                 span: span(0..4),
                 negated: false,
-                kind: union(span(1..3), vec![
-                    lit(span(1..2), 'a'),
-                    lit(span(2..3), '-'),
-                ]),
-            }))));
+                kind: union(
+                    span(1..3),
+                    vec![lit(span(1..2), 'a'), lit(span(2..3), '-'),]
+                ),
+            })))
+        );
         assert_eq!(
             parser("[-a]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
                 span: span(0..4),
                 negated: false,
-                kind: union(span(1..3), vec![
-                    lit(span(1..2), '-'),
-                    lit(span(2..3), 'a'),
-                ]),
-            }))));
+                kind: union(
+                    span(1..3),
+                    vec![lit(span(1..2), '-'), lit(span(2..3), 'a'),]
+                ),
+            })))
+        );
         assert_eq!(
             parser(r"[\pL]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
@@ -4501,7 +4855,8 @@ bar
                     negated: false,
                     kind: ast::ClassUnicodeKind::OneLetter('L'),
                 })),
-            }))));
+            })))
+        );
         assert_eq!(
             parser(r"[\w]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
@@ -4512,22 +4867,27 @@ bar
                     kind: ast::ClassPerlKind::Word,
                     negated: false,
                 })),
-            }))));
+            })))
+        );
         assert_eq!(
             parser(r"[a\wz]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
                 span: span(0..6),
                 negated: false,
-                kind: union(span(1..5), vec![
-                    lit(span(1..2), 'a'),
-                    item_perl(ast::ClassPerl {
-                        span: span(2..4),
-                        kind: ast::ClassPerlKind::Word,
-                        negated: false,
-                    }),
-                    lit(span(4..5), 'z'),
-                ]),
-            }))));
+                kind: union(
+                    span(1..5),
+                    vec![
+                        lit(span(1..2), 'a'),
+                        item_perl(ast::ClassPerl {
+                            span: span(2..4),
+                            kind: ast::ClassPerlKind::Word,
+                            negated: false,
+                        }),
+                        lit(span(4..5), 'z'),
+                    ]
+                ),
+            })))
+        );
 
         assert_eq!(
             parser("[a-z]").parse(),
@@ -4535,17 +4895,22 @@ bar
                 span: span(0..5),
                 negated: false,
                 kind: itemset(range(span(1..4), 'a', 'z')),
-            }))));
+            })))
+        );
         assert_eq!(
             parser("[a-cx-z]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
                 span: span(0..8),
                 negated: false,
-                kind: union(span(1..7), vec![
-                    range(span(1..4), 'a', 'c'),
-                    range(span(4..7), 'x', 'z'),
-                ]),
-            }))));
+                kind: union(
+                    span(1..7),
+                    vec![
+                        range(span(1..4), 'a', 'c'),
+                        range(span(4..7), 'x', 'z'),
+                    ]
+                ),
+            })))
+        );
         assert_eq!(
             parser(r"[\w&&a-cx-z]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
@@ -4558,12 +4923,16 @@ bar
                         kind: ast::ClassPerlKind::Word,
                         negated: false,
                     })),
-                    union(span(5..11), vec![
-                        range(span(5..8), 'a', 'c'),
-                        range(span(8..11), 'x', 'z'),
-                    ]),
+                    union(
+                        span(5..11),
+                        vec![
+                            range(span(5..8), 'a', 'c'),
+                            range(span(8..11), 'x', 'z'),
+                        ]
+                    ),
                 ),
-            }))));
+            })))
+        );
         assert_eq!(
             parser(r"[a-cx-z&&\w]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
@@ -4571,17 +4940,21 @@ bar
                 negated: false,
                 kind: intersection(
                     span(1..11),
-                    union(span(1..7), vec![
-                        range(span(1..4), 'a', 'c'),
-                        range(span(4..7), 'x', 'z'),
-                    ]),
+                    union(
+                        span(1..7),
+                        vec![
+                            range(span(1..4), 'a', 'c'),
+                            range(span(4..7), 'x', 'z'),
+                        ]
+                    ),
                     itemset(item_perl(ast::ClassPerl {
                         span: span(9..11),
                         kind: ast::ClassPerlKind::Word,
                         negated: false,
                     })),
                 ),
-            }))));
+            })))
+        );
         assert_eq!(
             parser(r"[a--b--c]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
@@ -4596,7 +4969,8 @@ bar
                     ),
                     itemset(lit(span(7..8), 'c')),
                 ),
-            }))));
+            })))
+        );
         assert_eq!(
             parser(r"[a~~b~~c]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
@@ -4611,7 +4985,8 @@ bar
                     ),
                     itemset(lit(span(7..8), 'c')),
                 ),
-            }))));
+            })))
+        );
         assert_eq!(
             parser(r"[\^&&^]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
@@ -4626,7 +5001,8 @@ bar
                     })),
                     itemset(lit(span(5..6), '^')),
                 ),
-            }))));
+            })))
+        );
         assert_eq!(
             parser(r"[\&&&&]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
@@ -4641,7 +5017,8 @@ bar
                     })),
                     itemset(lit(span(5..6), '&')),
                 ),
-            }))));
+            })))
+        );
         assert_eq!(
             parser(r"[&&&&]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
@@ -4656,7 +5033,8 @@ bar
                     ),
                     itemset(empty(span(5..5))),
                 ),
-            }))));
+            })))
+        );
 
         let pat = "[☃-⛄]";
         assert_eq!(
@@ -4677,7 +5055,8 @@ bar
                         c: '⛄',
                     },
                 })),
-            }))));
+            })))
+        );
 
         assert_eq!(
             parser(r"[]]").parse(),
@@ -4685,123 +5064,141 @@ bar
                 span: span(0..3),
                 negated: false,
                 kind: itemset(lit(span(1..2), ']')),
-            }))));
+            })))
+        );
         assert_eq!(
             parser(r"[]\[]").parse(),
             Ok(Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
                 span: span(0..5),
                 negated: false,
-                kind: union(span(1..4), vec![
-                    lit(span(1..2), ']'),
-                    ast::ClassSetItem::Literal(ast::Literal  {
-                        span: span(2..4),
-                        kind: ast::LiteralKind::Punctuation,
-                        c: '[',
-                    }),
-                ]),
-            }))));
+                kind: union(
+                    span(1..4),
+                    vec![
+                        lit(span(1..2), ']'),
+                        ast::ClassSetItem::Literal(ast::Literal {
+                            span: span(2..4),
+                            kind: ast::LiteralKind::Punctuation,
+                            c: '[',
+                        }),
+                    ]
+                ),
+            })))
+        );
         assert_eq!(
             parser(r"[\[]]").parse(),
-            Ok(concat(0..5, vec![
-                Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
-                    span: span(0..4),
-                    negated: false,
-                    kind: itemset(ast::ClassSetItem::Literal(ast::Literal  {
-                        span: span(1..3),
-                        kind: ast::LiteralKind::Punctuation,
-                        c: '[',
+            Ok(concat(
+                0..5,
+                vec![
+                    Ast::Class(ast::Class::Bracketed(ast::ClassBracketed {
+                        span: span(0..4),
+                        negated: false,
+                        kind: itemset(ast::ClassSetItem::Literal(
+                            ast::Literal {
+                                span: span(1..3),
+                                kind: ast::LiteralKind::Punctuation,
+                                c: '[',
+                            }
+                        )),
                     })),
-                })),
-                Ast::Literal(ast::Literal {
-                    span: span(4..5),
-                    kind: ast::LiteralKind::Verbatim,
-                    c: ']',
-                }),
-            ])));
+                    Ast::Literal(ast::Literal {
+                        span: span(4..5),
+                        kind: ast::LiteralKind::Verbatim,
+                        c: ']',
+                    }),
+                ]
+            ))
+        );
 
         assert_eq!(
             parser("[").parse().unwrap_err(),
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::ClassUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser("[[").parse().unwrap_err(),
             TestError {
                 span: span(1..2),
                 kind: ast::ErrorKind::ClassUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser("[[-]").parse().unwrap_err(),
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::ClassUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser("[[[:alnum:]").parse().unwrap_err(),
             TestError {
                 span: span(1..2),
                 kind: ast::ErrorKind::ClassUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser(r"[\b]").parse().unwrap_err(),
             TestError {
                 span: span(1..3),
                 kind: ast::ErrorKind::ClassEscapeInvalid,
-            });
+            }
+        );
         assert_eq!(
             parser(r"[\w-a]").parse().unwrap_err(),
             TestError {
                 span: span(1..3),
                 kind: ast::ErrorKind::ClassRangeLiteral,
-            });
+            }
+        );
         assert_eq!(
             parser(r"[a-\w]").parse().unwrap_err(),
             TestError {
                 span: span(3..5),
                 kind: ast::ErrorKind::ClassRangeLiteral,
-            });
+            }
+        );
         assert_eq!(
             parser(r"[z-a]").parse().unwrap_err(),
             TestError {
                 span: span(1..4),
                 kind: ast::ErrorKind::ClassRangeInvalid,
-            });
+            }
+        );
 
         assert_eq!(
             parser_ignore_whitespace("[a ").parse().unwrap_err(),
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::ClassUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser_ignore_whitespace("[a- ").parse().unwrap_err(),
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::ClassUnclosed,
-            });
+            }
+        );
     }
 
     #[test]
     fn parse_set_class_open() {
-        assert_eq!(
-            parser("[a]").parse_set_class_open(), {
-                let set = ast::ClassBracketed {
-                    span: span(0..1),
-                    negated: false,
-                    kind: ast::ClassSet::union(ast::ClassSetUnion {
-                        span: span(1..1),
-                        items: vec![],
-                    }),
-                };
-                let union = ast::ClassSetUnion {
+        assert_eq!(parser("[a]").parse_set_class_open(), {
+            let set = ast::ClassBracketed {
+                span: span(0..1),
+                negated: false,
+                kind: ast::ClassSet::union(ast::ClassSetUnion {
                     span: span(1..1),
                     items: vec![],
-                };
-                Ok((set, union))
-            });
+                }),
+            };
+            let union = ast::ClassSetUnion { span: span(1..1), items: vec![] };
+            Ok((set, union))
+        });
         assert_eq!(
-            parser_ignore_whitespace("[   a]").parse_set_class_open(), {
+            parser_ignore_whitespace("[   a]").parse_set_class_open(),
+            {
                 let set = ast::ClassBracketed {
                     span: span(0..4),
                     negated: false,
@@ -4810,30 +5207,26 @@ bar
                         items: vec![],
                     }),
                 };
-                let union = ast::ClassSetUnion {
-                    span: span(4..4),
-                    items: vec![],
-                };
+                let union =
+                    ast::ClassSetUnion { span: span(4..4), items: vec![] };
                 Ok((set, union))
-            });
-        assert_eq!(
-            parser("[^a]").parse_set_class_open(), {
-                let set = ast::ClassBracketed {
-                    span: span(0..2),
-                    negated: true,
-                    kind: ast::ClassSet::union(ast::ClassSetUnion {
-                        span: span(2..2),
-                        items: vec![],
-                    }),
-                };
-                let union = ast::ClassSetUnion {
+            }
+        );
+        assert_eq!(parser("[^a]").parse_set_class_open(), {
+            let set = ast::ClassBracketed {
+                span: span(0..2),
+                negated: true,
+                kind: ast::ClassSet::union(ast::ClassSetUnion {
                     span: span(2..2),
                     items: vec![],
-                };
-                Ok((set, union))
-            });
+                }),
+            };
+            let union = ast::ClassSetUnion { span: span(2..2), items: vec![] };
+            Ok((set, union))
+        });
         assert_eq!(
-            parser_ignore_whitespace("[ ^ a]").parse_set_class_open(), {
+            parser_ignore_whitespace("[ ^ a]").parse_set_class_open(),
+            {
                 let set = ast::ClassBracketed {
                     span: span(0..4),
                     negated: true,
@@ -4842,36 +5235,33 @@ bar
                         items: vec![],
                     }),
                 };
-                let union = ast::ClassSetUnion {
-                    span: span(4..4),
+                let union =
+                    ast::ClassSetUnion { span: span(4..4), items: vec![] };
+                Ok((set, union))
+            }
+        );
+        assert_eq!(parser("[-a]").parse_set_class_open(), {
+            let set = ast::ClassBracketed {
+                span: span(0..2),
+                negated: false,
+                kind: ast::ClassSet::union(ast::ClassSetUnion {
+                    span: span(1..1),
                     items: vec![],
-                };
-                Ok((set, union))
-            });
-        assert_eq!(
-            parser("[-a]").parse_set_class_open(), {
-                let set = ast::ClassBracketed {
-                    span: span(0..2),
-                    negated: false,
-                    kind: ast::ClassSet::union(ast::ClassSetUnion {
-                        span: span(1..1),
-                        items: vec![],
-                    }),
-                };
-                let union = ast::ClassSetUnion {
+                }),
+            };
+            let union = ast::ClassSetUnion {
+                span: span(1..2),
+                items: vec![ast::ClassSetItem::Literal(ast::Literal {
                     span: span(1..2),
-                    items: vec![
-                        ast::ClassSetItem::Literal(ast::Literal {
-                            span: span(1..2),
-                            kind: ast::LiteralKind::Verbatim,
-                            c: '-',
-                        }),
-                    ],
-                };
-                Ok((set, union))
-            });
+                    kind: ast::LiteralKind::Verbatim,
+                    c: '-',
+                })],
+            };
+            Ok((set, union))
+        });
         assert_eq!(
-            parser_ignore_whitespace("[ - a]").parse_set_class_open(), {
+            parser_ignore_whitespace("[ - a]").parse_set_class_open(),
+            {
                 let set = ast::ClassBracketed {
                     span: span(0..4),
                     negated: false,
@@ -4882,89 +5272,82 @@ bar
                 };
                 let union = ast::ClassSetUnion {
                     span: span(2..3),
-                    items: vec![
-                        ast::ClassSetItem::Literal(ast::Literal {
-                            span: span(2..3),
-                            kind: ast::LiteralKind::Verbatim,
-                            c: '-',
-                        }),
-                    ],
+                    items: vec![ast::ClassSetItem::Literal(ast::Literal {
+                        span: span(2..3),
+                        kind: ast::LiteralKind::Verbatim,
+                        c: '-',
+                    })],
                 };
                 Ok((set, union))
-            });
-        assert_eq!(
-            parser("[^-a]").parse_set_class_open(), {
-                let set = ast::ClassBracketed {
-                    span: span(0..3),
-                    negated: true,
-                    kind: ast::ClassSet::union(ast::ClassSetUnion {
-                        span: span(2..2),
-                        items: vec![],
-                    }),
-                };
-                let union = ast::ClassSetUnion {
+            }
+        );
+        assert_eq!(parser("[^-a]").parse_set_class_open(), {
+            let set = ast::ClassBracketed {
+                span: span(0..3),
+                negated: true,
+                kind: ast::ClassSet::union(ast::ClassSetUnion {
+                    span: span(2..2),
+                    items: vec![],
+                }),
+            };
+            let union = ast::ClassSetUnion {
+                span: span(2..3),
+                items: vec![ast::ClassSetItem::Literal(ast::Literal {
                     span: span(2..3),
-                    items: vec![
-                        ast::ClassSetItem::Literal(ast::Literal {
-                            span: span(2..3),
-                            kind: ast::LiteralKind::Verbatim,
-                            c: '-',
-                        }),
-                    ],
-                };
-                Ok((set, union))
-            });
-        assert_eq!(
-            parser("[--a]").parse_set_class_open(), {
-                let set = ast::ClassBracketed {
-                    span: span(0..3),
-                    negated: false,
-                    kind: ast::ClassSet::union(ast::ClassSetUnion {
-                        span: span(1..1),
-                        items: vec![],
+                    kind: ast::LiteralKind::Verbatim,
+                    c: '-',
+                })],
+            };
+            Ok((set, union))
+        });
+        assert_eq!(parser("[--a]").parse_set_class_open(), {
+            let set = ast::ClassBracketed {
+                span: span(0..3),
+                negated: false,
+                kind: ast::ClassSet::union(ast::ClassSetUnion {
+                    span: span(1..1),
+                    items: vec![],
+                }),
+            };
+            let union = ast::ClassSetUnion {
+                span: span(1..3),
+                items: vec![
+                    ast::ClassSetItem::Literal(ast::Literal {
+                        span: span(1..2),
+                        kind: ast::LiteralKind::Verbatim,
+                        c: '-',
                     }),
-                };
-                let union = ast::ClassSetUnion {
-                    span: span(1..3),
-                    items: vec![
-                        ast::ClassSetItem::Literal(ast::Literal {
-                            span: span(1..2),
-                            kind: ast::LiteralKind::Verbatim,
-                            c: '-',
-                        }),
-                        ast::ClassSetItem::Literal(ast::Literal {
-                            span: span(2..3),
-                            kind: ast::LiteralKind::Verbatim,
-                            c: '-',
-                        }),
-                    ],
-                };
-                Ok((set, union))
-            });
-        assert_eq!(
-            parser("[]a]").parse_set_class_open(), {
-                let set = ast::ClassBracketed {
-                    span: span(0..2),
-                    negated: false,
-                    kind: ast::ClassSet::union(ast::ClassSetUnion {
-                        span: span(1..1),
-                        items: vec![],
+                    ast::ClassSetItem::Literal(ast::Literal {
+                        span: span(2..3),
+                        kind: ast::LiteralKind::Verbatim,
+                        c: '-',
                     }),
-                };
-                let union = ast::ClassSetUnion {
+                ],
+            };
+            Ok((set, union))
+        });
+        assert_eq!(parser("[]a]").parse_set_class_open(), {
+            let set = ast::ClassBracketed {
+                span: span(0..2),
+                negated: false,
+                kind: ast::ClassSet::union(ast::ClassSetUnion {
+                    span: span(1..1),
+                    items: vec![],
+                }),
+            };
+            let union = ast::ClassSetUnion {
+                span: span(1..2),
+                items: vec![ast::ClassSetItem::Literal(ast::Literal {
                     span: span(1..2),
-                    items: vec![
-                        ast::ClassSetItem::Literal(ast::Literal {
-                            span: span(1..2),
-                            kind: ast::LiteralKind::Verbatim,
-                            c: ']',
-                        }),
-                    ],
-                };
-                Ok((set, union))
-            });
+                    kind: ast::LiteralKind::Verbatim,
+                    c: ']',
+                })],
+            };
+            Ok((set, union))
+        });
         assert_eq!(
-            parser_ignore_whitespace("[ ] a]").parse_set_class_open(), {
+            parser_ignore_whitespace("[ ] a]").parse_set_class_open(),
+            {
                 let set = ast::ClassBracketed {
                     span: span(0..4),
                     negated: false,
@@ -4975,99 +5358,98 @@ bar
                 };
                 let union = ast::ClassSetUnion {
                     span: span(2..3),
-                    items: vec![
-                        ast::ClassSetItem::Literal(ast::Literal {
-                            span: span(2..3),
-                            kind: ast::LiteralKind::Verbatim,
-                            c: ']',
-                        }),
-                    ],
+                    items: vec![ast::ClassSetItem::Literal(ast::Literal {
+                        span: span(2..3),
+                        kind: ast::LiteralKind::Verbatim,
+                        c: ']',
+                    })],
                 };
                 Ok((set, union))
-            });
-        assert_eq!(
-            parser("[^]a]").parse_set_class_open(), {
-                let set = ast::ClassBracketed {
-                    span: span(0..3),
-                    negated: true,
-                    kind: ast::ClassSet::union(ast::ClassSetUnion {
-                        span: span(2..2),
-                        items: vec![],
-                    }),
-                };
-                let union = ast::ClassSetUnion {
+            }
+        );
+        assert_eq!(parser("[^]a]").parse_set_class_open(), {
+            let set = ast::ClassBracketed {
+                span: span(0..3),
+                negated: true,
+                kind: ast::ClassSet::union(ast::ClassSetUnion {
+                    span: span(2..2),
+                    items: vec![],
+                }),
+            };
+            let union = ast::ClassSetUnion {
+                span: span(2..3),
+                items: vec![ast::ClassSetItem::Literal(ast::Literal {
                     span: span(2..3),
-                    items: vec![
-                        ast::ClassSetItem::Literal(ast::Literal {
-                            span: span(2..3),
-                            kind: ast::LiteralKind::Verbatim,
-                            c: ']',
-                        }),
-                    ],
-                };
-                Ok((set, union))
-            });
-        assert_eq!(
-            parser("[-]a]").parse_set_class_open(), {
-                let set = ast::ClassBracketed {
-                    span: span(0..2),
-                    negated: false,
-                    kind: ast::ClassSet::union(ast::ClassSetUnion {
-                        span: span(1..1),
-                        items: vec![],
-                    }),
-                };
-                let union = ast::ClassSetUnion {
+                    kind: ast::LiteralKind::Verbatim,
+                    c: ']',
+                })],
+            };
+            Ok((set, union))
+        });
+        assert_eq!(parser("[-]a]").parse_set_class_open(), {
+            let set = ast::ClassBracketed {
+                span: span(0..2),
+                negated: false,
+                kind: ast::ClassSet::union(ast::ClassSetUnion {
+                    span: span(1..1),
+                    items: vec![],
+                }),
+            };
+            let union = ast::ClassSetUnion {
+                span: span(1..2),
+                items: vec![ast::ClassSetItem::Literal(ast::Literal {
                     span: span(1..2),
-                    items: vec![
-                        ast::ClassSetItem::Literal(ast::Literal {
-                            span: span(1..2),
-                            kind: ast::LiteralKind::Verbatim,
-                            c: '-',
-                        }),
-                    ],
-                };
-                Ok((set, union))
-            });
+                    kind: ast::LiteralKind::Verbatim,
+                    c: '-',
+                })],
+            };
+            Ok((set, union))
+        });
 
         assert_eq!(
             parser("[").parse_set_class_open().unwrap_err(),
             TestError {
                 span: span(0..1),
                 kind: ast::ErrorKind::ClassUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser_ignore_whitespace("[    ")
-            .parse_set_class_open()
-            .unwrap_err(),
+                .parse_set_class_open()
+                .unwrap_err(),
             TestError {
                 span: span(0..5),
                 kind: ast::ErrorKind::ClassUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser("[^").parse_set_class_open().unwrap_err(),
             TestError {
                 span: span(0..2),
                 kind: ast::ErrorKind::ClassUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser("[]").parse_set_class_open().unwrap_err(),
             TestError {
                 span: span(0..2),
                 kind: ast::ErrorKind::ClassUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser("[-").parse_set_class_open().unwrap_err(),
             TestError {
                 span: span(0..2),
                 kind: ast::ErrorKind::ClassUnclosed,
-            });
+            }
+        );
         assert_eq!(
             parser("[--").parse_set_class_open().unwrap_err(),
             TestError {
                 span: span(0..3),
                 kind: ast::ErrorKind::ClassUnclosed,
-            });
+            }
+        );
     }
 
     #[test]
@@ -5078,21 +5460,24 @@ bar
                 span: span(0..9),
                 kind: ast::ClassAsciiKind::Alnum,
                 negated: false,
-            }));
+            })
+        );
         assert_eq!(
             parser(r"[:alnum:]A").maybe_parse_ascii_class(),
             Some(ast::ClassAscii {
                 span: span(0..9),
                 kind: ast::ClassAsciiKind::Alnum,
                 negated: false,
-            }));
+            })
+        );
         assert_eq!(
             parser(r"[:^alnum:]").maybe_parse_ascii_class(),
             Some(ast::ClassAscii {
                 span: span(0..10),
                 kind: ast::ClassAsciiKind::Alnum,
                 negated: true,
-            }));
+            })
+        );
 
         let p = parser(r"[:");
         assert_eq!(p.maybe_parse_ascii_class(), None);
@@ -5127,35 +5512,40 @@ bar
                 span: span(0..3),
                 negated: false,
                 kind: ast::ClassUnicodeKind::OneLetter('N'),
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\PN").parse_escape(),
             Ok(Primitive::Unicode(ast::ClassUnicode {
                 span: span(0..3),
                 negated: true,
                 kind: ast::ClassUnicodeKind::OneLetter('N'),
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\p{N}").parse_escape(),
             Ok(Primitive::Unicode(ast::ClassUnicode {
                 span: span(0..5),
                 negated: false,
                 kind: ast::ClassUnicodeKind::Named(s("N")),
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\P{N}").parse_escape(),
             Ok(Primitive::Unicode(ast::ClassUnicode {
                 span: span(0..5),
                 negated: true,
                 kind: ast::ClassUnicodeKind::Named(s("N")),
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\p{Greek}").parse_escape(),
             Ok(Primitive::Unicode(ast::ClassUnicode {
                 span: span(0..9),
                 negated: false,
                 kind: ast::ClassUnicodeKind::Named(s("Greek")),
-            })));
+            }))
+        );
 
         assert_eq!(
             parser(r"\p{scx:Katakana}").parse_escape(),
@@ -5167,7 +5557,8 @@ bar
                     name: s("scx"),
                     value: s("Katakana"),
                 },
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\p{scx=Katakana}").parse_escape(),
             Ok(Primitive::Unicode(ast::ClassUnicode {
@@ -5178,7 +5569,8 @@ bar
                     name: s("scx"),
                     value: s("Katakana"),
                 },
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\p{scx!=Katakana}").parse_escape(),
             Ok(Primitive::Unicode(ast::ClassUnicode {
@@ -5189,7 +5581,8 @@ bar
                     name: s("scx"),
                     value: s("Katakana"),
                 },
-            })));
+            }))
+        );
 
         assert_eq!(
             parser(r"\p{:}").parse_escape(),
@@ -5201,7 +5594,8 @@ bar
                     name: s(""),
                     value: s(""),
                 },
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\p{=}").parse_escape(),
             Ok(Primitive::Unicode(ast::ClassUnicode {
@@ -5212,7 +5606,8 @@ bar
                     name: s(""),
                     value: s(""),
                 },
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\p{!=}").parse_escape(),
             Ok(Primitive::Unicode(ast::ClassUnicode {
@@ -5223,32 +5618,37 @@ bar
                     name: s(""),
                     value: s(""),
                 },
-            })));
+            }))
+        );
 
         assert_eq!(
             parser(r"\p").parse_escape().unwrap_err(),
             TestError {
                 span: span(2..2),
                 kind: ast::ErrorKind::EscapeUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\p{").parse_escape().unwrap_err(),
             TestError {
                 span: span(3..3),
                 kind: ast::ErrorKind::EscapeUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\p{N").parse_escape().unwrap_err(),
             TestError {
                 span: span(4..4),
                 kind: ast::ErrorKind::EscapeUnexpectedEof,
-            });
+            }
+        );
         assert_eq!(
             parser(r"\p{Greek").parse_escape().unwrap_err(),
             TestError {
                 span: span(8..8),
                 kind: ast::ErrorKind::EscapeUnexpectedEof,
-            });
+            }
+        );
 
         assert_eq!(
             parser(r"\pNz").parse(),
@@ -5266,7 +5666,8 @@ bar
                         c: 'z',
                     }),
                 ],
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\p{Greek}z").parse(),
             Ok(Ast::Concat(ast::Concat {
@@ -5283,7 +5684,8 @@ bar
                         c: 'z',
                     }),
                 ],
-            })));
+            }))
+        );
     }
 
     #[test]
@@ -5294,42 +5696,48 @@ bar
                 span: span(0..2),
                 kind: ast::ClassPerlKind::Digit,
                 negated: false,
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\D").parse_escape(),
             Ok(Primitive::Perl(ast::ClassPerl {
                 span: span(0..2),
                 kind: ast::ClassPerlKind::Digit,
                 negated: true,
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\s").parse_escape(),
             Ok(Primitive::Perl(ast::ClassPerl {
                 span: span(0..2),
                 kind: ast::ClassPerlKind::Space,
                 negated: false,
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\S").parse_escape(),
             Ok(Primitive::Perl(ast::ClassPerl {
                 span: span(0..2),
                 kind: ast::ClassPerlKind::Space,
                 negated: true,
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\w").parse_escape(),
             Ok(Primitive::Perl(ast::ClassPerl {
                 span: span(0..2),
                 kind: ast::ClassPerlKind::Word,
                 negated: false,
-            })));
+            }))
+        );
         assert_eq!(
             parser(r"\W").parse_escape(),
             Ok(Primitive::Perl(ast::ClassPerl {
                 span: span(0..2),
                 kind: ast::ClassPerlKind::Word,
                 negated: true,
-            })));
+            }))
+        );
 
         assert_eq!(
             parser(r"\d").parse(),
@@ -5337,7 +5745,8 @@ bar
                 span: span(0..2),
                 kind: ast::ClassPerlKind::Digit,
                 negated: false,
-            }))));
+            })))
+        );
         assert_eq!(
             parser(r"\dz").parse(),
             Ok(Ast::Concat(ast::Concat {
@@ -5354,7 +5763,8 @@ bar
                         c: 'z',
                     }),
                 ],
-            })));
+            }))
+        );
     }
 
     // This tests a bug fix where the nest limit checker wasn't decrementing
@@ -5407,22 +5817,38 @@ bar
     fn regression_455_trailing_dash_ignore_whitespace() {
         assert!(parser("(?x)[ / - ]").parse().is_ok());
         assert!(parser("(?x)[ a - ]").parse().is_ok());
-        assert!(parser("(?x)[
+        assert!(parser(
+            "(?x)[
             a
             - ]
-        ").parse().is_ok());
-        assert!(parser("(?x)[
+        "
+        )
+        .parse()
+        .is_ok());
+        assert!(parser(
+            "(?x)[
             a # wat
             - ]
-        ").parse().is_ok());
+        "
+        )
+        .parse()
+        .is_ok());
 
         assert!(parser("(?x)[ / -").parse().is_err());
         assert!(parser("(?x)[ / - ").parse().is_err());
-        assert!(parser("(?x)[
+        assert!(parser(
+            "(?x)[
             / -
-        ").parse().is_err());
-        assert!(parser("(?x)[
+        "
+        )
+        .parse()
+        .is_err());
+        assert!(parser(
+            "(?x)[
             / - # wat
-        ").parse().is_err());
+        "
+        )
+        .parse()
+        .is_err());
     }
 }
