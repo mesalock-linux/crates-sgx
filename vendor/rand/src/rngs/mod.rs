@@ -42,9 +42,7 @@
 //! -   `from_seed` accepts a type specific to the PRNG
 //! -   `from_rng` allows a PRNG to be seeded from any other RNG
 //! -   `seed_from_u64` allows any PRNG to be seeded from a `u64` insecurely
-//!
-//! Additionally, [`FromEntropy::from_entropy`] is a shortcut for seeding from
-//! [`OsRng`].
+//! -   `from_entropy` securely seeds a PRNG from fresh entropy
 //!
 //! Use the [`rand_core`] crate when implementing your own RNGs.
 //!
@@ -60,8 +58,8 @@
 //!     is local, it is typically much faster than [`OsRng`]. It should be
 //!     secure, though the paranoid may prefer [`OsRng`].
 //! -   [`StdRng`] is a CSPRNG chosen for good performance and trust of security
-//!     (based on reviews, maturity and usage). The current algorithm is HC-128,
-//!     which is one of the recommendations by ECRYPT's eSTREAM project.
+//!     (based on reviews, maturity and usage). The current algorithm is ChaCha20,
+//!     which is well established and rigorously analysed.
 //!     [`StdRng`] provides the algorithm used by [`ThreadRng`] but without
 //!     periodic reseeding.
 //! -   [`SmallRng`] is an **insecure** PRNG designed to be fast, simple, require
@@ -93,7 +91,6 @@
 //! [`mock::StepRng`]: rngs::mock::StepRng
 //! [`adapter::ReadRng`]: rngs::adapter::ReadRng
 //! [`adapter::ReseedingRng`]: rngs::adapter::ReseedingRng
-//! [`ChaCha20Rng`]: ../../rand_chacha/struct.ChaCha20Rng.html
 //! [`rdrand`]: https://crates.io/crates/rdrand
 //! [`rand_jitter`]: https://crates.io/crates/rand_jitter
 //! [`rand_chacha`]: https://crates.io/crates/rand_chacha
@@ -106,6 +103,7 @@ pub mod adapter;
 #[cfg(feature="std")] mod entropy;
 pub mod mock;   // Public so we don't export `StepRng` directly, making it a bit
                 // more clear it is intended for testing.
+#[cfg(feature="small_rng")]
 mod small;
 mod std;
 #[cfg(feature="std")] pub(crate) mod thread;
@@ -113,6 +111,7 @@ mod std;
 #[allow(deprecated)]
 #[cfg(feature="std")] pub use self::entropy::EntropyRng;
 
+#[cfg(feature="small_rng")]
 pub use self::small::SmallRng;
 pub use self::std::StdRng;
 #[cfg(feature="std")] pub use self::thread::ThreadRng;

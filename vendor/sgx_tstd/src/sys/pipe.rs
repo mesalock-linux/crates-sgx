@@ -27,11 +27,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 use sgx_trts::libc::c_int;
-use io;
-use mem;
-use sys::fd::FileDesc;
-use sys::{cvt, cvt_r};
-use alloc::vec::Vec;
+use crate::io::{self, IoSlice, IoSliceMut};
+use crate::sys::fd::FileDesc;
+use crate::sys::{cvt, cvt_r};
+use core::mem;
+use alloc_crate::vec::Vec;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Anonymous pipes
@@ -53,8 +54,16 @@ impl AnonPipe {
         self.0.read(buf)
     }
 
+    pub fn read_vectored(&self, bufs: &mut [IoSliceMut<'_>]) -> io::Result<usize> {
+        self.0.read_vectored(bufs)
+    }
+
     pub fn write(&self, buf: &[u8]) -> io::Result<usize> {
         self.0.write(buf)
+    }
+
+    pub fn write_vectored(&self, bufs: &[IoSlice<'_>]) -> io::Result<usize> {
+        self.0.write_vectored(bufs)
     }
 
     pub fn fd(&self) -> &FileDesc { &self.0 }

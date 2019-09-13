@@ -35,7 +35,7 @@ use std::iter::repeat;
 use std::num::Wrapping as w;
 use std::fmt;
 
-use {Rng, SeedableRng, Rand, w32, w64};
+use crate::{Rng, SeedableRng, Rand, w32, w64};
 
 const RAND_SIZE_LEN: usize = 8;
 const RAND_SIZE: u32 = 1 << RAND_SIZE_LEN;
@@ -280,7 +280,7 @@ impl Rand for IsaacRng {
 }
 
 impl fmt::Debug for IsaacRng {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "IsaacRng {{}}")
     }
 }
@@ -529,7 +529,7 @@ impl Rand for Isaac64Rng {
 }
 
 impl fmt::Debug for Isaac64Rng {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Isaac64Rng {{}}")
     }
 }

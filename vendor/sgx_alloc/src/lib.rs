@@ -39,6 +39,7 @@
 
 #![feature(allocator_api)]
 
+#[cfg(target_env = "sgx")]
 extern crate sgx_trts;
 
 use core::alloc::{GlobalAlloc, Alloc, AllocErr, Layout};
@@ -108,12 +109,10 @@ mod realloc_fallback {
 }
 
 mod platform {
+    use super::*;
 
     use sgx_trts::libc::{self, c_void};
     use core::ptr;
-
-    use MIN_ALIGN;
-    use System;
     use core::alloc::{GlobalAlloc, Layout};
 
     unsafe impl GlobalAlloc for System {

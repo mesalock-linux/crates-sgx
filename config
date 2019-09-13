@@ -3,12 +3,7 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/baidu/rust-sgx-sdk"]
 git = "https://github.com/baidu/rust-sgx-sdk"
-rev = "v1.0.8"
-replace-with = "vendored-sources"
-
-[source."https://github.com/briansmith/untrusted"]
-git = "https://github.com/briansmith/untrusted"
-tag = "ring-master"
+rev = "v1.0.9"
 replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/adler32-rs-sgx"]
@@ -53,6 +48,11 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/color_quant-sgx"]
 git = "https://github.com/mesalock-linux/color_quant-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/cryptocorrosion-sgx"]
+git = "https://github.com/mesalock-linux/cryptocorrosion-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
@@ -223,7 +223,7 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/rand-sgx"]
 git = "https://github.com/mesalock-linux/rand-sgx"
-tag = "v0.6.5_sgx1.0.8"
+tag = "v0.6.5_sgx1.0.9"
 replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/regex-sgx"]
@@ -271,6 +271,11 @@ git = "https://github.com/mesalock-linux/rust-sha1-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/rustcrypto-traits-sgx"]
+git = "https://github.com/mesalock-linux/rustcrypto-traits-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/rustls"]
 git = "https://github.com/mesalock-linux/rustls"
 branch = "mesalock_sgx"
@@ -284,6 +289,11 @@ replace-with = "vendored-sources"
 [source."https://github.com/mesalock-linux/sct.rs"]
 git = "https://github.com/mesalock-linux/sct.rs"
 branch = "mesalock_sgx"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/serde-big-array-sgx"]
+git = "https://github.com/mesalock-linux/serde-big-array-sgx"
+branch = "master"
 replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/serde-json-sgx"]

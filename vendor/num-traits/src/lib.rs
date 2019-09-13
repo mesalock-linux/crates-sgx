@@ -16,14 +16,14 @@
 
 #![doc(html_root_url = "https://docs.rs/num-traits/0.2")]
 #![deny(unconditional_recursion)]
-#![cfg_attr(all(feature = "mesalock_sgx", not(target_env = "sgx")), no_std)]
 #![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
-#[cfg(all(feature = "std",
-          all(feature = "mesalock_sgx", not(target_env = "sgx"))))]
-extern crate sgx_tstd as std;
 
-#[cfg(all(feature = "mesalock_sgx", target_env = "sgx"))]
-extern crate core;
+#![no_std]
+#[cfg(all(feature = "std", feature = "mesalock_sgx", not(target_env = "sgx")))]
+#[macro_use]
+extern crate sgx_tstd as std;
+#[cfg(all(feature = "std", feature = "mesalock_sgx", target_env = "sgx"))]
+extern crate std;
 
 use core::fmt;
 use core::num::Wrapping;

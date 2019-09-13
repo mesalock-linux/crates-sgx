@@ -15,7 +15,7 @@ exclude = ["/sgx/*"]
 
 [dependencies]
 quick-error = { git = "https://github.com/mesalock-linux/quick-error-sgx" }
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 
 [features]
 default = ["mesalock_sgx"]

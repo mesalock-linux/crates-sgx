@@ -101,9 +101,9 @@ impl KeyExchange {
     }
 
     pub fn complete(self, peer: &[u8]) -> Option<KeyExchangeResult> {
-        let peer_public_key = ring::agreement::UnparsedPublicKey::new(self.alg, untrusted::Input::from(peer).as_slice_less_safe());
+        let peer_key = ring::agreement::UnparsedPublicKey::new(self.alg, peer);
         let secret = ring::agreement::agree_ephemeral(self.privkey,
-                                                      &peer_public_key,
+                                                      &peer_key,
                                                       (),
                                                       |v| {
                                                           let mut r = Vec::new();

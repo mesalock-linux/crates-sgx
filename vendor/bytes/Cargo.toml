@@ -34,7 +34,7 @@ byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
 iovec = { git = "https://github.com/mesalock-linux/iovec-sgx" }
 serde = { version = "1.0", git = "https://github.com/mesalock-linux/serde-sgx", optional = true }
 either = { version = "1.5", default-features = false, optional = true }
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 serde_test = "1.0"

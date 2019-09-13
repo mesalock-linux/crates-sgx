@@ -3,7 +3,7 @@
 # When uploading crates to the registry Cargo will automatically
 # "normalize" Cargo.toml files for maximal compatibility
 # with all versions of Cargo and also rewrite `path` dependencies
-# to registry (e.g. crates.io) dependencies
+# to registry (e.g., crates.io) dependencies
 #
 # If you believe there's an error in this file please file an
 # issue against the rust-lang/cargo repository. If you're
@@ -12,7 +12,7 @@
 
 [package]
 name = "either"
-version = "1.5.2"
+version = "1.5.3"
 authors = ["bluss"]
 description = "The enum `Either` with variants `Left` and `Right` is a general purpose sum type with two cases.\n"
 documentation = "https://docs.rs/either/1/"
@@ -26,6 +26,7 @@ features = ["serde"]
 
 [package.metadata.release]
 no-dev-version = true
+tag-name = "{{version}}"
 [dependencies.serde]
 version = "1.0"
 features = ["derive"]

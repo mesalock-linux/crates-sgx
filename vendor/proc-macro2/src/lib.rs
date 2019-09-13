@@ -31,6 +31,7 @@
 //! # const IGNORE: &str = stringify! {
 //! #[proc_macro_derive(MyDerive)]
 //! # };
+//! # #[cfg(wrap_proc_macro)]
 //! pub fn my_derive(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 //!     let input = proc_macro2::TokenStream::from(input);
 //!
@@ -77,7 +78,7 @@
 //! a different thread.
 
 // Proc-macro2 types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/proc-macro2/1.0.1")]
+#![doc(html_root_url = "https://docs.rs/proc-macro2/1.0.3")]
 #![cfg_attr(any(proc_macro_span, super_unstable), feature(proc_macro_span))]
 #![cfg_attr(super_unstable, feature(proc_macro_raw_ident, proc_macro_def_site))]
 
@@ -188,6 +189,12 @@ impl From<proc_macro::TokenStream> for TokenStream {
 impl From<TokenStream> for proc_macro::TokenStream {
     fn from(inner: TokenStream) -> proc_macro::TokenStream {
         inner.inner.into()
+    }
+}
+
+impl From<TokenTree> for TokenStream {
+    fn from(token: TokenTree) -> Self {
+        TokenStream::_new(imp::TokenStream::from(token))
     }
 }
 
@@ -672,7 +679,7 @@ pub struct Punct {
 pub enum Spacing {
     /// E.g. `+` is `Alone` in `+ =`, `+ident` or `+()`.
     Alone,
-    /// E.g. `+` is `Joint` in `+=` or `'#`.
+    /// E.g. `+` is `Joint` in `+=` or `'` is `Joint` in `'#`.
     ///
     /// Additionally, single quote `'` can join with identifiers to form
     /// lifetimes `'ident`.

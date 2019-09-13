@@ -99,7 +99,7 @@ ast_struct! {
         pub fn_token: Token![fn],
         pub paren_token: token::Paren,
         pub inputs: Punctuated<BareFnArg, Token![,]>,
-        pub variadic: Option<Token![...]>,
+        pub variadic: Option<Variadic>,
         pub output: ReturnType,
     }
 }
@@ -364,6 +364,27 @@ ast_struct! {
     }
 }
 
+ast_struct! {
+    /// The variadic argument of a foreign function.
+    ///
+    /// ```rust
+    /// # struct c_char;
+    /// # struct c_int;
+    /// #
+    /// extern "C" {
+    ///     fn printf(format: *const c_char, ...) -> c_int;
+    ///     //                               ^^^
+    /// }
+    /// ```
+    ///
+    /// *This type is available if Syn is built with the `"derive"` or `"full"`
+    /// feature.*
+    pub struct Variadic {
+        pub attrs: Vec<Attribute>,
+        pub dots: Token![...],
+    }
+}
+
 ast_enum! {
     /// Return type of a function signature.
     ///
@@ -542,7 +563,7 @@ pub mod parsing {
             || lookahead.peek(Token![::])
             || lookahead.peek(Token![<])
         {
-            if input.peek(Token![dyn ]) {
+            if input.peek(Token![dyn]) {
                 let mut trait_object: TypeTraitObject = input.parse()?;
                 if lifetimes.is_some() {
                     match trait_object.bounds.iter_mut().next().unwrap() {
@@ -723,7 +744,10 @@ pub mod parsing {
                 },
                 variadic: {
                     if allow_variadic && args.peek(Token![...]) {
-                        Some(args.parse()?)
+                        Some(Variadic {
+                            attrs: Vec::new(),
+                            dots: args.parse()?,
+                        })
                     } else {
                         None
                     }
@@ -1001,7 +1025,7 @@ mod printing {
                 self.inputs.to_tokens(tokens);
                 if let Some(variadic) = &self.variadic {
                     if !self.inputs.empty_or_trailing() {
-                        let span = variadic.spans[0];
+                        let span = variadic.dots.spans[0];
                         Token![,](span).to_tokens(tokens);
                     }
                     variadic.to_tokens(tokens);
@@ -1093,6 +1117,13 @@ mod printing {
                 colon.to_tokens(tokens);
             }
             self.ty.to_tokens(tokens);
+        }
+    }
+
+    impl ToTokens for Variadic {
+        fn to_tokens(&self, tokens: &mut TokenStream) {
+            tokens.append_all(self.attrs.outer());
+            self.dots.to_tokens(tokens);
         }
     }
 

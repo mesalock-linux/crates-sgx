@@ -1,4 +1,5 @@
 #![forbid(unsafe_code)]
+#![cfg_attr(feature = "const-generics", feature(const_generics))]
 
 /*!
 Big array helper for serde.
@@ -41,11 +42,17 @@ extern crate serde;
 #[doc(hidden)]
 pub mod reex {
     pub use core::fmt;
+    pub use core::result;
     pub use core::marker::PhantomData;
     pub use serde::ser;
     pub use serde::ser::{Serialize, Serializer};
     pub use serde::de::{Deserialize, Deserializer, Visitor, SeqAccess, Error};
 }
+
+#[cfg(feature = "const-generics")]
+mod const_generics;
+#[cfg(feature = "const-generics")]
+pub use const_generics::BigArray;
 
 /**
 Big array macro
@@ -124,16 +131,16 @@ struct S {
 macro_rules! big_array {
     ($name:ident; $($len:tt,)+) => {
         pub trait $name<'de>: Sized {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            fn serialize<S>(&self, serializer: S) -> $crate::reex::result::Result<S::Ok, S::Error>
                 where S: $crate::reex::Serializer;
-            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            fn deserialize<D>(deserializer: D) -> $crate::reex::result::Result<Self, D::Error>
                 where D: $crate::reex::Deserializer<'de>;
         }
         $(
             impl<'de, T> $name<'de> for [T; $len]
                 where T: Default + Copy + $crate::reex::Serialize + $crate::reex::Deserialize<'de>
             {
-                fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+                fn serialize<S>(&self, serializer: S) -> $crate::reex::result::Result<S::Ok, S::Error>
                     where S: $crate::reex::Serializer
                 {
                     use $crate::reex::ser::SerializeTuple;
@@ -144,7 +151,7 @@ macro_rules! big_array {
                     seq.end()
                 }
 
-                fn deserialize<D>(deserializer: D) -> Result<[T; $len], D::Error>
+                fn deserialize<D>(deserializer: D) -> $crate::reex::result::Result<[T; $len], D::Error>
                     where D: $crate::reex::Deserializer<'de>
                 {
                     use $crate::reex::PhantomData;
@@ -159,25 +166,25 @@ macro_rules! big_array {
 
                         fn expecting(&self, formatter: &mut $crate::reex::fmt::Formatter) -> $crate::reex::fmt::Result {
                             #[cfg(not(macros_literal))]
-                            macro_rules! fconcat {
+                            macro_rules! write_len {
                                 ($l:tt) => {
-                                    format!("an array of length {}", $l)
+                                    write!(formatter, "an array of length {}", $l)
                                 };
                             }
                             #[cfg(macros_literal)]
-                            macro_rules! fconcat {
+                            macro_rules! write_len {
                                 ($l:literal) => {
-                                    concat!("an array of length", $l)
+                                    write!(formatter, concat!("an array of length ", $l))
                                 };
                                 ($l:tt) => {
-                                    format!("an array of length {}", $l)
+                                    write!(formatter, "an array of length {}", $l)
                                 };
                             }
 
-                            formatter.write_str(&fconcat!($len))
+                            write_len!($len)
                         }
 
-                        fn visit_seq<A>(self, mut seq: A) -> Result<[T; $len], A::Error>
+                        fn visit_seq<A>(self, mut seq: A) -> $crate::reex::result::Result<[T; $len], A::Error>
                             where A: $crate::reex::SeqAccess<'de>
                         {
                             let mut arr = [T::default(); $len];

@@ -19,7 +19,7 @@ inflate = { git = "https://github.com/mesalock-linux/inflate-sgx" }
 deflate = { git = "https://github.com/mesalock-linux/deflate-rs-sgx", branch = "dev", optional = true }
 bitflags = "1.0"
 crc32fast = { git = "https://github.com/mesalock-linux/rust-crc32fast-sgx" }
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 getopts = "0.2.14"

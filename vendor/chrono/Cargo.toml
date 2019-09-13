@@ -34,7 +34,7 @@ num-integer = { git = "https://github.com/mesalock-linux/num-integer-sgx" }
 num-traits = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
 rustc-serialize = { version = "0.3.20", optional = true }
 serde = { version = "1", git = "https://github.com/mesalock-linux/serde-sgx", optional = true }
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 serde_json = { version = "1" }

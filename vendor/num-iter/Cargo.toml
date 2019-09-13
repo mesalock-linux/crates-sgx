@@ -17,7 +17,7 @@ exclude = ["/ci/*", "/.travis.yml", "/bors.toml", "/sgx/*"]
 features = ["std"]
 
 [dependencies]
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 
 [dependencies.num-integer]
 #version = "0.1.38"

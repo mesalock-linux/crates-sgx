@@ -26,16 +26,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use untrusted::fs;
-use io;
-use path::Path;
-use path::PathBuf;
+use crate::untrusted::fs;
+use crate::io;
+use crate::path::Path;
+use crate::path::PathBuf;
 
 pub trait PathEx {
     fn metadata(&self) -> io::Result<fs::Metadata>;
     fn symlink_metadata(&self) -> io::Result<fs::Metadata>;
     fn canonicalize(&self) -> io::Result<PathBuf>;
     fn read_link(&self) -> io::Result<PathBuf>;
+    fn read_dir(&self) -> io::Result<fs::ReadDir>;
     fn exists(&self) -> bool;
     fn is_file(&self) -> bool;
     fn is_dir(&self) -> bool;
@@ -86,6 +87,9 @@ impl PathEx for Path {
         fs::read_link(self)
     }
 
+    fn read_dir(&self) -> io::Result<fs::ReadDir> {
+        fs::read_dir(self)
+    }
     /// Returns whether the path points at an existing entity.
     ///
     /// This function will traverse symbolic links to query information about the

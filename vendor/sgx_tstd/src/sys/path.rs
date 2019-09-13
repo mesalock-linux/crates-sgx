@@ -26,8 +26,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-use path::Prefix;
-use ffi::OsStr;
+use crate::path::Prefix;
+use crate::ffi::OsStr;
 
 #[inline]
 pub fn is_sep_byte(b: u8) -> bool {
@@ -39,9 +39,9 @@ pub fn is_verbatim_sep(b: u8) -> bool {
     b == b'/'
 }
 
-pub fn parse_prefix(_: &OsStr) -> Option<Prefix> {
+pub fn parse_prefix(_: &OsStr) -> Option<Prefix<'_>> {
     None
 }
 
-pub const MAIN_SEP_STR: &'static str = "/";
+pub const MAIN_SEP_STR: &str = "/";
 pub const MAIN_SEP: char = '/';

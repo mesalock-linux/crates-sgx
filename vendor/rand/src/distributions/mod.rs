@@ -101,9 +101,8 @@
 //! [`rand_distr`]: https://crates.io/crates/rand_distr
 //! [`statrs`]: https://crates.io/crates/statrs
 
-#[cfg(any(rustc_1_26, features="nightly"))]
 use core::iter;
-use Rng;
+use crate::Rng;
 
 pub use self::other::Alphanumeric;
 #[doc(inline)] pub use self::uniform::Uniform;
@@ -259,7 +258,6 @@ impl<D, R, T> Iterator for DistIter<D, R, T>
     }
 }
 
-#[cfg(rustc_1_26)]
 impl<D, R, T> iter::FusedIterator for DistIter<D, R, T>
     where D: Distribution<T>, R: Rng {}
 
@@ -289,13 +287,15 @@ impl<D, R, T> iter::TrustedLen for DistIter<D, R, T>
 /// * Wrapping integers (`Wrapping<T>`), besides the type identical to their
 ///   normal integer variants.
 ///
-/// The following aggregate types also implement the distribution `Standard` as
-/// long as their component types implement it:
+/// The `Standard` distribution also supports generation of the following
+/// compound types where all component types are supported:
 ///
-/// * Tuples and arrays: Each element of the tuple or array is generated
-///   independently, using the `Standard` distribution recursively.
-/// * `Option<T>` where `Standard` is implemented for `T`: Returns `None` with
-///   probability 0.5; otherwise generates a random `x: T` and returns `Some(x)`.
+/// *   Tuples (up to 12 elements): each element is generated sequentially.
+/// *   Arrays (up to 32 elements): each element is generated sequentially;
+///     see also [`Rng::fill`] which supports arbitrary array length for integer
+///     types and tends to be faster for `u32` and smaller types.
+/// *   `Option<T>` first generates a `bool`, and if true generates and returns
+///     `Some(value)` where `value: T`, otherwise returning `None`.
 ///
 /// ## Custom implementations
 ///
@@ -322,7 +322,7 @@ impl<D, R, T> iter::TrustedLen for DistIter<D, R, T>
 /// use rand::prelude::*;
 /// use rand::distributions::Standard;
 ///
-/// let val: f32 = SmallRng::from_entropy().sample(Standard);
+/// let val: f32 = StdRng::from_entropy().sample(Standard);
 /// println!("f32 from [0, 1): {}", val);
 /// ```
 ///
@@ -349,13 +349,13 @@ pub struct Standard;
 
 #[cfg(all(test, feature = "std"))]
 mod tests {
-    use ::Rng;
+    use crate::Rng;
     use super::{Distribution, Uniform};
 
     #[test]
     fn test_distributions_iter() {
-        use distributions::Open01;
-        let mut rng = ::test::rng(210);
+        use crate::distributions::Open01;
+        let mut rng = crate::test::rng(210);
         let distr = Open01;
         let results: Vec<f32> = distr.sample_iter(&mut rng).take(100).collect();
         println!("{:?}", results);
@@ -370,7 +370,7 @@ mod tests {
                 .take(10)
         }
         
-        let mut rng = ::test::rng(211);
+        let mut rng = crate::test::rng(211);
         let mut count = 0;
         for val in ten_dice_rolls_other_than_five(&mut rng) {
             assert!(val >= 1 && val <= 6 && val != 5);

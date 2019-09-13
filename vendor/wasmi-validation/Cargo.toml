@@ -9,7 +9,7 @@ description = "Wasm code validator"
 
 [dependencies]
 parity-wasm = { git = "https://github.com/mesalock-linux/parity-wasm-sgx.git", default-features = false, branch = "v0.31.3" }
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 assert_matches = "1.1"

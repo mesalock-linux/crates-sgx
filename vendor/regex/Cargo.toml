@@ -33,17 +33,17 @@ memchr = { git = "https://github.com/mesalock-linux/rust-memchr-sgx" }
 thread_local = { git = "https://github.com/mesalock-linux/thread_local-rs-sgx" }
 # For parsing regular expressions.
 regex-syntax = { path = "regex-syntax", version = "0.6.11" }
-sgx_tstd = { rev = "v1.0.8", git="https://github.com/baidu/rust-sgx-sdk", optional = true }
+sgx_tstd = { rev = "v1.0.9", git="https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 # For examples.
-lazy_static = "1"
+#lazy_static = "1"
 # For property based tests.
-quickcheck = { version = "0.8", default-features = false }
+#quickcheck = { version = "0.8", default-features = false }
 # For generating random test data.
-rand = "0.6.5"
+#rand = "0.6.5"
 # To check README's example
-doc-comment = "0.3"
+#doc-comment = "0.3"
 
 [features]
 default = ["use_std", "mesalock_sgx"]

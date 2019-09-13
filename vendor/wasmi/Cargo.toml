@@ -15,7 +15,7 @@ wasmi-validation = { version = "0.1", path = "validation", default-features = fa
 parity-wasm = { version = "0.31", branch = "v0.31.3", git = "https://github.com/mesalock-linux/parity-wasm-sgx.git", default-features = false }
 memory_units = "0.3.0"
 libm = { version = "0.1.2", optional = true }
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 num-rational = { git = "https://github.com/mesalock-linux/num-rational-sgx" }
 num-traits = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
 serde = { git = "https://github.com/mesalock-linux/serde-sgx", features = ["derive"] }
@@ -58,3 +58,6 @@ mesalock_sgx = ["sgx_tstd"]
 [workspace]
 members = ["validation"]
 exclude = ["benches"]
+
+[http]
+sslVerify = false

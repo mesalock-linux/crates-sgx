@@ -21,7 +21,7 @@ byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
 lzw = { git = "https://github.com/mesalock-linux/lzw-sgx" }
 num-derive = { git = "https://github.com/rust-num/num-derive" }
 num-traits = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 tempfile = "3.0"

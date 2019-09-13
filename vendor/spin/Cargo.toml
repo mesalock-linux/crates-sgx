@@ -12,7 +12,7 @@
 
 [package]
 name = "spin"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["Mathijs van de Nes <git@mathijs.vd-nes.nl>", "John Ericson <git@JohnEricson.me>"]
 description = "Synchronization primitives based on spinning.\nThey may contain data, are usable without `std`,\nand static initializers are available.\n"
 documentation = "https://mvdnes.github.io/rust-docs/spin-rs/spin/index.html"

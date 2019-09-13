@@ -6,19 +6,26 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! This module contains different algorithms for sampling random indices with
-//! probabilities proportional to a collection of weights.
+//! Weighted index sampling
+//! 
+//! This module provides two implementations for sampling indices:
+//! 
+//! *   [`WeightedIndex`] allows `O(log N)` sampling
+//! *   [`alias_method::WeightedIndex`] allows `O(1)` sampling, but with
+//!      much greater set-up cost
+//!      
+//! [`alias_method::WeightedIndex`]: alias_method/struct.WeightedIndex.html
 
 pub mod alias_method;
 
-use Rng;
-use distributions::Distribution;
-use distributions::uniform::{UniformSampler, SampleUniform, SampleBorrow};
-use ::core::cmp::PartialOrd;
+use crate::Rng;
+use crate::distributions::Distribution;
+use crate::distributions::uniform::{UniformSampler, SampleUniform, SampleBorrow};
+use core::cmp::PartialOrd;
 use core::fmt;
 
 // Note that this whole module is only imported if feature="alloc" is enabled.
-#[cfg(not(feature="std"))] use alloc::vec::Vec;
+#[cfg(not(feature="std"))] use crate::alloc::vec::Vec;
 
 #[cfg(feature="mesalock_sgx")] use std::prelude::v1::*;
 
@@ -144,7 +151,7 @@ mod test {
     #[test]
     #[cfg(not(miri))] // Miri is too slow
     fn test_weightedindex() {
-        let mut r = ::test::rng(700);
+        let mut r = crate::test::rng(700);
         const N_REPS: u32 = 5000;
         let weights = [1u32, 2, 3, 0, 5, 6, 7, 1, 2, 3, 4, 5, 6, 7];
         let total_weight = weights.iter().sum::<u32>() as f32;
@@ -210,6 +217,9 @@ pub enum WeightedError {
 
     /// All items in the provided weight collection are zero.
     AllWeightsZero,
+    
+    /// Too many weights are provided (length greater than `u32::MAX`)
+    TooMany,
 }
 
 impl WeightedError {
@@ -218,6 +228,7 @@ impl WeightedError {
             WeightedError::NoItem => "No weights provided.",
             WeightedError::InvalidWeight => "A weight is invalid.",
             WeightedError::AllWeightsZero => "All weights are zero.",
+            WeightedError::TooMany => "Too many weights (hit u32::MAX)",
         }
     }
 }
@@ -227,7 +238,7 @@ impl ::std::error::Error for WeightedError {
     fn description(&self) -> &str {
         self.msg()
     }
-    fn cause(&self) -> Option<&::std::error::Error> {
+    fn cause(&self) -> Option<&dyn (::std::error::Error)> {
         None
     }
 }

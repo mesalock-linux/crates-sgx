@@ -25,9 +25,9 @@ use_std = []
 mesalock_sgx = ["sgx_tstd", "sgx_libc", "sgx_types"]
 
 [dependencies]
-sgx_libc = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true}
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true}
-sgx_types = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true}
+sgx_libc = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true}
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true}
+sgx_types = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true}
 
 [dev-dependencies]
 quickcheck = { version = "0.8", default-features = false }

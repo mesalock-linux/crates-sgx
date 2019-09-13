@@ -79,15 +79,21 @@
 
 #![feature(allocator_api)]
 #![feature(asm)]
-#![feature(lang_items)]
+#![feature(rustc_const_unstable)]
+#![feature(const_raw_ptr_deref)]
+#![feature(const_cstr_unchecked)]
 #![allow(non_camel_case_types)]
 #![allow(non_upper_case_globals)]
 #![allow(overflowing_literals)]
 #![allow(non_snake_case)]
 
-extern crate alloc;
+#[cfg(target_env = "sgx")]
 extern crate sgx_types;
+
+#[cfg(target_env = "sgx")]
 extern crate sgx_libc;
+
+extern crate alloc;
 
 #[macro_use]
 mod macros;
@@ -97,8 +103,18 @@ pub mod trts;
 pub mod enclave;
 pub mod memeq;
 pub mod oom;
-pub mod error;
-pub mod libc;
 pub mod memchr;
 pub mod ascii;
 pub mod c_str;
+
+#[cfg(not(target_env = "sgx"))]
+pub use sgx_libc as libc;
+
+#[cfg(target_env = "sgx")]
+pub mod libc {
+    pub use sgx_libc::*;
+}
+
+pub mod error {
+    pub use sgx_libc::{errno, set_errno, error_string};
+}

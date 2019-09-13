@@ -46,25 +46,33 @@ use sgx_types::{c_void, c_int, c_long};
 use sgx_trts::libc;
 use sgx_trts::oom;
 use super::mutex::{self, SgxThreadMutex, SgxMutexGuard};
-use sys_common::poison::{self, LockResult, PoisonError};
+use crate::sys_common::poison::{self, LockResult, PoisonError};
 use core::sync::atomic::{AtomicUsize, Ordering};
 use core::cell::UnsafeCell;
 use core::fmt;
 use core::mem;
 use core::alloc::AllocErr;
-use alloc::boxed::Box;
-use sync::SgxThreadSpinlock;
-use io::{self, Error, ErrorKind};
-use time::Duration;
-use time::Instant;
-use untrusted::time::InstantEx;
-use thread::{self, rsgx_thread_self};
+use alloc_crate::boxed::Box;
+use crate::sync::SgxThreadSpinlock;
+use crate::io::{self, Error, ErrorKind};
+use crate::time::Duration;
+use crate::time::Instant;
+use crate::untrusted::time::InstantEx;
+use crate::thread::{self, rsgx_thread_self};
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 
+/// A type indicating whether a timed wait on a condition variable returned
+/// due to a time out or not.
+///
+/// It is returned by the [`wait_timeout`] method.
+///
+/// [`wait_timeout`]: struct.Condvar.html#method.wait_timeout
 pub struct WaitTimeoutResult(bool);
 
 impl WaitTimeoutResult {
+    /// Returns `true` if the wait was known to have timed out.
+    ///
     pub fn timed_out(&self) -> bool {
         self.0
     }
@@ -104,11 +112,11 @@ impl SgxThreadCondvar {
         condvar.thread_vec.push(rsgx_thread_self());
         let mut waiter: sgx_thread_t = SGX_THREAD_T_NULL;
 
-        try!(mutex.unlock_lazy(&mut waiter).map_err(|ret| {
+        mutex.unlock_lazy(&mut waiter).map_err(|ret| {
             condvar.thread_vec.pop();
             condvar.spinlock.unlock();
             ret
-        }));
+        })?;
 
         loop {
             condvar.spinlock.unlock();
@@ -144,11 +152,11 @@ impl SgxThreadCondvar {
         condvar.thread_vec.push(rsgx_thread_self());
         let mut waiter: sgx_thread_t = SGX_THREAD_T_NULL;
 
-        try!(mutex.unlock_lazy(&mut waiter).map_err(|ret| {
+        mutex.unlock_lazy(&mut waiter).map_err(|ret| {
             condvar.thread_vec.pop();
             condvar.spinlock.unlock();
             ret
-        }));
+        })?;
         let mut ret = Ok(());
         loop {
             condvar.spinlock.unlock();
@@ -554,7 +562,7 @@ impl SgxCondvar {
 
 
 impl fmt::Debug for SgxCondvar {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.pad("Condvar { .. }")
     }
 }

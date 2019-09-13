@@ -15,4 +15,4 @@ mesalock_sgx = ["sgx_tstd"]
 
 [dependencies]
 adler32 = { git = "https://github.com/mesalock-linux/adler32-rs-sgx" }
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }

@@ -30,13 +30,13 @@
 
 use sgx_trts::libc;
 #[cfg(feature = "untrusted_fs")]
-use fs;
+use crate::fs;
 #[cfg(not(feature = "untrusted_fs"))]
-use untrusted::fs;
-use os::raw;
-use sys;
-use io;
-use sys_common::{AsInner, FromInner, IntoInner};
+use crate::untrusted::fs;
+use crate::os::raw;
+use crate::sys;
+use crate::io;
+use crate::sys_common::{AsInner, FromInner, IntoInner};
 
 /// Raw file descriptors.
 pub type RawFd = raw::c_int;
@@ -115,5 +115,20 @@ impl AsRawFd for io::Stdout {
 
 #[cfg(feature = "stdio")]
 impl AsRawFd for io::Stderr {
+    fn as_raw_fd(&self) -> RawFd { libc::STDERR_FILENO }
+}
+
+#[cfg(feature = "stdio")]
+impl<'a> AsRawFd for io::StdinLock<'a> {
+    fn as_raw_fd(&self) -> RawFd { libc::STDIN_FILENO }
+}
+
+#[cfg(feature = "stdio")]
+impl<'a> AsRawFd for io::StdoutLock<'a> {
+    fn as_raw_fd(&self) -> RawFd { libc::STDOUT_FILENO }
+}
+
+#[cfg(feature = "stdio")]
+impl<'a> AsRawFd for io::StderrLock<'a> {
     fn as_raw_fd(&self) -> RawFd { libc::STDERR_FILENO }
 }

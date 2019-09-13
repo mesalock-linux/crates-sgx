@@ -19,4 +19,4 @@ mesalock_sgx = ["sgx_tstd"]
 [dependencies]
 ring = { git = "https://github.com/mesalock-linux/ring-sgx", tag = "v0.16.5" }
 untrusted = "0.7.0"
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }

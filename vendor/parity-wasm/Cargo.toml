@@ -14,7 +14,7 @@ exclude = [ "res/*", "spec/*", "sgx/*" ]
 
 [dependencies]
 byteorder = { version = "1.0", default-features = false, git = "https://github.com/mesalock-linux/byteorder-sgx.git" }
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 time = "0.1"

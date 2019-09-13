@@ -65,36 +65,48 @@ extern crate sgx_tstd as std;
           target_env = "sgx"))]
 extern crate core;
 
-#[cfg(all(feature = "alloc", not(feature="std")))] #[macro_use] extern crate alloc;
-
-#[cfg(feature="simd_support")] extern crate packed_simd;
+#[cfg(all(feature="alloc", not(feature="std")))]
+extern crate alloc;
 
 #[cfg(feature = "getrandom")]
-extern crate getrandom;
+use getrandom_package as getrandom;
 
-extern crate rand_core;
-extern crate rand_hc;
-extern crate rand_pcg;
-
-#[cfg(feature = "log")] #[macro_use] extern crate log;
 #[allow(unused)]
-#[cfg(not(feature = "log"))] macro_rules! trace { ($($x:tt)*) => () }
+macro_rules! trace { ($($x:tt)*) => (
+    #[cfg(feature = "log")] {
+        log::trace!($($x)*)
+    }
+) }
 #[allow(unused)]
-#[cfg(not(feature = "log"))] macro_rules! debug { ($($x:tt)*) => () }
+macro_rules! debug { ($($x:tt)*) => (
+    #[cfg(feature = "log")] {
+        log::debug!($($x)*)
+    }
+) }
 #[allow(unused)]
-#[cfg(not(feature = "log"))] macro_rules! info { ($($x:tt)*) => () }
+macro_rules! info { ($($x:tt)*) => (
+    #[cfg(feature = "log")] {
+        log::info!($($x)*)
+    }
+) }
 #[allow(unused)]
-#[cfg(not(feature = "log"))] macro_rules! warn { ($($x:tt)*) => () }
+macro_rules! warn { ($($x:tt)*) => (
+    #[cfg(feature = "log")] {
+        log::warn!($($x)*)
+    }
+) }
 #[allow(unused)]
-#[cfg(not(feature = "log"))] macro_rules! error { ($($x:tt)*) => () }
-
+macro_rules! error { ($($x:tt)*) => (
+    #[cfg(feature = "log")] {
+        log::error!($($x)*)
+    }
+) }
 
 // Re-exports from rand_core
-pub use rand_core::{RngCore, CryptoRng, SeedableRng};
-pub use rand_core::{ErrorKind, Error};
+pub use rand_core::{RngCore, CryptoRng, SeedableRng, Error};
 
 // Public exports
-#[cfg(feature="std")] pub use rngs::thread::thread_rng;
+#[cfg(feature="std")] pub use crate::rngs::thread::thread_rng;
 
 // Public modules
 pub mod distributions;
@@ -104,8 +116,9 @@ pub mod seq;
 
 
 use core::{mem, slice};
-use distributions::{Distribution, Standard};
-use distributions::uniform::{SampleUniform, UniformSampler, SampleBorrow};
+use core::num::Wrapping;
+use crate::distributions::{Distribution, Standard};
+use crate::distributions::uniform::{SampleUniform, UniformSampler, SampleBorrow};
 
 /// An automatically-implemented extension trait on [`RngCore`] providing high-level
 /// generic methods for sampling values and other convenience methods.
@@ -147,8 +160,6 @@ use distributions::uniform::{SampleUniform, UniformSampler, SampleBorrow};
 pub trait Rng: RngCore {
     /// Return a random value supporting the [`Standard`] distribution.
     ///
-    /// [`Standard`]: distributions::Standard
-    ///
     /// # Example
     ///
     /// ```
@@ -159,6 +170,28 @@ pub trait Rng: RngCore {
     /// println!("{}", x);
     /// println!("{:?}", rng.gen::<(f64, bool)>());
     /// ```
+    ///
+    /// # Arrays and tuples
+    ///
+    /// The `rng.gen()` method is able to generate arrays (up to 32 elements)
+    /// and tuples (up to 12 elements), so long as all element types can be
+    /// generated.
+    ///
+    /// For arrays of integers, especially for those with small element types
+    /// (< 64 bit), it will likely be faster to instead use [`Rng::fill`].
+    ///
+    /// ```
+    /// use rand::{thread_rng, Rng};
+    ///
+    /// let mut rng = thread_rng();
+    /// let tuple: (u8, i32, char) = rng.gen(); // arbitrary tuple support
+    ///
+    /// let arr1: [f32; 32] = rng.gen();        // array construction
+    /// let mut arr2 = [0u8; 128];
+    /// rng.fill(&mut arr2);                    // array fill
+    /// ```
+    ///
+    /// [`Standard`]: distributions::Standard
     #[inline]
     fn gen<T>(&mut self) -> T
     where Standard: Distribution<T> {
@@ -287,10 +320,8 @@ pub trait Rng: RngCore {
     /// On big-endian platforms this performs byte-swapping to ensure
     /// portability of results from reproducible generators.
     ///
-    /// This uses [`try_fill_bytes`] internally and forwards all RNG errors. In
-    /// some cases errors may be resolvable; see [`ErrorKind`] and
-    /// documentation for the RNG in use. If you do not plan to handle these
-    /// errors you may prefer to use [`fill`].
+    /// This is identical to [`fill`] except that it uses [`try_fill_bytes`]
+    /// internally and forwards RNG errors.
     ///
     /// # Example
     ///
@@ -392,6 +423,7 @@ impl AsByteSliceMut for [u8] {
 }
 
 macro_rules! impl_as_byte_slice {
+    () => {};
     ($t:ty) => {
         impl AsByteSliceMut for [$t] {
             fn as_byte_slice_mut(&mut self) -> &mut [u8] {
@@ -416,26 +448,47 @@ macro_rules! impl_as_byte_slice {
                 }
             }
         }
+        
+        impl AsByteSliceMut for [Wrapping<$t>] {
+            fn as_byte_slice_mut(&mut self) -> &mut [u8] {
+                if self.len() == 0 {
+                    unsafe {
+                        // must not use null pointer
+                        slice::from_raw_parts_mut(0x1 as *mut u8, 0)
+                    }
+                } else {
+                    unsafe {
+                        slice::from_raw_parts_mut(self.as_mut_ptr()
+                            as *mut u8,
+                            self.len() * mem::size_of::<$t>()
+                        )
+                    }
+                }
+            }
+
+            fn to_le(&mut self) {
+                for x in self {
+                    *x = Wrapping(x.0.to_le());
+                }
+            }
+        }
+    };
+    ($t:ty, $($tt:ty,)*) => {
+        impl_as_byte_slice!($t);
+        // TODO: this could replace above impl once Rust #32463 is fixed
+        // impl_as_byte_slice!(Wrapping<$t>);
+        impl_as_byte_slice!($($tt,)*);
     }
 }
 
-impl_as_byte_slice!(u16);
-impl_as_byte_slice!(u32);
-impl_as_byte_slice!(u64);
-#[cfg(all(rustc_1_26, not(target_os = "emscripten")))] impl_as_byte_slice!(u128);
-impl_as_byte_slice!(usize);
-impl_as_byte_slice!(i8);
-impl_as_byte_slice!(i16);
-impl_as_byte_slice!(i32);
-impl_as_byte_slice!(i64);
-#[cfg(all(rustc_1_26, not(target_os = "emscripten")))] impl_as_byte_slice!(i128);
-impl_as_byte_slice!(isize);
+impl_as_byte_slice!(u16, u32, u64, usize,);
+#[cfg(not(target_os = "emscripten"))] impl_as_byte_slice!(u128);
+impl_as_byte_slice!(i8, i16, i32, i64, isize,);
+#[cfg(not(target_os = "emscripten"))] impl_as_byte_slice!(i128);
 
 macro_rules! impl_as_byte_slice_arrays {
     ($n:expr,) => {};
-    ($n:expr, $N:ident, $($NN:ident,)*) => {
-        impl_as_byte_slice_arrays!($n - 1, $($NN,)*);
-
+    ($n:expr, $N:ident) => {
         impl<T> AsByteSliceMut for [T; $n] where [T]: AsByteSliceMut {
             fn as_byte_slice_mut(&mut self) -> &mut [u8] {
                 self[..].as_byte_slice_mut()
@@ -446,74 +499,18 @@ macro_rules! impl_as_byte_slice_arrays {
             }
         }
     };
+    ($n:expr, $N:ident, $($NN:ident,)*) => {
+        impl_as_byte_slice_arrays!($n, $N);
+        impl_as_byte_slice_arrays!($n - 1, $($NN,)*);
+    };
     (!div $n:expr,) => {};
     (!div $n:expr, $N:ident, $($NN:ident,)*) => {
+        impl_as_byte_slice_arrays!($n, $N);
         impl_as_byte_slice_arrays!(!div $n / 2, $($NN,)*);
-
-        impl<T> AsByteSliceMut for [T; $n] where [T]: AsByteSliceMut {
-            fn as_byte_slice_mut(&mut self) -> &mut [u8] {
-                self[..].as_byte_slice_mut()
-            }
-
-            fn to_le(&mut self) {
-                self[..].to_le()
-            }
-        }
     };
 }
 impl_as_byte_slice_arrays!(32, N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,N,);
 impl_as_byte_slice_arrays!(!div 4096, N,N,N,N,N,N,N,);
-
-
-/// A convenience extension to [`SeedableRng`] allowing construction from fresh
-/// entropy. This trait is automatically implemented for any PRNG implementing
-/// [`SeedableRng`] and is not intended to be implemented by users.
-///
-/// This is equivalent to using `SeedableRng::from_rng(OsRng)` then
-/// unwrapping the result.
-///
-/// Since this is convenient and secure, it is the recommended way to create
-/// PRNGs, though two alternatives may be considered:
-///
-/// *   Deterministic creation using [`SeedableRng::from_seed`] with a fixed seed
-/// *   Seeding from `thread_rng`: `SeedableRng::from_rng(thread_rng())?`;
-///     this will usually be faster and should also be secure, but requires
-///     trusting one extra component.
-///
-/// ## Example
-///
-/// ```
-/// use rand::{Rng, FromEntropy};
-/// use rand::rngs::StdRng;
-///
-/// let mut rng = StdRng::from_entropy();
-/// println!("Random die roll: {}", rng.gen_range(1, 7));
-/// ```
-///
-/// [`OsRng`]: rngs::OsRng
-#[cfg(feature="std")]
-pub trait FromEntropy: SeedableRng {
-    /// Creates a new instance of the RNG seeded from [`OsRng`].
-    ///
-    /// This method is equivalent to `SeedableRng::from_rng(OsRng).unwrap()`.
-    ///
-    /// # Panics
-    ///
-    /// If [`OsRng`] is unable to obtain secure entropy this method will panic.
-    /// It is also possible for an RNG overriding the [`SeedableRng::from_rng`]
-    /// method to cause a panic. Both causes are extremely unlikely to occur;
-    /// most users need not worry about this.
-    fn from_entropy() -> Self;
-}
-
-#[cfg(feature="std")]
-impl<R: SeedableRng> FromEntropy for R {
-    fn from_entropy() -> R {
-        R::from_rng(rngs::OsRng).unwrap_or_else(|err|
-            panic!("FromEntropy::from_entropy() failed: {}", err))
-    }
-}
-
 
 /// Generates a random value using the thread-local random number generator.
 ///
@@ -566,13 +563,16 @@ where Standard: Distribution<T> {
 
 #[cfg(test)]
 mod test {
-    use rngs::mock::StepRng;
-    use rngs::StdRng;
+    use crate::rngs::mock::StepRng;
     use super::*;
     #[cfg(all(not(feature="std"), feature="alloc"))] use alloc::boxed::Box;
 
+    /// Construct a deterministic RNG with the given seed
     pub fn rng(seed: u64) -> impl RngCore {
-        StdRng::seed_from_u64(seed)
+        // For tests, we want a statistically good, fast, reproducible RNG.
+        // PCG32 will do fine, and will be easy to embed if we ever need to.
+        const INC: u64 = 11634580027462260723;
+        rand_pcg::Pcg32::new(seed, INC)
     }
 
     #[test]
@@ -612,6 +612,12 @@ mod test {
         rng.fill(&mut array[..]);
         assert_eq!(array, [x as u32, (x >> 32) as u32]);
         assert_eq!(rng.next_u32(), x as u32);
+        
+        // Check equivalence using wrapped arrays
+        let mut warray = [Wrapping(0u32); 2];
+        rng.fill(&mut warray[..]);
+        assert_eq!(array[0], warray[0].0);
+        assert_eq!(array[1], warray[1].0);
     }
 
     #[test]
@@ -668,9 +674,9 @@ mod test {
 
     #[test]
     fn test_rng_trait_object() {
-        use distributions::{Distribution, Standard};
+        use crate::distributions::{Distribution, Standard};
         let mut rng = rng(109);
-        let mut r = &mut rng as &mut RngCore;
+        let mut r = &mut rng as &mut dyn RngCore;
         r.next_u32();
         r.gen::<i32>();
         assert_eq!(r.gen_range(0, 1), 0);
@@ -680,9 +686,9 @@ mod test {
     #[test]
     #[cfg(feature="alloc")]
     fn test_rng_boxed_trait() {
-        use distributions::{Distribution, Standard};
+        use crate::distributions::{Distribution, Standard};
         let rng = rng(110);
-        let mut r = Box::new(rng) as Box<RngCore>;
+        let mut r = Box::new(rng) as Box<dyn RngCore>;
         r.next_u32();
         r.gen::<i32>();
         assert_eq!(r.gen_range(0, 1), 0);

@@ -17,8 +17,8 @@ winapi = { version = "0.3", features = ["handleapi", "winsock2", "ws2def", "ws2i
 
 [target.'cfg(any(target_os="redox", unix, target_os="wasi"))'.dependencies]
 #libc = "0.2.54"
-sgx_libc = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
-sgx_tstd = { rev = "v1.0.8", git = "https://github.com/baidu/rust-sgx-sdk.git", features = ["net"], optional = true }
+sgx_libc = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", features = ["net"], optional = true }
 
 [dependencies]
 cfg-if = "0.1"

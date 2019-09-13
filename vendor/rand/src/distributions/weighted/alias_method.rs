@@ -4,14 +4,16 @@
 #[cfg(feature="mesalock_sgx")] use std::prelude::v1::*;
 use super::WeightedError;
 #[cfg(not(feature = "std"))]
-use alloc::vec::Vec;
+use crate::alloc::vec::Vec;
+#[cfg(not(feature = "std"))]
+use crate::alloc::vec;
 use core::fmt;
 use core::iter::Sum;
 use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
-use distributions::uniform::SampleUniform;
-use distributions::Distribution;
-use distributions::Uniform;
-use Rng;
+use crate::distributions::uniform::SampleUniform;
+use crate::distributions::Distribution;
+use crate::distributions::Uniform;
+use crate::Rng;
 
 /// A distribution using weighted sampling to pick a discretely selected item.
 ///
@@ -26,10 +28,10 @@ use Rng;
 /// Given that `n` is the number of items in the vector used to create an
 /// [`WeightedIndex<W>`], [`WeightedIndex<W>`] will require `O(n)` amount of
 /// memory. More specifically it takes up some constant amount of memory plus
-/// the vector used to create it and a [`Vec<usize>`] with capacity `n`.
+/// the vector used to create it and a [`Vec<u32>`] with capacity `n`.
 ///
 /// Time complexity for the creation of a [`WeightedIndex<W>`] is `O(n)`.
-/// Sampling is `O(1)`, it makes a call to [`Uniform<usize>::sample`] and a call
+/// Sampling is `O(1)`, it makes a call to [`Uniform<u32>::sample`] and a call
 /// to [`Uniform<W>::sample`].
 ///
 /// # Example
@@ -57,13 +59,13 @@ use Rng;
 ///
 /// [`WeightedIndex<W>`]: crate::distributions::weighted::alias_method::WeightedIndex
 /// [`Weight`]: crate::distributions::weighted::alias_method::Weight
-/// [`Vec<usize>`]: Vec
-/// [`Uniform<usize>::sample`]: Distribution::sample
+/// [`Vec<u32>`]: Vec
+/// [`Uniform<u32>::sample`]: Distribution::sample
 /// [`Uniform<W>::sample`]: Distribution::sample
 pub struct WeightedIndex<W: Weight> {
-    aliases: Vec<usize>,
+    aliases: Vec<u32>,
     no_alias_odds: Vec<W>,
-    uniform_index: Uniform<usize>,
+    uniform_index: Uniform<u32>,
     uniform_within_weight_sum: Uniform<W>,
 }
 
@@ -72,6 +74,7 @@ impl<W: Weight> WeightedIndex<W> {
     ///
     /// Returns an error if:
     /// - The vector is empty.
+    /// - The vector is longer than `u32::MAX`.
     /// - For any weight `w`: `w < 0` or `w > max` where `max = W::MAX /
     ///   weights.len()`.
     /// - The sum of weights is zero.
@@ -79,9 +82,12 @@ impl<W: Weight> WeightedIndex<W> {
         let n = weights.len();
         if n == 0 {
             return Err(WeightedError::NoItem);
+        } else if n > ::core::u32::MAX as usize {
+            return Err(WeightedError::TooMany);
         }
+        let n = n as u32;
 
-        let max_weight_size = W::try_from_usize_lossy(n)
+        let max_weight_size = W::try_from_u32_lossy(n)
             .map(|n| W::MAX / n)
             .unwrap_or(W::ZERO);
         if !weights
@@ -104,7 +110,7 @@ impl<W: Weight> WeightedIndex<W> {
         }
 
         // `weight_sum` would have been zero if `try_from_lossy` causes an error here.
-        let n_converted = W::try_from_usize_lossy(n).unwrap();
+        let n_converted = W::try_from_u32_lossy(n).unwrap();
 
         let mut no_alias_odds = weights;
         for odds in no_alias_odds.iter_mut() {
@@ -120,52 +126,52 @@ impl<W: Weight> WeightedIndex<W> {
         /// be ensured that a single index is only ever in one of them at the
         /// same time.
         struct Aliases {
-            aliases: Vec<usize>,
-            smalls_head: usize,
-            bigs_head: usize,
+            aliases: Vec<u32>,
+            smalls_head: u32,
+            bigs_head: u32,
         }
 
         impl Aliases {
-            fn new(size: usize) -> Self {
+            fn new(size: u32) -> Self {
                 Aliases {
-                    aliases: vec![0; size],
-                    smalls_head: ::core::usize::MAX,
-                    bigs_head: ::core::usize::MAX,
+                    aliases: vec![0; size as usize],
+                    smalls_head: ::core::u32::MAX,
+                    bigs_head: ::core::u32::MAX,
                 }
             }
 
-            fn push_small(&mut self, idx: usize) {
-                self.aliases[idx] = self.smalls_head;
+            fn push_small(&mut self, idx: u32) {
+                self.aliases[idx as usize] = self.smalls_head;
                 self.smalls_head = idx;
             }
 
-            fn push_big(&mut self, idx: usize) {
-                self.aliases[idx] = self.bigs_head;
+            fn push_big(&mut self, idx: u32) {
+                self.aliases[idx as usize] = self.bigs_head;
                 self.bigs_head = idx;
             }
 
-            fn pop_small(&mut self) -> usize {
+            fn pop_small(&mut self) -> u32 {
                 let popped = self.smalls_head;
-                self.smalls_head = self.aliases[popped];
+                self.smalls_head = self.aliases[popped as usize];
                 popped
             }
 
-            fn pop_big(&mut self) -> usize {
+            fn pop_big(&mut self) -> u32 {
                 let popped = self.bigs_head;
-                self.bigs_head = self.aliases[popped];
+                self.bigs_head = self.aliases[popped as usize];
                 popped
             }
 
             fn smalls_is_empty(&self) -> bool {
-                self.smalls_head == ::core::usize::MAX
+                self.smalls_head == ::core::u32::MAX
             }
 
             fn bigs_is_empty(&self) -> bool {
-                self.bigs_head == ::core::usize::MAX
+                self.bigs_head == ::core::u32::MAX
             }
 
-            fn set_alias(&mut self, idx: usize, alias: usize) {
-                self.aliases[idx] = alias;
+            fn set_alias(&mut self, idx: u32, alias: u32) {
+                self.aliases[idx as usize] = alias;
             }
         }
 
@@ -174,9 +180,9 @@ impl<W: Weight> WeightedIndex<W> {
         // Split indices into those with small weights and those with big weights.
         for (index, &odds) in no_alias_odds.iter().enumerate() {
             if odds < weight_sum {
-                aliases.push_small(index);
+                aliases.push_small(index as u32);
             } else {
-                aliases.push_big(index);
+                aliases.push_big(index as u32);
             }
         }
 
@@ -187,9 +193,11 @@ impl<W: Weight> WeightedIndex<W> {
             let b = aliases.pop_big();
 
             aliases.set_alias(s, b);
-            no_alias_odds[b] = no_alias_odds[b] - weight_sum + no_alias_odds[s];
+            no_alias_odds[b as usize] = no_alias_odds[b as usize]
+                    - weight_sum
+                    + no_alias_odds[s as usize];
 
-            if no_alias_odds[b] < weight_sum {
+            if no_alias_odds[b as usize] < weight_sum {
                 aliases.push_small(b);
             } else {
                 aliases.push_big(b);
@@ -199,10 +207,10 @@ impl<W: Weight> WeightedIndex<W> {
         // The remaining indices should have no alias odds of about 100%. This is due to
         // numeric accuracy. Otherwise they would be exactly 100%.
         while !aliases.smalls_is_empty() {
-            no_alias_odds[aliases.pop_small()] = weight_sum;
+            no_alias_odds[aliases.pop_small() as usize] = weight_sum;
         }
         while !aliases.bigs_is_empty() {
-            no_alias_odds[aliases.pop_big()] = weight_sum;
+            no_alias_odds[aliases.pop_big() as usize] = weight_sum;
         }
 
         // Prepare distributions for sampling. Creating them beforehand improves
@@ -222,10 +230,10 @@ impl<W: Weight> WeightedIndex<W> {
 impl<W: Weight> Distribution<usize> for WeightedIndex<W> {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> usize {
         let candidate = rng.sample(self.uniform_index);
-        if rng.sample(&self.uniform_within_weight_sum) < self.no_alias_odds[candidate] {
-            candidate
+        if rng.sample(&self.uniform_within_weight_sum) < self.no_alias_odds[candidate as usize] {
+            candidate as usize
         } else {
-            self.aliases[candidate]
+            self.aliases[candidate as usize] as usize
         }
     }
 }
@@ -283,10 +291,10 @@ pub trait Weight:
     /// Element of `Self` equivalent to 0.
     const ZERO: Self;
 
-    /// Produce an instance of `Self` from a `usize` value, or return `None` if
+    /// Produce an instance of `Self` from a `u32` value, or return `None` if
     /// out of range. Loss of precision (where `Self` is a floating point type)
     /// is acceptable.
-    fn try_from_usize_lossy(n: usize) -> Option<Self>;
+    fn try_from_u32_lossy(n: u32) -> Option<Self>;
 
     /// Sums all values in slice `values`.
     fn sum(values: &[Self]) -> Self {
@@ -300,7 +308,7 @@ macro_rules! impl_weight_for_float {
             const MAX: Self = ::core::$T::MAX;
             const ZERO: Self = 0.0;
 
-            fn try_from_usize_lossy(n: usize) -> Option<Self> {
+            fn try_from_u32_lossy(n: u32) -> Option<Self> {
                 Some(n as $T)
             }
 
@@ -329,9 +337,9 @@ macro_rules! impl_weight_for_int {
             const MAX: Self = ::core::$T::MAX;
             const ZERO: Self = 0;
 
-            fn try_from_usize_lossy(n: usize) -> Option<Self> {
+            fn try_from_u32_lossy(n: u32) -> Option<Self> {
                 let n_converted = n as Self;
-                if n_converted >= Self::ZERO && n_converted as usize == n {
+                if n_converted >= Self::ZERO && n_converted as u32 == n {
                     Some(n_converted)
                 } else {
                     None
@@ -344,14 +352,14 @@ macro_rules! impl_weight_for_int {
 impl_weight_for_float!(f64);
 impl_weight_for_float!(f32);
 impl_weight_for_int!(usize);
-#[cfg(all(rustc_1_26, not(target_os = "emscripten")))]
+#[cfg(not(target_os = "emscripten"))]
 impl_weight_for_int!(u128);
 impl_weight_for_int!(u64);
 impl_weight_for_int!(u32);
 impl_weight_for_int!(u16);
 impl_weight_for_int!(u8);
 impl_weight_for_int!(isize);
-#[cfg(all(rustc_1_26, not(target_os = "emscripten")))]
+#[cfg(not(target_os = "emscripten"))]
 impl_weight_for_int!(i128);
 impl_weight_for_int!(i64);
 impl_weight_for_int!(i32);
@@ -390,7 +398,7 @@ mod test {
         );
     }
 
-    #[cfg(all(rustc_1_26, not(target_os = "emscripten")))]
+    #[cfg(not(target_os = "emscripten"))]
     #[test]
     #[cfg(not(miri))] // Miri is too slow
     fn test_weighted_index_u128() {
@@ -440,21 +448,21 @@ mod test {
     where
         WeightedIndex<W>: fmt::Debug,
     {
-        const NUM_WEIGHTS: usize = 10;
-        const ZERO_WEIGHT_INDEX: usize = 3;
+        const NUM_WEIGHTS: u32 = 10;
+        const ZERO_WEIGHT_INDEX: u32 = 3;
         const NUM_SAMPLES: u32 = 15000;
-        let mut rng = ::test::rng(0x9c9fa0b0580a7031);
+        let mut rng = crate::test::rng(0x9c9fa0b0580a7031);
 
         let weights = {
-            let mut weights = Vec::with_capacity(NUM_WEIGHTS);
-            let random_weight_distribution = ::distributions::Uniform::new_inclusive(
+            let mut weights = Vec::with_capacity(NUM_WEIGHTS as usize);
+            let random_weight_distribution = crate::distributions::Uniform::new_inclusive(
                 W::ZERO,
-                W::MAX / W::try_from_usize_lossy(NUM_WEIGHTS).unwrap(),
+                W::MAX / W::try_from_u32_lossy(NUM_WEIGHTS).unwrap(),
             );
             for _ in 0..NUM_WEIGHTS {
                 weights.push(rng.sample(&random_weight_distribution));
             }
-            weights[ZERO_WEIGHT_INDEX] = W::ZERO;
+            weights[ZERO_WEIGHT_INDEX as usize] = W::ZERO;
             weights
         };
         let weight_sum = weights.iter().map(|w| *w).sum::<W>();
@@ -464,12 +472,12 @@ mod test {
             .collect::<Vec<f64>>();
         let weight_distribution = WeightedIndex::new(weights).unwrap();
 
-        let mut counts = vec![0_usize; NUM_WEIGHTS];
+        let mut counts = vec![0; NUM_WEIGHTS as usize];
         for _ in 0..NUM_SAMPLES {
             counts[rng.sample(&weight_distribution)] += 1;
         }
 
-        assert_eq!(counts[ZERO_WEIGHT_INDEX], 0);
+        assert_eq!(counts[ZERO_WEIGHT_INDEX as usize], 0);
         for (count, expected_count) in counts.into_iter().zip(expected_counts) {
             let difference = (count as f64 - expected_count).abs();
             let max_allowed_difference = NUM_SAMPLES as f64 / NUM_WEIGHTS as f64 * 0.1;

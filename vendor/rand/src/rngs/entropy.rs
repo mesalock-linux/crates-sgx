@@ -12,12 +12,14 @@
 
 use rand_core::{RngCore, CryptoRng, Error};
 #[allow(unused)]
-use rngs::OsRng;
+use crate::rngs::OsRng;
 
 /// An interface returning random data from external source(s), provided
 /// specifically for securely seeding algorithmic generators (PRNGs).
 ///
 /// This is deprecated. It is suggested you use [`rngs::OsRng`] instead.
+/// 
+/// [`rngs::OsRng`]: crate::rngs::OsRng
 #[derive(Debug)]
 #[deprecated(since="0.7.0", note="use rngs::OsRng instead")]
 pub struct EntropyRng {

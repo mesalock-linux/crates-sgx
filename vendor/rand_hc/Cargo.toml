@@ -1,6 +1,6 @@
 [package]
 name = "rand_hc"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["The Rand Project Developers"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
@@ -12,10 +12,11 @@ HC128 random number generator
 """
 keywords = ["random", "rng", "hc128"]
 categories = ["algorithms", "no-std"]
+edition = "2018"
 
 [badges]
 travis-ci = { repository = "rust-random/rand" }
 appveyor = { repository = "rust-random/rand" }
 
 [dependencies]
-rand_core = { path = "../rand_core", version = "0.4" }
+rand_core = { path = "../rand_core", version = "0.5" }
