@@ -5,12 +5,34 @@
 // <LICENSE-MIT or https://opensource.org/licenses/MIT>, at your
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
-extern crate std;
-
+use crate::error::ERRNO_NOT_POSITIVE;
 use crate::util::LazyUsize;
 use crate::Error;
+use core::num::NonZeroU32;
 use core::ptr::NonNull;
-use std::io;
+
+cfg_if! {
+    if #[cfg(any(target_os = "netbsd", target_os = "openbsd", target_os = "android"))] {
+        use libc::__errno as errno_location;
+    } else if #[cfg(any(target_os = "linux", target_os = "emscripten", target_os = "redox"))] {
+        use libc::__errno_location as errno_location;
+    } else if #[cfg(any(target_os = "solaris", target_os = "illumos"))] {
+        use libc::___errno as errno_location;
+    } else if #[cfg(any(target_os = "macos", target_os = "freebsd", target_os = "dragonfly"))] {
+        use libc::__error as errno_location;
+    } else if #[cfg(target_os = "haiku")] {
+        use libc::_errnop as errno_location;
+    }
+}
+
+pub fn last_os_error() -> Error {
+    let errno = unsafe { *errno_location() };
+    if errno > 0 {
+        Error::from(NonZeroU32::new(errno as u32).unwrap())
+    } else {
+        ERRNO_NOT_POSITIVE
+    }
+}
 
 // Fill a buffer by repeatedly invoking a system call. The `sys_fill` function:
 //   - should return -1 and set errno on failure
@@ -22,10 +44,10 @@ pub fn sys_fill_exact(
     while !buf.is_empty() {
         let res = sys_fill(buf);
         if res < 0 {
-            let err = io::Error::last_os_error();
+            let err = last_os_error();
             // We should try again if the call was interrupted.
             if err.raw_os_error() != Some(libc::EINTR) {
-                return Err(err.into());
+                return Err(err);
             }
         } else {
             // We don't check for EOF (ret = 0) as the data we are reading
@@ -80,7 +102,12 @@ impl LazyFd {
                 None => LazyUsize::UNINIT,
             },
             || unsafe {
-                libc::usleep(1000);
+                // We are usually waiting on an open(2) syscall to complete,
+                // which typically takes < 10us if the file is a device.
+                // However, we might end up waiting much longer if the entropy
+                // pool isn't initialized, but even in that case, this loop will
+                // consume a negligible amount of CPU on most platforms.
+                libc::usleep(10);
             },
         );
         match fd {
@@ -88,4 +115,26 @@ impl LazyFd {
             val => Some(val as libc::c_int),
         }
     }
+}
+
+cfg_if! {
+    if #[cfg(any(target_os = "linux", target_os = "emscripten"))] {
+        use libc::open64 as open;
+    } else {
+        use libc::open;
+    }
+}
+
+// SAFETY: path must be null terminated, FD must be manually closed.
+pub unsafe fn open_readonly(path: &str) -> Option<libc::c_int> {
+    debug_assert!(path.as_bytes().last() == Some(&0));
+    let fd = open(path.as_ptr() as *mut _, libc::O_RDONLY | libc::O_CLOEXEC);
+    if fd < 0 {
+        return None;
+    }
+    // O_CLOEXEC works on all Unix targets except for older Linux kernels (pre
+    // 2.6.23), so we also use an ioctl to make sure FD_CLOEXEC is set.
+    #[cfg(target_os = "linux")]
+    libc::ioctl(fd, libc::FIOCLEX);
+    Some(fd)
 }

@@ -9,6 +9,7 @@
 
 //! The dirichlet distribution.
 #![allow(deprecated)]
+#![allow(clippy::all)]
 
 #[cfg(feature="mesalock_sgx")] use std::prelude::v1::*;
 

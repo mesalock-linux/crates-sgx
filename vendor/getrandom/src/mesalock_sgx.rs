@@ -8,10 +8,10 @@
 
 //! Implementation for SGX using RDRAND instruction
 use crate::Error;
-use core::num::NonZeroU32;
 
 use sgx_trts::trts::rsgx_read_rand;
 
+#[allow(deprecated)]
 pub fn getrandom_inner(dest: &mut [u8]) -> Result<(), Error> {
 
     // sgx_read_rand cannot take len=0, but this function does
@@ -25,5 +25,5 @@ pub fn getrandom_inner(dest: &mut [u8]) -> Result<(), Error> {
     }
 }
 
-#[inline(always)]
-pub fn error_msg_inner(_: NonZeroU32) -> Option<&'static str> { None }
+//#[inline(always)]
+//pub fn error_msg_inner(_: NonZeroU32) -> Option<&'static str> { None }

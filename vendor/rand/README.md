@@ -84,7 +84,7 @@ Rand release if required, but the change must be noted in the changelog.
 Rand is built with these features enabled by default:
 
 -   `std` enables functionality dependent on the `std` lib
--   `alloc` (implied by `std`) enables functionality requiring an allocator
+-   `alloc` (implied by `std`) enables functionality requiring an allocator (when using this feature in `no_std`, Rand requires Rustc version 1.36 or greater)
 -   `getrandom` (implied by `std`) is an optional dependency providing the code
     behind `rngs::OsRng`
 
@@ -93,8 +93,10 @@ Optionally, the following dependencies can be enabled:
 -   `log` enables logging via the `log` crate
 -   `stdweb` implies `getrandom/stdweb` to enable
     `getrandom` support on `wasm32-unknown-unknown`
+    (will be removed in rand 0.8; activate via `getrandom` crate instead)
 -   `wasm-bindgen` implies `getrandom/wasm-bindgen` to enable
     `getrandom` support on `wasm32-unknown-unknown`
+    (will be removed in rand 0.8; activate via `getrandom` crate instead)
 
 Additionally, these features configure Rand:
 

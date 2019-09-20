@@ -19,15 +19,18 @@ mod arch_dep {
     /// Using a macro here since an inline function.
     /// didn't optimise properly.
     /// TODO June 2019: See if it's still needed.
-    macro_rules! push{
+    macro_rules! push {
         ($s:ident) => {
-            $s.w.extend_from_slice(&[$s.acc as u8,
-                                    ($s.acc >> 8) as u8,
-                                    ($s.acc >> 16) as u8,
-                                    ($s.acc >> 24) as u8,
-                                    ($s.acc >> 32) as u8,
-                                    ($s.acc >> 40) as u8
-            ][..])
+            $s.w.extend_from_slice(
+                &[
+                    $s.acc as u8,
+                    ($s.acc >> 8) as u8,
+                    ($s.acc >> 16) as u8,
+                    ($s.acc >> 24) as u8,
+                    ($s.acc >> 32) as u8,
+                    ($s.acc >> 40) as u8,
+                ][..],
+            )
         };
     }
 }
@@ -36,7 +39,7 @@ mod arch_dep {
 mod arch_dep {
     pub type AccType = u32;
     pub const FLUSH_AT: u8 = 16;
-    macro_rules! push{
+    macro_rules! push {
         ($s:ident) => {
             // Unlike the 64-bit case, using copy_from_slice seemed to worsen performance here.
             // TODO: Needs benching on a 32-bit system to see what works best.
@@ -73,7 +76,7 @@ impl LsbWriter {
     /// Buffer n number of bits, and write them to the vec if there are enough pending bits.
     pub fn write_bits(&mut self, v: u16, n: u8) {
         // NOTE: This outputs garbage data if n is 0, but v is not 0
-        self.acc |= (v as AccType) << self.bits;
+        self.acc |= (u64::from(v)) << self.bits;
         self.bits += n;
         // Waiting until we have FLUSH_AT bits and pushing them all in one batch.
         while self.bits >= FLUSH_AT {
@@ -85,7 +88,7 @@ impl LsbWriter {
 
     fn write_bits_finish(&mut self, v: u16, n: u8) {
         // NOTE: This outputs garbage data if n is 0, but v is not 0
-        self.acc |= (v as AccType) << self.bits;
+        self.acc |= (u64::from(v)) << self.bits;
         self.bits += n % 8;
         while self.bits >= 8 {
             self.w.push(self.acc as u8);
@@ -110,7 +113,7 @@ impl Write for LsbWriter {
             self.w.extend_from_slice(buf)
         } else {
             for &byte in buf.iter() {
-                self.write_bits(byte as u16, 8)
+                self.write_bits(u16::from(byte), 8)
             }
         }
         Ok(buf.len())
@@ -164,34 +167,8 @@ mod test {
             (174, 8),
         ];
         let expected = [
-            83,
-            192,
-            2,
-            220,
-            253,
-            66,
-            21,
-            220,
-            93,
-            253,
-            92,
-            131,
-            28,
-            125,
-            20,
-            2,
-            66,
-            157,
-            124,
-            60,
-            157,
-            21,
-            128,
-            216,
-            213,
-            47,
-            216,
-            21,
+            83, 192, 2, 220, 253, 66, 21, 220, 93, 253, 92, 131, 28, 125, 20, 2, 66, 157, 124, 60,
+            157, 21, 128, 216, 213, 47, 216, 21,
         ];
         let mut writer = LsbWriter::new(Vec::new());
         for v in input.iter() {
@@ -202,11 +179,10 @@ mod test {
     }
 }
 
-
 #[cfg(all(test, feature = "benchmarks"))]
 mod bench {
-    use test_std::Bencher;
     use super::LsbWriter;
+    use test_std::Bencher;
     #[bench]
     fn bit_writer(b: &mut Bencher) {
         let input = [
@@ -245,8 +221,10 @@ mod bench {
             (174, 8),
         ];
         let mut writer = LsbWriter::new(Vec::with_capacity(100));
-        b.iter(|| for v in input.iter() {
-            let _ = writer.write_bits(v.0, v.1);
+        b.iter(|| {
+            for v in input.iter() {
+                let _ = writer.write_bits(v.0, v.1);
+            }
         });
     }
 }

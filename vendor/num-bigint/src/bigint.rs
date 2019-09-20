@@ -35,6 +35,9 @@ use biguint::{BigUint, IntDigits};
 use IsizePromotion;
 use UsizePromotion;
 
+#[cfg(feature = "quickcheck")]
+use quickcheck::{Arbitrary, Gen};
+
 /// A Sign is a `BigInt`'s composing element.
 #[derive(PartialEq, PartialOrd, Eq, Ord, Copy, Clone, Debug, Hash)]
 pub enum Sign {
@@ -113,6 +116,22 @@ impl<'de> serde::Deserialize<'de> for Sign {
 pub struct BigInt {
     sign: Sign,
     data: BigUint,
+}
+
+#[cfg(feature = "quickcheck")]
+impl Arbitrary for BigInt {
+    fn arbitrary<G: Gen>(g: &mut G) -> Self {
+        let positive = bool::arbitrary(g);
+        let sign = if positive { Sign::Plus } else { Sign::Minus };
+        Self::from_biguint(sign, BigUint::arbitrary(g))
+    }
+
+    #[allow(bare_trait_objects)] // `dyn` needs Rust 1.27 to parse, even when cfg-disabled
+    fn shrink(&self) -> Box<Iterator<Item = Self>> {
+        let sign = self.sign();
+        let unsigned_shrink = self.data.shrink();
+        Box::new(unsigned_shrink.map(move |x| BigInt::from_biguint(sign, x)))
+    }
 }
 
 /// Return the magnitude of a `BigInt`.
@@ -220,7 +239,7 @@ impl fmt::UpperHex for BigInt {
 // ff ff -> ...f 00 01
 #[inline]
 fn negate_carry(a: BigDigit, acc: &mut DoubleBigDigit) -> BigDigit {
-    *acc += (!a) as DoubleBigDigit;
+    *acc += DoubleBigDigit::from(!a);
     let lo = *acc as BigDigit;
     *acc >>= big_digit::BITS;
     lo
@@ -677,7 +696,7 @@ impl Num for BigInt {
         } else {
             Plus
         };
-        let bu = try!(BigUint::from_str_radix(s, radix));
+        let bu = BigUint::from_str_radix(s, radix)?;
         Ok(BigInt::from_biguint(sign, bu))
     }
 }
@@ -870,6 +889,7 @@ pow_impl!(u64);
 pow_impl!(usize);
 #[cfg(has_i128)]
 pow_impl!(u128);
+pow_impl!(BigUint);
 
 // A convenience method for getting the absolute value of an i32 in a u32.
 #[inline]
@@ -2480,7 +2500,9 @@ impl<'de> serde::Deserialize<'de> for BigInt {
     }
 }
 
-/// A generic trait for converting a value to a `BigInt`.
+/// A generic trait for converting a value to a `BigInt`. This may return
+/// `None` when converting from `f32` or `f64`, and will always succeed
+/// when converting from any integer or unsigned primitive, or `BigUint`.
 pub trait ToBigInt {
     /// Converts the value of `self` to a `BigInt`.
     fn to_bigint(&self) -> Option<BigInt>;

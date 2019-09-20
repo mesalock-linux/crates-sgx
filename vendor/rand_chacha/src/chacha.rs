@@ -56,6 +56,7 @@ impl<T> Clone for Array64<T> where T: Copy + Default {
         new
     }
 }
+
 impl<T> fmt::Debug for Array64<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Array64 {{}}")
@@ -84,7 +85,7 @@ macro_rules! chacha_impl {
             fn generate(&mut self, r: &mut Self::Results) {
                 // Fill slice of words by writing to equivalent slice of bytes, then fixing endianness.
                 self.state.refill4($rounds, unsafe {
-                    core::mem::transmute::<&mut Array64<u32>, &mut [u8; 256]>(&mut *r)
+                    &mut *(&mut *r as *mut Array64<u32> as *mut [u8; 256])
                 });
                 for x in r.as_mut() {
                     *x = x.to_le();

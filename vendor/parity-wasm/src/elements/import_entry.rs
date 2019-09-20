@@ -1,9 +1,13 @@
-use io;
-use std::string::String;
+use crate::rust::string::String;
+use crate::io;
 use super::{
-	Deserialize, Serialize, Error, VarUint7, VarInt7, VarUint32, VarUint1,
+	Deserialize, Serialize, Error, VarUint7, VarInt7, VarUint32, VarUint1, Uint8,
 	ValueType, TableElementType
 };
+
+const FLAG_HAS_MAX: u8 = 0x01;
+#[cfg(feature="atomics")]
+const FLAG_SHARED: u8 = 0x02;
 
 /// Global definition struct
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -96,34 +100,54 @@ impl Serialize for TableType {
 	}
 }
 
-/// Memory limits
+/// Memory and table limits.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ResizableLimits {
 	initial: u32,
 	maximum: Option<u32>,
+	#[cfg(feature = "atomics")]
+	shared: bool,
 }
 
 impl ResizableLimits {
-	/// New memory limits definition
+	/// New memory limits definition.
 	pub fn new(min: u32, max: Option<u32>) -> Self {
 		ResizableLimits {
 			initial: min,
 			maximum: max,
+			#[cfg(feature = "atomics")]
+			shared: false,
 		}
 	}
-	/// Initial size
+	/// Initial size.
 	pub fn initial(&self) -> u32 { self.initial }
-	/// Maximum size
+	/// Maximum size.
 	pub fn maximum(&self) -> Option<u32> { self.maximum }
+
+	#[cfg(feature = "atomics")]
+	/// Whether or not this is a shared array buffer.
+	pub fn shared(&self) -> bool { self.shared }
 }
 
 impl Deserialize for ResizableLimits {
 	type Error = Error;
 
 	fn deserialize<R: io::Read>(reader: &mut R) -> Result<Self, Self::Error> {
-		let has_max = VarUint1::deserialize(reader)?;
+		let flags: u8 = Uint8::deserialize(reader)?.into();
+		match flags {
+			// Default flags are always supported. This is simply: FLAG_HAS_MAX={true, false}.
+			0x00 | 0x01 => {},
+
+			// Atomics proposal introduce FLAG_SHARED (0x02). Shared memories can be used only
+			// together with FLAG_HAS_MAX (0x01), hence 0x03.
+			#[cfg(feature="atomics")]
+			0x03 => {},
+
+			_ => return Err(Error::InvalidLimitsFlags(flags)),
+		}
+
 		let initial = VarUint32::deserialize(reader)?;
-		let maximum = if has_max.into() {
+		let maximum = if flags & FLAG_HAS_MAX != 0 {
 			Some(VarUint32::deserialize(reader)?.into())
 		} else {
 			None
@@ -132,6 +156,9 @@ impl Deserialize for ResizableLimits {
 		Ok(ResizableLimits {
 			initial: initial.into(),
 			maximum: maximum,
+
+			#[cfg(feature="atomics")]
+			shared: flags & FLAG_SHARED != 0,
 		})
 	}
 }
@@ -140,11 +167,23 @@ impl Serialize for ResizableLimits {
 	type Error = Error;
 
 	fn serialize<W: io::Write>(self, writer: &mut W) -> Result<(), Self::Error> {
-		let max = self.maximum;
-		VarUint1::from(max.is_some()).serialize(writer)?;
+		let mut flags: u8 = 0;
+		if self.maximum.is_some() {
+			flags |= FLAG_HAS_MAX;
+		}
+
+		#[cfg(feature="atomics")]
+		{
+			// If the atomics feature is enabled and if the shared flag is set, add logically
+			// it to the flags.
+			if self.shared {
+				flags |= FLAG_SHARED;
+			}
+		}
+		Uint8::from(flags).serialize(writer)?;
 		VarUint32::from(self.initial).serialize(writer)?;
-		if let Some(val) = max {
-			VarUint32::from(val).serialize(writer)?;
+		if let Some(max) = self.maximum {
+			VarUint32::from(max).serialize(writer)?;
 		}
 		Ok(())
 	}
@@ -157,8 +196,18 @@ pub struct MemoryType(ResizableLimits);
 impl MemoryType {
 	/// New memory definition
 	pub fn new(min: u32, max: Option<u32>) -> Self {
-		MemoryType(ResizableLimits::new(min, max))
+		let r = ResizableLimits::new(min, max);
+		MemoryType(r)
 	}
+
+	/// Set the `shared` flag that denotes a memory that can be shared between threads.
+	///
+	/// `false` by default. This is only available if the `atomics` feature is enabled.
+	#[cfg(feature = "atomics")]
+	pub fn set_shared(&mut self, shared: bool) {
+		self.0.shared = shared;
+	}
+
 	/// Limits of the memory entry.
 	pub fn limits(&self) -> &ResizableLimits {
 		&self.0
@@ -184,7 +233,8 @@ impl Serialize for MemoryType {
 /// External to local binding.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum External {
-	/// Binds to function with index.
+	/// Binds to a function whose type is associated with the given index in the
+	/// type section.
 	Function(u32),
 	/// Describes local table definition to be imported as.
 	Table(TableType),

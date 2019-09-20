@@ -63,65 +63,62 @@ use std::prelude::v1::*;
 extern crate test as test_std;
 
 #[cfg(test)]
-extern crate flate2;
-// #[cfg(test)]
-// extern crate inflate;
+extern crate miniz_oxide;
 
 extern crate adler32;
 extern crate byteorder;
 #[cfg(feature = "gzip")]
 extern crate gzip_header;
 
-mod compression_options;
-mod huffman_table;
-mod lz77;
-mod lzvalue;
-mod chained_hash_table;
-mod length_encode;
-mod output_writer;
-mod stored_block;
-mod huffman_lengths;
-mod zlib;
-mod checksum;
 mod bit_reverse;
 mod bitstream;
-mod encoder_state;
-mod matching;
-mod input_buffer;
-mod deflate_state;
+mod chained_hash_table;
+mod checksum;
 mod compress;
+mod compression_options;
+mod deflate_state;
+mod encoder_state;
+mod huffman_lengths;
+mod huffman_table;
+mod input_buffer;
+mod length_encode;
+mod lz77;
+mod lzvalue;
+mod matching;
+mod output_writer;
 mod rle;
-mod writer;
+mod stored_block;
 #[cfg(test)]
 mod test_utils;
+mod writer;
+mod zlib;
 
-use std::io::Write;
 use std::io;
+use std::io::Write;
 
 use byteorder::BigEndian;
 #[cfg(feature = "gzip")]
-use gzip_header::GzBuilder;
+use byteorder::LittleEndian;
 #[cfg(feature = "gzip")]
 use gzip_header::Crc;
 #[cfg(feature = "gzip")]
-use byteorder::LittleEndian;
+use gzip_header::GzBuilder;
 
-use checksum::RollingChecksum;
-use deflate_state::DeflateState;
+use crate::checksum::RollingChecksum;
+use crate::deflate_state::DeflateState;
 
-pub use compression_options::{CompressionOptions, SpecialOptions, Compression};
-use compress::Flush;
+use crate::compress::Flush;
+pub use compression_options::{Compression, CompressionOptions, SpecialOptions};
 pub use lz77::MatchingType;
 
-use writer::compress_until_done;
+use crate::writer::compress_until_done;
 
 /// Encoders implementing a `Write` interface.
 pub mod write {
-    pub use writer::{DeflateEncoder, ZlibEncoder};
     #[cfg(feature = "gzip")]
-    pub use writer::gzip::GzEncoder;
+    pub use crate::writer::gzip::GzEncoder;
+    pub use crate::writer::{DeflateEncoder, ZlibEncoder};
 }
-
 
 fn compress_data_dynamic<RC: RollingChecksum, W: Write>(
     input: &[u8],
@@ -157,7 +154,8 @@ pub fn deflate_bytes_conf<O: Into<CompressionOptions>>(input: &[u8], options: O)
         &mut writer,
         checksum::NoChecksum::new(),
         options.into(),
-    ).expect("Write error!");
+    )
+    .expect("Write error!");
     writer
 }
 
@@ -307,9 +305,9 @@ mod test {
     use super::*;
     use std::io::Write;
 
-    use test_utils::{get_test_data, decompress_to_end, decompress_zlib};
     #[cfg(feature = "gzip")]
     use test_utils::decompress_gzip;
+    use test_utils::{decompress_to_end, decompress_zlib, get_test_data};
 
     type CO = CompressionOptions;
 
@@ -500,6 +498,4 @@ mod test {
         roundtrip_zlib(two, CO::fast());
         roundtrip_zlib(two, CO::default());
     }
-
-
 }

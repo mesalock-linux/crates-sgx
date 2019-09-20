@@ -65,7 +65,7 @@ impl<W: Write> Encoder<W> {
         let mut info = Info::default();
         info.width = width;
         info.height = height;
-        Encoder { w: w, info: info }
+        Encoder { w, info }
     }
 
     pub fn write_header(self) -> Result<Writer<W>> {
@@ -115,8 +115,7 @@ pub struct Writer<W: Write> {
 
 impl<W: Write> Writer<W> {
     fn new(w: W, info: Info) -> Writer<W> {
-        let w = Writer { w: w, info: info };
-        w
+        Writer { w, info }
     }
 
     fn init(mut self) -> Result<Self> {
@@ -220,7 +219,7 @@ impl<'a, W: Write> Write for ChunkWriter<'a, W> {
 
     fn flush(&mut self) -> io::Result<()> {
         if self.index > 0 {
-            self.writer.write_chunk(chunk::IDAT, &self.buffer[..self.index+1])?;
+            self.writer.write_chunk(chunk::IDAT, &self.buffer[..=self.index])?;
         }
         self.index = 0;
         Ok(())
@@ -312,10 +311,9 @@ impl<'a, W: Write> Drop for StreamWriter<'a, W> {
 mod tests {
     use super::*;
 
-    extern crate rand;
     extern crate glob;
 
-    use self::rand::Rng;
+    use rand::{thread_rng, Rng};
     use std::{io, cmp};
     use std::io::Write;
     use std::fs::File;
@@ -342,7 +340,7 @@ mod tests {
                 let mut out = Vec::new();
                 {
                     let mut wrapper = RandomChunkWriter {
-                        rng: self::rand::thread_rng(),
+                        rng: thread_rng(),
                         w: &mut out
                     };
 
@@ -382,7 +380,7 @@ mod tests {
                 let mut out = Vec::new();
                 {
                     let mut wrapper = RandomChunkWriter {
-                        rng: self::rand::thread_rng(),
+                        rng: thread_rng(),
                         w: &mut out
                     };
 
@@ -390,7 +388,7 @@ mod tests {
                     let mut stream_writer = encoder.stream_writer();
 
                     let mut outer_wrapper = RandomChunkWriter {
-                        rng: self::rand::thread_rng(),
+                        rng: thread_rng(),
                         w: &mut stream_writer
                     };
                     

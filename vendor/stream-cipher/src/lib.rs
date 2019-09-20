@@ -4,25 +4,24 @@
 //! See [RustCrypto/stream-ciphers](https://github.com/RustCrypto/stream-ciphers)
 //! for ciphers implementation.
 #![no_std]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
 #![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
-#![doc(html_logo_url =
-    "https://raw.githubusercontent.com/RustCrypto/meta/master/logo_small.png")]
-pub extern crate generic_array;
 #[cfg(feature = "dev")]
 pub extern crate blobby;
+pub extern crate generic_array;
 #[cfg(all(feature = "std", feature = "mesalock_sgx", target_env = "sgx"))]
 extern crate std;
 #[cfg(all(feature = "std", feature = "mesalock_sgx", not(target_env = "sgx")))]
 extern crate sgx_tstd as std;
 
-use generic_array::{GenericArray, ArrayLength};
 use generic_array::typenum::Unsigned;
+use generic_array::{ArrayLength, GenericArray};
 
 #[cfg(feature = "dev")]
 pub mod dev;
 mod errors;
 
-pub use errors::{LoopError, InvalidKeyNonceLength};
+pub use errors::{InvalidKeyNonceLength, LoopError};
 
 /// Stream cipher creation trait.
 ///

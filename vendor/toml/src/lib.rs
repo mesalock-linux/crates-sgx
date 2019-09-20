@@ -174,5 +174,4 @@ mod tokens;
 pub mod macros;
 
 mod spanned;
-#[doc(no_inline)]
 pub use crate::spanned::Spanned;

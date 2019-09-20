@@ -1,17 +1,17 @@
 use std::io::Write;
-use std::{thread, io};
+use std::{io, thread};
 
-use byteorder::{WriteBytesExt, BigEndian};
+use byteorder::{BigEndian, WriteBytesExt};
 
-use checksum::{Adler32Checksum, RollingChecksum};
-use compress::compress_data_dynamic_n;
-use compress::Flush;
-use deflate_state::DeflateState;
-use compression_options::CompressionOptions;
-use zlib::{write_zlib_header, CompressionLevel};
+use crate::checksum::{Adler32Checksum, RollingChecksum};
+use crate::compress::compress_data_dynamic_n;
+use crate::compress::Flush;
+use crate::compression_options::CompressionOptions;
+use crate::deflate_state::DeflateState;
+use crate::zlib::{write_zlib_header, CompressionLevel};
 
-const ERR_STR: &'static str = "Error! The wrapped writer is missing.\
-                               This is a bug, please file an issue.";
+const ERR_STR: &str = "Error! The wrapped writer is missing.\
+                       This is a bug, please file an issue.";
 
 /// Keep compressing until all the input has been compressed and output or the writer returns `Err`.
 pub fn compress_until_done<W: Write>(
@@ -153,7 +153,6 @@ impl<W: Write> Drop for DeflateEncoder<W> {
     }
 }
 
-
 /// A Zlib encoder/compressor.
 ///
 /// A struct implementing a [`Write`] interface that takes unencoded data and compresses it to
@@ -294,12 +293,12 @@ impl<W: Write> Drop for ZlibEncoder<W> {
 pub mod gzip {
     use std::prelude::v1::*;
 
-    use std::io::{Write, Cursor};
-    use std::{thread, io};
+    use std::io::{Cursor, Write};
+    use std::{io, thread};
 
     use super::*;
 
-    use byteorder::{WriteBytesExt, LittleEndian};
+    use byteorder::{LittleEndian, WriteBytesExt};
     use gzip_header::{Crc, GzBuilder};
 
     /// A Gzip encoder/compressor.
@@ -472,7 +471,7 @@ pub mod gzip {
     #[cfg(test)]
     mod test {
         use super::*;
-        use test_utils::{get_test_data, decompress_gzip};
+        use test_utils::{decompress_gzip, get_test_data};
         #[test]
         fn gzip_writer() {
             let data = get_test_data();
@@ -498,8 +497,8 @@ pub mod gzip {
 #[cfg(test)]
 mod test {
     use super::*;
-    use test_utils::{get_test_data, decompress_to_end, decompress_zlib};
-    use compression_options::CompressionOptions;
+    use crate::compression_options::CompressionOptions;
+    use crate::test_utils::{decompress_to_end, decompress_zlib, get_test_data};
     use std::io::Write;
 
     #[test]
@@ -600,7 +599,7 @@ mod test {
     #[test]
     /// Make sure compression works with the writer when the input is between 1 and 2 window sizes.
     fn issue_18() {
-        use compression_options::Compression;
+        use crate::compression_options::Compression;
         let data = vec![0; 61000];
         let compressed = {
             let mut compressor = ZlibEncoder::new(Vec::new(), Compression::Default);

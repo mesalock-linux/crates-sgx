@@ -1,16 +1,16 @@
 use std::prelude::v1::*;
 use std::io::Write;
-use std::{io, mem, cmp};
+use std::{cmp, io, mem};
 
-use lz77::LZ77State;
-use output_writer::DynamicWriter;
-use encoder_state::EncoderState;
-use input_buffer::InputBuffer;
-use compression_options::{CompressionOptions, MAX_HASH_CHECKS};
-use compress::Flush;
-use length_encode::{LeafVec, EncodedLength};
-use huffman_table::NUM_LITERALS_AND_LENGTHS;
-pub use huffman_table::MAX_MATCH;
+use crate::compress::Flush;
+use crate::compression_options::{CompressionOptions, MAX_HASH_CHECKS};
+use crate::encoder_state::EncoderState;
+pub use crate::huffman_table::MAX_MATCH;
+use crate::huffman_table::NUM_LITERALS_AND_LENGTHS;
+use crate::input_buffer::InputBuffer;
+use crate::length_encode::{EncodedLength, LeafVec};
+use crate::lz77::LZ77State;
+use crate::output_writer::DynamicWriter;
 
 /// A counter used for checking values in debug mode.
 /// Does nothing when debug assertions are disabled.
@@ -103,7 +103,7 @@ impl<W: Write> DeflateState<W> {
             encoder_state: EncoderState::new(Vec::with_capacity(1024 * 32)),
             lz77_writer: DynamicWriter::new(),
             length_buffers: LengthBuffers::new(),
-            compression_options: compression_options,
+            compression_options,
             bytes_written: 0,
             inner: Some(writer),
             output_buf_pos: 0,

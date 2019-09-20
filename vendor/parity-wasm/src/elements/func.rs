@@ -1,10 +1,9 @@
-use io;
-use std::vec::Vec;
+use crate::rust::vec::Vec;
 use super::{
 	Deserialize, Error, ValueType, VarUint32, CountedList, Instructions,
 	Serialize, CountedWriter, CountedListWriter,
 };
-use elements::section::SectionReader;
+use crate::{io, elements::section::SectionReader};
 
 /// Function signature (type reference)
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -89,12 +88,12 @@ pub struct FuncBody {
 }
 
 impl FuncBody {
-	/// New function body with given `locals` and `instructions`
+	/// New function body with given `locals` and `instructions`.
 	pub fn new(locals: Vec<Local>, instructions: Instructions) -> Self {
 		FuncBody { locals: locals, instructions: instructions }
 	}
 
-	/// List of individual instructions
+	/// List of individual instructions.
 	pub fn empty() -> Self {
 		FuncBody { locals: Vec::new(), instructions: Instructions::empty() }
 	}
@@ -103,6 +102,7 @@ impl FuncBody {
 	pub fn locals(&self) -> &[Local] { &self.locals }
 
 	/// Instruction list of the function body. Minimal instruction list
+	///
 	/// is just `&[Instruction::End]`
 	pub fn code(&self) -> &Instructions { &self.instructions }
 
@@ -117,9 +117,16 @@ impl Deserialize for FuncBody {
 	 type Error = Error;
 
 	fn deserialize<R: io::Read>(reader: &mut R) -> Result<Self, Self::Error> {
-		// todo: maybe use reader.take(section_length)
 		let mut body_reader = SectionReader::new(reader)?;
 		let locals: Vec<Local> = CountedList::<Local>::deserialize(&mut body_reader)?.into_inner();
+
+		// The specification obliges us to count the total number of local variables while
+		// decoding the binary format.
+		locals
+			.iter()
+			.try_fold(0u32, |acc, &Local { count, .. }| acc.checked_add(count))
+			.ok_or_else(|| Error::TooManyLocals)?;
+
 		let instructions = Instructions::deserialize(&mut body_reader)?;
 		body_reader.close()?;
 		Ok(FuncBody { locals: locals, instructions: instructions })

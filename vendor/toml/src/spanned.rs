@@ -1,38 +1,34 @@
-//! ```
-//! use serde_derive::Deserialize;
-//! use toml::Spanned;
-//!
-//! #[derive(Deserialize)]
-//! struct Value {
-//!     s: Spanned<String>,
-//! }
-//!
-//! fn main() {
-//!     let t = "s = \"value\"\n";
-//!
-//!     let u: Value = toml::from_str(t).unwrap();
-//!
-//!     assert_eq!(u.s.start(), 4);
-//!     assert_eq!(u.s.end(), 11);
-//!     assert_eq!(u.s.get_ref(), "value");
-//!     assert_eq!(u.s.into_inner(), String::from("value"));
-//! }
-//! ```
-
 use serde::{de, ser};
 use std::fmt;
 
-#[doc(hidden)]
-pub const NAME: &'static str = "$__toml_private_Spanned";
-#[doc(hidden)]
-pub const START: &'static str = "$__toml_private_start";
-#[doc(hidden)]
-pub const END: &'static str = "$__toml_private_end";
-#[doc(hidden)]
-pub const VALUE: &'static str = "$__toml_private_value";
+pub(crate) const NAME: &str = "$__toml_private_Spanned";
+pub(crate) const START: &str = "$__toml_private_start";
+pub(crate) const END: &str = "$__toml_private_end";
+pub(crate) const VALUE: &str = "$__toml_private_value";
 
 /// A spanned value, indicating the range at which it is defined in the source.
-#[derive(Debug)]
+///
+/// ```
+/// use serde_derive::Deserialize;
+/// use toml::Spanned;
+///
+/// #[derive(Deserialize)]
+/// struct Value {
+///     s: Spanned<String>,
+/// }
+///
+/// fn main() {
+///     let t = "s = \"value\"\n";
+///
+///     let u: Value = toml::from_str(t).unwrap();
+///
+///     assert_eq!(u.s.start(), 4);
+///     assert_eq!(u.s.end(), 11);
+///     assert_eq!(u.s.get_ref(), "value");
+///     assert_eq!(u.s.into_inner(), String::from("value"));
+/// }
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Spanned<T> {
     /// The start range.
     start: usize,
@@ -116,17 +112,13 @@ where
 
                 let value: T = visitor.next_value()?;
 
-                Ok(Spanned {
-                    start: start,
-                    end: end,
-                    value: value,
-                })
+                Ok(Spanned { start, end, value })
             }
         }
 
         let visitor = SpannedVisitor(::std::marker::PhantomData);
 
-        static FIELDS: [&'static str; 3] = [START, END, VALUE];
+        static FIELDS: [&str; 3] = [START, END, VALUE];
         deserializer.deserialize_struct(NAME, &FIELDS, visitor)
     }
 }

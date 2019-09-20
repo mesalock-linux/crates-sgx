@@ -221,7 +221,12 @@ macro_rules! float_trait_impl {
                 }
 
                 fn slice_shift_char(src: &str) -> Option<(char, &str)> {
-                    src.chars().nth(0).map(|ch| (ch, &src[1..]))
+                    let mut chars = src.chars();
+                    if let Some(ch) = chars.next() {
+                        Some((ch, chars.as_str()))
+                    } else {
+                        None
+                    }
                 }
 
                 let (is_positive, src) =  match slice_shift_char(src) {
@@ -376,17 +381,56 @@ pub fn clamp<T: PartialOrd>(input: T, min: T, max: T) -> T {
     }
 }
 
+/// A value bounded by a minimum value
+///
+///  If input is less than min then this returns min.
+///  Otherwise this returns input.
+///  `clamp_min(std::f32::NAN, 1.0)` preserves `NAN` different from `f32::min(std::f32::NAN, 1.0)`.
+#[inline]
+pub fn clamp_min<T: PartialOrd>(input: T, min: T) -> T {
+    if input < min {
+        min
+    } else {
+        input
+    }
+}
+
+/// A value bounded by a maximum value
+///
+///  If input is greater than max then this returns max.
+///  Otherwise this returns input.
+///  `clamp_max(std::f32::NAN, 1.0)` preserves `NAN` different from `f32::max(std::f32::NAN, 1.0)`.
+#[inline]
+pub fn clamp_max<T: PartialOrd>(input: T, max: T) -> T {
+    if input > max {
+        max
+    } else {
+        input
+    }
+}
+
 #[test]
 fn clamp_test() {
     // Int test
     assert_eq!(1, clamp(1, -1, 2));
     assert_eq!(-1, clamp(-2, -1, 2));
     assert_eq!(2, clamp(3, -1, 2));
+    assert_eq!(1, clamp_min(1, -1));
+    assert_eq!(-1, clamp_min(-2, -1));
+    assert_eq!(-1, clamp_max(1, -1));
+    assert_eq!(-2, clamp_max(-2, -1));
 
     // Float test
     assert_eq!(1.0, clamp(1.0, -1.0, 2.0));
     assert_eq!(-1.0, clamp(-2.0, -1.0, 2.0));
     assert_eq!(2.0, clamp(3.0, -1.0, 2.0));
+    assert_eq!(1.0, clamp_min(1.0, -1.0));
+    assert_eq!(-1.0, clamp_min(-2.0, -1.0));
+    assert_eq!(-1.0, clamp_max(1.0, -1.0));
+    assert_eq!(-2.0, clamp_max(-2.0, -1.0));
+    assert!(clamp(::core::f32::NAN, -1.0, 1.0).is_nan());
+    assert!(clamp_min(::core::f32::NAN, 1.0).is_nan());
+    assert!(clamp_max(::core::f32::NAN, 1.0).is_nan());
 }
 
 #[test]
@@ -398,6 +442,15 @@ fn from_str_radix_unwrap() {
 
     let f: f32 = Num::from_str_radix("0.0", 10).unwrap();
     assert_eq!(f, 0.0);
+}
+
+#[test]
+fn from_str_radix_multi_byte_fail() {
+    // Ensure parsing doesn't panic, even on invalid sign characters
+    assert!(f32::from_str_radix("™0.2", 10).is_err());
+
+    // Even when parsing the exponent sign
+    assert!(f32::from_str_radix("0.2E™1", 10).is_err());
 }
 
 #[test]

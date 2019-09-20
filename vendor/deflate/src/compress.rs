@@ -1,13 +1,13 @@
-use std::io::Write;
 use std::io;
+use std::io::Write;
 
-use deflate_state::DeflateState;
-use encoder_state::EncoderState;
-use lzvalue::LZValue;
-use lz77::{lz77_compress_block, LZ77Status};
-use huffman_lengths::{gen_huffman_lengths, write_huffman_lengths, BlockType};
-use bitstream::LsbWriter;
-use stored_block::{compress_block_stored, write_stored_header, MAX_STORED_BLOCK_LENGTH};
+use crate::bitstream::LsbWriter;
+use crate::deflate_state::DeflateState;
+use crate::encoder_state::EncoderState;
+use crate::huffman_lengths::{gen_huffman_lengths, write_huffman_lengths, BlockType};
+use crate::lz77::{lz77_compress_block, LZ77Status};
+use crate::lzvalue::LZValue;
+use crate::stored_block::{compress_block_stored, write_stored_header, MAX_STORED_BLOCK_LENGTH};
 
 const LARGEST_OUTPUT_BUF_SIZE: usize = 1024 * 32;
 
@@ -43,7 +43,7 @@ pub fn flush_to_bitstream(buffer: &[LZValue], state: &mut EncoderState) {
 /// Currently only used in tests.
 #[cfg(test)]
 pub fn compress_data_fixed(input: &[u8]) -> Vec<u8> {
-    use lz77::lz77_compress;
+    use crate::lz77::lz77_compress;
 
     let mut state = EncoderState::fixed(Vec::new());
     let compressed = lz77_compress(input).unwrap();
@@ -57,7 +57,6 @@ pub fn compress_data_fixed(input: &[u8]) -> Vec<u8> {
 }
 
 fn write_stored_block(input: &[u8], mut writer: &mut LsbWriter, final_block: bool) {
-
     // If the input is not zero, we write stored blocks for the input data.
     if !input.is_empty() {
         let mut i = input.chunks(MAX_STORED_BLOCK_LENGTH).peekable();
@@ -69,7 +68,6 @@ fn write_stored_block(input: &[u8], mut writer: &mut LsbWriter, final_block: boo
 
             // Write the actual data.
             compress_block_stored(chunk, &mut writer).expect("Write error");
-
         }
     } else {
         // If the input length is zero, we output an empty block. This is used for syncing.
@@ -194,7 +192,7 @@ pub fn compress_data_dynamic_n<W: Write>(
                 write_huffman_lengths(
                     &header,
                     &deflate_state.encoder_state.huffman_table,
-                    &mut deflate_state.length_buffers.length_buf,
+                    &deflate_state.length_buffers.length_buf,
                     &mut deflate_state.encoder_state.writer,
                 );
 
@@ -204,7 +202,6 @@ pub fn compress_data_dynamic_n<W: Write>(
                     .encoder_state
                     .huffman_table
                     .update_from_lengths();
-
 
                 // Write the huffman compressed data and the end of block marker.
                 flush_to_bitstream(
@@ -281,8 +278,8 @@ pub fn compress_data_dynamic_n<W: Write>(
         .as_mut()
         .expect("Missing writer!")
         .write(&deflate_state.encoder_state.inner_vec()[output_buf_pos..])?;
-    if written_to_writer <
-        deflate_state
+    if written_to_writer
+        < deflate_state
             .output_buf()
             .len()
             .checked_sub(output_buf_pos)
@@ -300,7 +297,7 @@ pub fn compress_data_dynamic_n<W: Write>(
 #[cfg(test)]
 mod test {
     use super::*;
-    use test_utils::{get_test_data, decompress_to_end};
+    use crate::test_utils::{decompress_to_end, get_test_data};
 
     #[test]
     /// Test compressing a short string using fixed encoding.
@@ -332,17 +329,7 @@ mod test {
         // let check =
         // [0x73, 0x49, 0x4d, 0xcb, 0x49, 0x2c, 0x49, 0x55, 0xc8, 0x49, 0x2c, 0x49, 0x5, 0x0];
         let check = [
-            0x73,
-            0x49,
-            0x4d,
-            0xcb,
-            0x49,
-            0x2c,
-            0x49,
-            0x55,
-            0x00,
-            0x11,
-            0x00,
+            0x73, 0x49, 0x4d, 0xcb, 0x49, 0x2c, 0x49, 0x55, 0x00, 0x11, 0x00,
         ];
         let compressed = compress_data_fixed(test_data);
         assert_eq!(&compressed, &check);

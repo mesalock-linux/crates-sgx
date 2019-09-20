@@ -57,6 +57,8 @@
 
 #![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
 
+#![allow(clippy::excessive_precision, clippy::unreadable_literal, clippy::float_cmp)]
+
 #[cfg(all(feature = "mesalock_sgx", not(target_env = "sgx")))]
 #[macro_use]
 extern crate sgx_tstd as std;
@@ -67,9 +69,6 @@ extern crate core;
 
 #[cfg(all(feature="alloc", not(feature="std")))]
 extern crate alloc;
-
-#[cfg(feature = "getrandom")]
-use getrandom_package as getrandom;
 
 #[allow(unused)]
 macro_rules! trace { ($($x:tt)*) => (
@@ -448,7 +447,7 @@ macro_rules! impl_as_byte_slice {
                 }
             }
         }
-        
+
         impl AsByteSliceMut for [Wrapping<$t>] {
             fn as_byte_slice_mut(&mut self) -> &mut [u8] {
                 if self.len() == 0 {
@@ -612,7 +611,7 @@ mod test {
         rng.fill(&mut array[..]);
         assert_eq!(array, [x as u32, (x >> 32) as u32]);
         assert_eq!(rng.next_u32(), x as u32);
-        
+
         // Check equivalence using wrapped arrays
         let mut warray = [Wrapping(0u32); 2];
         rng.fill(&mut warray[..]);

@@ -11,7 +11,6 @@ use lzw;
 
 use traits::{Parameter, WriteBytesExt};
 use common::{Block, Frame, Extension, DisposalMethod};
-use util;
 
 /// Number of repetitions
 pub enum Repeat {
@@ -88,7 +87,10 @@ impl<'a, W: Write + 'a> Write for BlockWriter<'a, W> {
 
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         let to_copy = min(buf.len(), 0xFF - self.bytes);
-        util::copy_memory(&buf[..to_copy], &mut self.buf[self.bytes..]);
+        { // isolation to please borrow checker
+            let destination = &mut self.buf[self.bytes..];
+            destination[..to_copy].copy_from_slice(&buf[..to_copy]);
+        }
         self.bytes += to_copy;
         if self.bytes == 0xFF {
             self.bytes = 0;
@@ -314,14 +316,14 @@ impl<W: Write> Drop for Encoder<W> {
 // Color table size converted to flag bits
 fn flag_size(size: usize) -> u8 {
     match size {
-        0  ...2   => 0,
-        3  ...4   => 1,
-        5  ...8   => 2,
-        7  ...16  => 3,
-        17 ...32  => 4,
-        33 ...64  => 5,
-        65 ...128 => 6,
-        129...256 => 7,
+        0  ..=2   => 0,
+        3  ..=4   => 1,
+        5  ..=8   => 2,
+        7  ..=16  => 3,
+        17 ..=32  => 4,
+        33 ..=64  => 5,
+        65 ..=128 => 6,
+        129..=256 => 7,
         _ => 7
     }
 }

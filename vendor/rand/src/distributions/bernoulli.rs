@@ -96,13 +96,13 @@ impl Bernoulli {
     /// return `true`. If `numerator == 0` it will always return `false`.
     #[inline]
     pub fn from_ratio(numerator: u32, denominator: u32) -> Result<Bernoulli, BernoulliError> {
-        if !(numerator <= denominator) {
+        if numerator > denominator {
             return Err(BernoulliError::InvalidProbability);
         }
         if numerator == denominator {
             return Ok(Bernoulli { p_int: ALWAYS_TRUE })
         }
-        let p_int = ((numerator as f64 / denominator as f64) * SCALE) as u64;
+        let p_int = ((f64::from(numerator) / f64::from(denominator)) * SCALE) as u64;
         Ok(Bernoulli { p_int })
     }
 }
@@ -162,5 +162,16 @@ mod test {
 
         let avg2 = (sum2 as f64) / (N as f64);
         assert!((avg2 - (NUM as f64)/(DENOM as f64)).abs() < 5e-3);
+    }
+    
+    #[test]
+    fn value_stability() {
+        let mut rng = crate::test::rng(3);
+        let distr = Bernoulli::new(0.4532).unwrap();
+        let mut buf = [false; 10];
+        for x in &mut buf {
+            *x = rng.sample(&distr);
+        }
+        assert_eq!(buf, [true, false, false, true, false, false, true, true, true, true]);
     }
 }

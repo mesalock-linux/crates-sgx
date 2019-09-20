@@ -644,6 +644,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     ///
     /// This assumes the parser is currently positioned at `|` and will advance
     /// the parser to the character following `|`.
+    #[inline(never)]
     fn push_alternate(&self, mut concat: ast::Concat) -> Result<ast::Concat> {
         assert_eq!(self.char(), '|');
         concat.span.end = self.pos();
@@ -681,6 +682,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     ///
     /// If there was a problem parsing the start of the group, then an error
     /// is returned.
+    #[inline(never)]
     fn push_group(&self, mut concat: ast::Concat) -> Result<ast::Concat> {
         assert_eq!(self.char(), '(');
         match self.parse_group()? {
@@ -721,6 +723,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     ///
     /// If no such group could be popped, then an unopened group error is
     /// returned.
+    #[inline(never)]
     fn pop_group(&self, mut group_concat: ast::Concat) -> Result<ast::Concat> {
         use self::GroupState::*;
 
@@ -772,6 +775,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// error.
     ///
     /// This assumes that the parser has advanced to the end.
+    #[inline(never)]
     fn pop_group_end(&self, mut concat: ast::Concat) -> Result<Ast> {
         concat.span.end = self.pos();
         let mut stack = self.parser().stack_group.borrow_mut();
@@ -814,6 +818,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// If there was a problem parsing the opening of the class, then an error
     /// is returned. Otherwise, a new union of set items for the class is
     /// returned (which may be populated with either a `]` or a `-`).
+    #[inline(never)]
     fn push_class_open(
         &self,
         parent_union: ast::ClassSetUnion,
@@ -842,6 +847,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     ///
     /// If there is no corresponding opening bracket on the parser's stack,
     /// then an error is returned.
+    #[inline(never)]
     fn pop_class(
         &self,
         nested_union: ast::ClassSetUnion,
@@ -890,6 +896,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// recently opened class.
     ///
     /// This should only be called while parsing a character class.
+    #[inline(never)]
     fn unclosed_class_error(&self) -> ast::Error {
         for state in self.parser().stack_class.borrow().iter().rev() {
             match *state {
@@ -910,6 +917,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     ///
     /// A fresh set union is returned, which should be used to build the right
     /// hand side of this operator.
+    #[inline(never)]
     fn push_class_op(
         &self,
         next_kind: ast::ClassSetBinaryOpKind,
@@ -929,6 +937,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// given set unchanged. If the top of the stack is an operation, then the
     /// given set will be used as the rhs of the operation on the top of the
     /// stack. In that case, the binary operation is returned as a set.
+    #[inline(never)]
     fn pop_class_op(&self, rhs: ast::ClassSet) -> ast::ClassSet {
         let mut stack = self.parser().stack_class.borrow_mut();
         let (kind, lhs) = match stack.pop() {
@@ -1022,6 +1031,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// The caller should include the concatenation that is being built. The
     /// concatenation returned includes the repetition operator applied to the
     /// last expression in the given concatenation.
+    #[inline(never)]
     fn parse_uncounted_repetition(
         &self,
         mut concat: ast::Concat,
@@ -1076,6 +1086,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// The caller should include the concatenation that is being built. The
     /// concatenation returned includes the repetition operator applied to the
     /// last expression in the given concatenation.
+    #[inline(never)]
     fn parse_counted_repetition(
         &self,
         mut concat: ast::Concat,
@@ -1183,6 +1194,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     ///
     /// If a capture name is given and it is incorrectly specified, then a
     /// corresponding error is returned.
+    #[inline(never)]
     fn parse_group(&self) -> Result<Either<ast::SetFlags, ast::Group>> {
         assert_eq!(self.char(), '(');
         let open_span = self.span_char();
@@ -1249,6 +1261,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// following the closing `>`.
     ///
     /// The caller must provide the capture index of the group for this name.
+    #[inline(never)]
     fn parse_capture_name(
         &self,
         capture_index: u32,
@@ -1309,6 +1322,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     ///
     /// If no flags could be found or if the negation operation is not followed
     /// by any flags, then an error is returned.
+    #[inline(never)]
     fn parse_flags(&self) -> Result<ast::Flags> {
         let mut flags = ast::Flags { span: self.span(), items: vec![] };
         let mut last_was_negation = None;
@@ -1360,6 +1374,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// # Errors
     ///
     /// If the flag is not recognized, then an error is returned.
+    #[inline(never)]
     fn parse_flag(&self) -> Result<ast::Flag> {
         match self.char() {
             'i' => Ok(ast::Flag::CaseInsensitive),
@@ -1426,6 +1441,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// This assumes the parser is positioned at the start of the escape
     /// sequence, i.e., `\`. It advances the parser to the first position
     /// immediately following the escape sequence.
+    #[inline(never)]
     fn parse_escape(&self) -> Result<Primitive> {
         assert_eq!(self.char(), '\\');
         let start = self.pos();
@@ -1527,6 +1543,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// escapes is enabled.
     ///
     /// Assuming the preconditions are met, this routine can never fail.
+    #[inline(never)]
     fn parse_octal(&self) -> ast::Literal {
         use std::char;
         use std::u32;
@@ -1560,6 +1577,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// hex notations, i.e., `\xFF` and `\x{FFFF}`. This expects the parser to
     /// be positioned at the `x`, `u` or `U` prefix. The parser is advanced to
     /// the first character immediately following the hexadecimal literal.
+    #[inline(never)]
     fn parse_hex(&self) -> Result<ast::Literal> {
         assert!(
             self.char() == 'x' || self.char() == 'u' || self.char() == 'U'
@@ -1589,6 +1607,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     ///
     /// The number of digits given must be 2 (for `\xNN`), 4 (for `\uNNNN`)
     /// or 8 (for `\UNNNNNNNN`).
+    #[inline(never)]
     fn parse_hex_digits(
         &self,
         kind: ast::HexLiteralKind,
@@ -1634,6 +1653,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// Parse a hex representation of any Unicode scalar value. This expects
     /// the parser to be positioned at the opening brace `{` and will advance
     /// the parser to the first character following the closing brace `}`.
+    #[inline(never)]
     fn parse_hex_brace(
         &self,
         kind: ast::HexLiteralKind,
@@ -1727,6 +1747,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// This assumes the parser is positioned at the opening `[`. If parsing
     /// is successful, then the parser is advanced to the position immediately
     /// following the closing `]`.
+    #[inline(never)]
     fn parse_set_class(&self) -> Result<ast::Class> {
         assert_eq!(self.char(), '[');
 
@@ -1793,6 +1814,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// If an invalid escape is found, or if a character class is found where
     /// a simple literal is expected (e.g., in a range), then an error is
     /// returned.
+    #[inline(never)]
     fn parse_set_class_range(&self) -> Result<ast::ClassSetItem> {
         let prim1 = self.parse_set_class_item()?;
         self.bump_space();
@@ -1839,6 +1861,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     ///
     /// Note that it is the caller's responsibility to report an error if an
     /// illegal primitive was parsed.
+    #[inline(never)]
     fn parse_set_class_item(&self) -> Result<Primitive> {
         if self.char() == '\\' {
             self.parse_escape()
@@ -1869,6 +1892,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// the parser to the first non-special byte of the character class.
     ///
     /// An error is returned if EOF is found.
+    #[inline(never)]
     fn parse_set_class_open(
         &self,
     ) -> Result<(ast::ClassBracketed, ast::ClassSetUnion)> {
@@ -1942,6 +1966,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// advance the parser and `None` is returned. Otherwise, the parser is
     /// advanced to the first byte following the closing `]` and the
     /// corresponding ASCII class is returned.
+    #[inline(never)]
     fn maybe_parse_ascii_class(&self) -> Option<ast::ClassAscii> {
         // ASCII character classes are interesting from a parsing perspective
         // because parsing cannot fail with any interesting error. For example,
@@ -2012,6 +2037,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// advance the parser to the character immediately following the class.
     ///
     /// Note that this does not check whether the class name is valid or not.
+    #[inline(never)]
     fn parse_unicode_class(&self) -> Result<ast::ClassUnicode> {
         assert!(self.char() == 'p' || self.char() == 'P');
 
@@ -2084,6 +2110,7 @@ impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
     /// Parse a Perl character class, e.g., `\d` or `\W`. This assumes the
     /// parser is currently at a valid character class name and will be
     /// advanced to the character immediately following the class.
+    #[inline(never)]
     fn parse_perl_class(&self) -> ast::ClassPerl {
         let c = self.char();
         let span = self.span_char();
@@ -2116,6 +2143,7 @@ impl<'p, 's, P: Borrow<Parser>> NestLimiter<'p, 's, P> {
         NestLimiter { p: p, depth: 0 }
     }
 
+    #[inline(never)]
     fn check(self, ast: &Ast) -> Result<()> {
         ast::visit(ast, self)
     }

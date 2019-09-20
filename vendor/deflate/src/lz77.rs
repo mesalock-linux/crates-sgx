@@ -1,25 +1,24 @@
 //! This module contains functionality for doing lz77 compression of data.
 #![macro_use]
 use std::cmp;
-use std::ops::{Range, RangeFrom};
-use std::iter::{self, Iterator};
-use std::slice::Iter;
 use std::fmt;
+use std::iter::{self, Iterator};
+use std::ops::{Range, RangeFrom};
+use std::slice::Iter;
 
-use input_buffer::InputBuffer;
-use matching::longest_match;
+use crate::chained_hash_table::{update_hash, ChainedHashTable};
+use crate::compress::Flush;
 #[cfg(test)]
-use lzvalue::{LZValue, LZType};
-use huffman_table;
-use chained_hash_table::{ChainedHashTable, update_hash};
+use crate::compression_options::{HIGH_LAZY_IF_LESS_THAN, HIGH_MAX_HASH_CHECKS};
+use crate::input_buffer::InputBuffer;
 #[cfg(test)]
-use compression_options::{HIGH_MAX_HASH_CHECKS, HIGH_LAZY_IF_LESS_THAN};
-use output_writer::{BufferStatus, DynamicWriter};
-use compress::Flush;
-use rle::process_chunk_greedy_rle;
+use crate::lzvalue::{LZType, LZValue};
+use crate::matching::longest_match;
+use crate::output_writer::{BufferStatus, DynamicWriter};
+use crate::rle::process_chunk_greedy_rle;
 
-const MAX_MATCH: usize = huffman_table::MAX_MATCH as usize;
-const MIN_MATCH: usize = huffman_table::MIN_MATCH as usize;
+const MAX_MATCH: usize = crate::huffman_table::MAX_MATCH as usize;
+const MIN_MATCH: usize = crate::huffman_table::MIN_MATCH as usize;
 
 const NO_RLE: u16 = 43212;
 
@@ -87,9 +86,9 @@ impl LZ77State {
             is_last_block: false,
             overlap: 0,
             current_block_input_bytes: 0,
-            max_hash_checks: max_hash_checks,
-            lazy_if_less_than: lazy_if_less_than,
-            matching_type: matching_type,
+            max_hash_checks,
+            lazy_if_less_than,
+            matching_type,
             match_state: ChunkState::new(),
             bytes_to_hash: 0,
             was_synced: false,
@@ -189,6 +188,7 @@ pub fn buffer_full(position: usize) -> ProcessStatus {
     ProcessStatus::BufferFull(position)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn process_chunk(
     data: &[u8],
     iterated_data: &Range<usize>,
@@ -260,7 +260,7 @@ fn add_to_hash_table(
 ///
 /// `pos` should indicate the byte to start at in the next call to `process_chunk`,
 /// `is_hashed` should be set to true of the byte at pos has been added to the hash chain.
-macro_rules! write_literal{
+macro_rules! write_literal {
     ($w:ident, $byte:expr, $pos:expr) => {
         let b_status = $w.write_literal($byte);
 
@@ -312,7 +312,6 @@ fn process_chunk_lazy(
     max_hash_checks: u16,
     lazy_if_less_than: usize,
 ) -> (usize, ProcessStatus) {
-
     let (end, mut insert_it, mut hash_it) = create_iterators(data, iterated_data);
 
     const NO_LENGTH: u16 = 0;
@@ -328,7 +327,6 @@ fn process_chunk_lazy(
     // The number of bytes past end that was added due to finding a match that extends into
     // the lookahead window.
     let mut overlap = 0;
-
 
     // Set to true if we found a match that is equal to or longer than `lazy_if_less_than`,
     // indicating that we won't lazy match (check for a better match at the next byte).
@@ -430,7 +428,6 @@ fn process_chunk_lazy(
                 }
 
                 ignore_next = false;
-
             } else if state.add {
                 // We found a better match (or there was no previous match)
                 // so output the previous byte.
@@ -472,7 +469,6 @@ fn process_chunk_lazy(
 
                 // ADD
                 write_literal!(writer, state.prev_byte, position + 1);
-
             };
 
             // We are at the last two bytes we want to add, so there is no point
@@ -492,7 +488,6 @@ fn process_chunk_greedy(
     writer: &mut DynamicWriter,
     max_hash_checks: u16,
 ) -> (usize, ProcessStatus) {
-
     let (end, mut insert_it, mut hash_it) = create_iterators(data, iterated_data);
 
     const NO_LENGTH: usize = 0;
@@ -519,12 +514,7 @@ fn process_chunk_greedy(
                 // Since we've already added one of them, we need to add one less than
                 // the length.
                 let bytes_to_add = match_len - 1;
-                add_to_hash_table(
-                    bytes_to_add,
-                    &mut insert_it,
-                    &mut hash_it,
-                    &mut hash_table,
-                );
+                add_to_hash_table(bytes_to_add, &mut insert_it, &mut hash_it, &mut hash_table);
 
                 // If the match is longer than the current window, we have note how many
                 // bytes we overlap, since we don't need to do any matching on these bytes
@@ -538,7 +528,6 @@ fn process_chunk_greedy(
                     // MATCH
                     return (overlap, buffer_full(position + match_len));
                 }
-
             } else {
                 // NO MATCH
                 write_literal!(writer, b, position + 1);
@@ -552,7 +541,6 @@ fn process_chunk_greedy(
     }
     (overlap, ProcessStatus::Ok)
 }
-
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
 pub enum LZ77Status {
@@ -637,9 +625,9 @@ pub fn lz77_compress_block(
             // Don't do anything until we are either flushing, or we have at least one window of
             // data.
             if buffer.current_end() >= (window_size * 2) + MAX_MATCH || finish {
-
-                if buffer.get_buffer().len() >= 2 && add_initial &&
-                    state.current_block_input_bytes == 0
+                if buffer.get_buffer().len() >= 2
+                    && add_initial
+                    && state.current_block_input_bytes == 0
                 {
                     let b = buffer.get_buffer();
                     // Warm up the hash with the two first values, so we can find  matches at
@@ -671,18 +659,19 @@ pub fn lz77_compress_block(
                     state.overlap = if overlap > 0 { overlap } else { written };
                     status = LZ77Status::EndBlock;
                     current_position = written - state.pending_byte_as_num();
-                    state.current_block_input_bytes +=
-                        (written - start + overlap + pending_previous -
-                             state.pending_byte_as_num()) as u64;
+                    state.current_block_input_bytes += (written - start
+                        + overlap
+                        + pending_previous
+                        - state.pending_byte_as_num())
+                        as u64;
                     break;
                 }
-
 
                 // Update the length of how many input bytes the current block is representing,
                 // taking into account pending bytes.
                 state.current_block_input_bytes +=
-                    (first_chunk_end - start + overlap + pending_previous -
-                         state.pending_byte_as_num()) as u64;
+                    (first_chunk_end - start + overlap + pending_previous
+                        - state.pending_byte_as_num()) as u64;
 
                 // We are at the first window so we don't need to slide the hash table yet.
                 // If finishing or syncing, we stop here.
@@ -740,7 +729,6 @@ pub fn lz77_compress_block(
 
             state.bytes_to_hash = overlap;
 
-
             if let ProcessStatus::BufferFull(written) = p_status {
                 state.current_block_input_bytes +=
                     (written - start + pending_previous - state.pending_byte_as_num()) as u64;
@@ -762,7 +750,6 @@ pub fn lz77_compress_block(
                 };
 
                 current_position = written - state.pending_byte_as_num();
-
 
                 // Status is already EndBlock at this point.
                 // status = LZ77Status::EndBlock;
@@ -816,7 +803,6 @@ pub fn lz77_compress_block(
             status = LZ77Status::NeedInput;
             break;
         }
-
     }
 
     (
@@ -954,12 +940,12 @@ pub fn lz77_compress_conf(
                 &mut test.state,
                 &mut test.buffer,
                 &mut test.writer,
-            ).0;
+            )
+            .0;
             slice = &slice[bytes_written..];
             out.extend(test.writer.get_buffer());
             test.writer.clear();
         }
-
     }
 
     Some(out)
@@ -969,11 +955,11 @@ pub fn lz77_compress_conf(
 mod test {
     use super::*;
 
-    use lzvalue::{LZValue, LZType, lit, ld};
-    use chained_hash_table::WINDOW_SIZE;
-    use compression_options::DEFAULT_LAZY_IF_LESS_THAN;
-    use test_utils::get_test_data;
-    use output_writer::MAX_BUFFER_LENGTH;
+    use crate::chained_hash_table::WINDOW_SIZE;
+    use crate::compression_options::DEFAULT_LAZY_IF_LESS_THAN;
+    use crate::lzvalue::{ld, lit, LZType, LZValue};
+    use crate::output_writer::MAX_BUFFER_LENGTH;
+    use crate::test_utils::get_test_data;
 
     /// Helper function to print the output from the lz77 compression function
     fn print_output(input: &[LZValue]) {
@@ -1066,7 +1052,7 @@ mod test {
     /// Test that matches at the window border are working correctly
     #[test]
     fn border() {
-        use chained_hash_table::WINDOW_SIZE;
+        use crate::chained_hash_table::WINDOW_SIZE;
         let mut data = vec![35; WINDOW_SIZE];
         data.extend(b"Test");
         let compressed = super::lz77_compress(&data).unwrap();
@@ -1079,7 +1065,7 @@ mod test {
 
     #[test]
     fn border_multiple_blocks() {
-        use chained_hash_table::WINDOW_SIZE;
+        use crate::chained_hash_table::WINDOW_SIZE;
         let mut data = vec![0; (WINDOW_SIZE * 2) + 50];
         data.push(1);
         let compressed = super::lz77_compress(&data).unwrap();
@@ -1091,7 +1077,7 @@ mod test {
 
     #[test]
     fn compress_block_status() {
-        use input_buffer::InputBuffer;
+        use crate::input_buffer::InputBuffer;
 
         let data = b"Test data data";
         let mut writer = DynamicWriter::new();
@@ -1106,8 +1092,8 @@ mod test {
 
     #[test]
     fn compress_block_multiple_windows() {
-        use input_buffer::InputBuffer;
-        use output_writer::DynamicWriter;
+        use crate::input_buffer::InputBuffer;
+        use crate::output_writer::DynamicWriter;
 
         let data = get_test_data();
         assert!(data.len() > (WINDOW_SIZE * 2) + super::MAX_MATCH);
@@ -1133,7 +1119,6 @@ mod test {
             &mut writer,
         );
         assert_eq!(status, LZ77Status::EndBlock);
-
     }
 
     #[test]
@@ -1155,7 +1140,6 @@ mod test {
         };
         assert!(comp1 == comp2);
     }
-
 
     #[test]
     /// Test that the exit from process_chunk when buffer is full is working correctly.
@@ -1225,24 +1209,17 @@ mod test {
     fn buffer_test_last_bytes(matching_type: MatchingType, data: &[u8]) {
         const BYTES_USED: usize = MAX_BUFFER_LENGTH;
         assert!(
-            &data[..BYTES_USED] ==
-                &decompress_lz77(&lz77_compress_conf(
-                    &data[..BYTES_USED],
-                    0,
-                    NO_RLE,
-                    matching_type,
-                ).unwrap())
-                    [..]
+            &data[..BYTES_USED]
+                == &decompress_lz77(
+                    &lz77_compress_conf(&data[..BYTES_USED], 0, NO_RLE, matching_type,).unwrap()
+                )[..]
         );
         assert!(
-            &data[..BYTES_USED + 1] ==
-                &decompress_lz77(&lz77_compress_conf(
-                    &data[..BYTES_USED + 1],
-                    0,
-                    NO_RLE,
-                    matching_type,
-                ).unwrap())
-                    [..]
+            &data[..BYTES_USED + 1]
+                == &decompress_lz77(
+                    &lz77_compress_conf(&data[..BYTES_USED + 1], 0, NO_RLE, matching_type,)
+                        .unwrap()
+                )[..]
         );
     }
 
@@ -1256,7 +1233,6 @@ mod test {
         }
         state.compress_block(&[1, 2, 3, 1, 2, 3, 4], true);
         assert!(*state.writer.get_buffer().last().unwrap() == LZValue::length_distance(3, 3));
-
     }
 
     /// Test buffer fill for the lazy match algorithm when adding a pending byte at the end.
@@ -1288,14 +1264,13 @@ mod test {
         // ------------l2 l4  <-ld4,20-> l1 l1  <---ld5,10-->
         assert!(dec == [2, 4, 5, 5, 5, 5, 1, 1, 5, 5, 2, 4, 5]);
     }
-
 }
 
 #[cfg(all(test, feature = "benchmarks"))]
 mod bench {
+    use super::lz77_compress;
     use test_std::Bencher;
     use test_utils::get_test_data;
-    use super::lz77_compress;
     #[bench]
     fn test_file_zlib_lz77_only(b: &mut Bencher) {
         let test_data = get_test_data();

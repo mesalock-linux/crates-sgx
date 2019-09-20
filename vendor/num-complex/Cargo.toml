@@ -44,4 +44,4 @@ std = ["num-traits/std", "num-traits/mesalock_sgx", "mesalock_sgx"]
 mesalock_sgx = ["sgx_tstd"]
 
 [build-dependencies]
-#autocfg = "0.1.3"
+autocfg = "0.1.3"

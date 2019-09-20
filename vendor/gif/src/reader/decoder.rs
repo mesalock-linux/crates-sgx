@@ -47,7 +47,7 @@ impl error::Error for DecodingError {
         }
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&dyn error::Error> {
         match *self {
             DecodingError::Io(ref err) => Some(err),
             _ => None,

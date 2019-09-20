@@ -1,6 +1,6 @@
 [package]
 name = "inventory-impl"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 license = "MIT OR Apache-2.0"
 description = "Implementation of macros for the `inventory` crate"
@@ -11,6 +11,6 @@ edition = "2018"
 proc-macro = true
 
 [dependencies]
-proc-macro2 = "0.4"
-quote = "0.6"
-syn = "0.15"
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = "1.0"

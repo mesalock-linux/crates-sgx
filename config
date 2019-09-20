@@ -213,7 +213,7 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/parity-wasm-sgx"]
 git = "https://github.com/mesalock-linux/parity-wasm-sgx"
-branch = "v0.31.3"
+branch = "master"
 replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/quick-error-sgx"]

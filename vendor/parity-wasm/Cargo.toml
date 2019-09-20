@@ -1,6 +1,6 @@
 [package]
 name = "parity-wasm"
-version = "0.31.3"
+version = "0.40.2"
 authors = ["Nikolay Volf <nikvolf@gmail.com>", "Svyatoslav Nikolsky <svyatonik@yandex.ru>", "Sergey Shulepov <s.pepyakin@gmail.com>"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
@@ -11,15 +11,38 @@ description = "WebAssembly binary format serialization/deserialization/interpret
 keywords = ["wasm", "webassembly", "bytecode", "serde", "interpreter"]
 categories = ["wasm", "parser-implementations"]
 exclude = [ "res/*", "spec/*", "sgx/*" ]
+edition = "2018"
 
 [dependencies]
 byteorder = { version = "1.0", default-features = false, git = "https://github.com/mesalock-linux/byteorder-sgx.git" }
 sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
-time = "0.1"
+#time = "0.1"
 
 [features]
 default = ["std", "mesalock_sgx"]
-mesalock_sgx = ["std", "sgx_tstd", "byteorder/mesalock_sgx", "byteorder/std"]
 std = []
+
+#
+# Features for enabling non-MVP proposals.
+# These features should be tested as part of Travis CI build.
+#
+
+# Atomics aka threading.
+# https://github.com/webassembly/threads/
+atomics = []
+
+# SIMD
+# https://github.com/WebAssembly/simd/
+simd = []
+
+# Sign-extension operators
+# https://github.com/WebAssembly/sign-extension-ops/
+sign_ext = []
+
+# Bulk-memory operators
+# https://github.com/WebAssembly/bulk-memory-operations/
+bulk = []
+
+mesalock_sgx = ["std", "sgx_tstd", "byteorder/mesalock_sgx", "byteorder/std"]

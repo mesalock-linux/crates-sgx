@@ -10,7 +10,6 @@ use reader::{Decoded, DecodingError, PLTE_CHANNELS};
 use c_api::{GifFileType, SavedImage, ColorMapObject, GifColorType, c_bool,
            InputFunc
 };
-use util;
 
 pub trait CInterface {
     fn read_screen_desc(&mut self, &mut GifFileType);
@@ -32,7 +31,7 @@ pub unsafe fn copy_data(buf: &[u8]) -> *mut u8 {
     let data = mem::transmute::<_, *mut u8>(malloc(
         (mem::size_of::<SavedImage>() *  buf.len()) as size_t
     ));
-    util::copy_memory(buf, slice::from_raw_parts_mut(data, buf.len()));
+    slice::from_raw_parts_mut(data, buf.len()).copy_from_slice(buf);
     //for (i, &b) in buf.iter().enumerate() {
     //    *data.offset(i as isize) = b
     //}

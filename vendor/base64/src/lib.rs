@@ -58,13 +58,19 @@
     unused_import_braces,
     unused_results,
     variant_size_differences,
-    warnings,
-    unsafe_code
+    warnings
 )]
+#![forbid(unsafe_code)]
+#![cfg_attr(not(any(feature = "std", test)), no_std)]
 
 #![cfg_attr(all(feature = "mesalock_sgx",
                 not(target_env = "sgx")), no_std)]
 #![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
+
+#[cfg(all(feature = "alloc", not(any(feature = "std", test))))]
+extern crate alloc;
+//#[cfg(any(feature = "std", test))]
+//extern crate std as alloc;
 
 #[cfg(all(feature = "mesalock_sgx", not(target_env = "sgx")))]
 #[macro_use]
@@ -80,15 +86,18 @@ doctest!("../README.md");
 mod chunked_encoder;
 pub mod display;
 mod tables;
+#[cfg(any(feature = "std", test))]
 pub mod write;
 
 mod encode;
-pub use crate::encode::{encode, encode_config, encode_config_buf, encode_config_slice};
+pub use crate::encode::encode_config_slice;
+#[cfg(any(feature = "alloc", feature = "std", test))]
+pub use crate::encode::{encode, encode_config, encode_config_buf};
 
 mod decode;
-pub use crate::decode::{
-    decode, decode_config, decode_config_buf, decode_config_slice, DecodeError,
-};
+#[cfg(any(feature = "alloc", feature = "std", test))]
+pub use crate::decode::{decode, decode_config, decode_config_buf};
+pub use crate::decode::{decode_config_slice, DecodeError};
 
 #[cfg(test)]
 mod tests;

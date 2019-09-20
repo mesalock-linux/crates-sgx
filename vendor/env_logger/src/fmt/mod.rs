@@ -113,9 +113,25 @@ impl fmt::Debug for Formatter {
     }
 }
 
+/// Formatting precision of timestamps.
+///
+/// Seconds give precision of full seconds, milliseconds give thousands of a
+/// second (3 decimal digits), microseconds are millionth of a second (6 decimal
+/// digits) and nanoseconds are billionth of a second (9 decimal digits).
+#[derive(Copy, Clone, Debug)]
+pub enum TimestampPrecision {
+    /// Full second precision (0 decimal digits)
+    Seconds,
+    /// Millisecond precision (3 decimal digits)
+    Millis,
+    /// Microsecond precision (6 decimal digits)
+    Micros,
+    /// Nanosecond precision (9 decimal digits)
+    Nanos,
+}
+
 pub(crate) struct Builder {
-    pub default_format_timestamp: bool,
-    pub default_format_timestamp_nanos: bool,
+    pub default_format_timestamp: Option<TimestampPrecision>,
     pub default_format_module_path: bool,
     pub default_format_level: bool,
     pub default_format_indent: Option<usize>,
@@ -127,8 +143,7 @@ pub(crate) struct Builder {
 impl Default for Builder {
     fn default() -> Self {
         Builder {
-            default_format_timestamp: true,
-            default_format_timestamp_nanos: false,
+            default_format_timestamp: Some(TimestampPrecision::Seconds),
             default_format_module_path: true,
             default_format_level: true,
             default_format_indent: Some(4),
@@ -140,7 +155,7 @@ impl Default for Builder {
 
 impl Builder {
     /// Convert the format into a callable function.
-    /// 
+    ///
     /// If the `custom_format` is `Some`, then any `default_format` switches are ignored.
     /// If the `custom_format` is `None`, then a default format is returned.
     /// Any `default_format` switches set to `false` won't be written by the format.
@@ -160,7 +175,6 @@ impl Builder {
             Box::new(move |buf, record| {
                 let fmt = DefaultFormat {
                     timestamp: built.default_format_timestamp,
-                    timestamp_nanos: built.default_format_timestamp_nanos,
                     module_path: built.default_format_module_path,
                     level: built.default_format_level,
                     written_header_value: false,
@@ -180,13 +194,12 @@ type SubtleStyle = StyledValue<'static, &'static str>;
 type SubtleStyle = &'static str;
 
 /// The default format.
-/// 
+///
 /// This format needs to work with any combination of crate features.
 struct DefaultFormat<'a> {
-    timestamp: bool,
+    timestamp: Option<TimestampPrecision>,
     module_path: bool,
     level: bool,
-    timestamp_nanos: bool,
     written_header_value: bool,
     indent: Option<usize>,
     buf: &'a mut Formatter,
@@ -252,22 +265,22 @@ impl<'a> DefaultFormat<'a> {
     fn write_timestamp(&mut self) -> io::Result<()> {
         #[cfg(feature = "humantime")]
         {
-            if !self.timestamp {
-                return Ok(())
-            }
+            use fmt::TimestampPrecision::*;
+            let ts = match self.timestamp {
+                None => return Ok(()),
+                Some(Seconds) => self.buf.timestamp_seconds(),
+                Some(Millis) => self.buf.timestamp_millis(),
+                Some(Micros) => self.buf.timestamp_micros(),
+                Some(Nanos) => self.buf.timestamp_nanos(),
+            };
 
-            if self.timestamp_nanos {
-                let ts_nanos = self.buf.precise_timestamp();
-                self.write_header_value(ts_nanos)
-            } else {
-                let ts = self.buf.timestamp();
-                self.write_header_value(ts)
-            }
+            self.write_header_value(ts)
         }
         #[cfg(not(feature = "humantime"))]
         {
+            // Trick the compiler to think we have used self.timestamp
+            // Workaround for "field is never used: `timestamp`" compiler nag.
             let _ = self.timestamp;
-            let _ = self.timestamp_nanos;
             Ok(())
         }
     }
@@ -295,7 +308,7 @@ impl<'a> DefaultFormat<'a> {
 
     fn write_args(&mut self, record: &Record) -> io::Result<()> {
         match self.indent {
-            
+
             // Fast path for no indentation
             None => writeln!(self.buf, "{}", record.args()),
 
@@ -377,8 +390,7 @@ mod tests {
         let mut f = Formatter::new(&writer);
 
         let written = write(DefaultFormat {
-            timestamp: false,
-            timestamp_nanos: false,
+            timestamp: None,
             module_path: true,
             level: true,
             written_header_value: false,
@@ -398,8 +410,7 @@ mod tests {
         let mut f = Formatter::new(&writer);
 
         let written = write(DefaultFormat {
-            timestamp: false,
-            timestamp_nanos: false,
+            timestamp: None,
             module_path: false,
             level: false,
             written_header_value: false,
@@ -419,8 +430,7 @@ mod tests {
         let mut f = Formatter::new(&writer);
 
         let written = write(DefaultFormat {
-            timestamp: false,
-            timestamp_nanos: false,
+            timestamp: None,
             module_path: true,
             level: true,
             written_header_value: false,
@@ -440,8 +450,7 @@ mod tests {
         let mut f = Formatter::new(&writer);
 
         let written = write(DefaultFormat {
-            timestamp: false,
-            timestamp_nanos: false,
+            timestamp: None,
             module_path: true,
             level: true,
             written_header_value: false,
@@ -461,8 +470,7 @@ mod tests {
         let mut f = Formatter::new(&writer);
 
         let written = write(DefaultFormat {
-            timestamp: false,
-            timestamp_nanos: false,
+            timestamp: None,
             module_path: false,
             level: false,
             written_header_value: false,

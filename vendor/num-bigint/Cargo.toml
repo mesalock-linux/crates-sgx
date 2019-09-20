@@ -8,13 +8,13 @@ categories = [ "algorithms", "data-structures", "science" ]
 license = "MIT/Apache-2.0"
 name = "num-bigint"
 repository = "https://github.com/rust-num/num-bigint"
-version = "0.2.2"
+version = "0.2.3"
 readme = "README.md"
 build = "build.rs"
 exclude = ["/sgx/*"]
 
 [package.metadata.docs.rs]
-features = ["std", "serde", "rand"]
+features = ["std", "serde", "rand", "quickcheck"]
 
 [[bench]]
 name = "bigint"
@@ -58,6 +58,16 @@ version = "1.0"
 #default-features = false
 #features = ["std", "mesalock_sgx"]
 git = "https://github.com/mesalock-linux/serde-sgx"
+
+[dependencies.quickcheck]
+optional = true
+version = "0.8"
+default-features = false
+
+[dependencies.quickcheck_macros]
+optional = true
+version = "0.8"
+default-features = false
 
 [dev-dependencies.serde_test]
 version = "1.0"

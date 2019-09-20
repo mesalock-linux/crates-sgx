@@ -1,10 +1,9 @@
 use std::prelude::v1::*;
 use std::cmp;
 
-use chained_hash_table::WINDOW_SIZE;
-use huffman_table;
+use crate::chained_hash_table::WINDOW_SIZE;
 
-const MAX_MATCH: usize = huffman_table::MAX_MATCH as usize;
+const MAX_MATCH: usize = crate::huffman_table::MAX_MATCH as usize;
 
 /// The maximum size of the buffer.
 pub const BUFFER_SIZE: usize = (WINDOW_SIZE * 2) + MAX_MATCH;
@@ -101,8 +100,8 @@ impl InputBuffer {
 #[cfg(test)]
 mod test {
     use super::MAX_MATCH;
-    use chained_hash_table::WINDOW_SIZE;
     use super::*;
+    use crate::chained_hash_table::WINDOW_SIZE;
     #[test]
     pub fn buffer_add_full() {
         let data = [10u8; BUFFER_SIZE + 10];

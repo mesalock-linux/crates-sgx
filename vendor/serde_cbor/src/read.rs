@@ -1,4 +1,8 @@
+#[cfg(feature = "alloc")]
+use alloc::{vec, vec::Vec};
+
 use std::prelude::v1::*;
+
 #[cfg(feature = "std")]
 use core::cmp;
 use core::mem;
@@ -285,7 +289,7 @@ where
 }
 
 /// A CBOR input source that reads from a slice of bytes.
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "alloc"))]
 #[derive(Debug)]
 pub struct SliceRead<'a> {
     slice: &'a [u8],
@@ -293,7 +297,7 @@ pub struct SliceRead<'a> {
     index: usize,
 }
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "alloc"))]
 impl<'a> SliceRead<'a> {
     /// Creates a CBOR input source to read from a slice of bytes.
     pub fn new(slice: &'a [u8]) -> SliceRead<'a> {
@@ -315,7 +319,7 @@ impl<'a> SliceRead<'a> {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "alloc"))]
 impl<'a> Offset for SliceRead<'a> {
     #[inline]
     fn byte_offset(&self) -> usize {
@@ -323,10 +327,13 @@ impl<'a> Offset for SliceRead<'a> {
     }
 }
 
-#[cfg(all(feature = "std", not(feature = "unsealed_read_write")))]
+#[cfg(all(
+    any(feature = "std", feature = "alloc"),
+    not(feature = "unsealed_read_write")
+))]
 impl<'a> private::Sealed for SliceRead<'a> {}
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "alloc"))]
 impl<'a> Read<'a> for SliceRead<'a> {
     #[inline]
     fn next(&mut self) -> Result<Option<u8>> {

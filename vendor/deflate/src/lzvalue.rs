@@ -1,6 +1,6 @@
-use huffman_table::{MAX_DISTANCE, MIN_MATCH};
 #[cfg(test)]
-use huffman_table::MAX_MATCH;
+use crate::huffman_table::MAX_MATCH;
+use crate::huffman_table::{MAX_DISTANCE, MIN_MATCH};
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct StoredLength {
@@ -59,7 +59,7 @@ impl LZValue {
         let stored_length = (length - MIN_MATCH) as u8;
         LZValue {
             litlen: stored_length,
-            distance: distance,
+            distance,
         }
     }
 
@@ -86,7 +86,7 @@ pub fn ld(l: u16, d: u16) -> LZValue {
 #[cfg(test)]
 mod test {
     use super::*;
-    use huffman_table::{MIN_MATCH, MIN_DISTANCE, MAX_MATCH, MAX_DISTANCE};
+    use crate::huffman_table::{MAX_DISTANCE, MAX_MATCH, MIN_DISTANCE, MIN_MATCH};
     #[test]
     fn lzvalue() {
         for i in 0..255 as usize + 1 {
@@ -116,6 +116,5 @@ mod test {
                 panic!("Failed to get distance {}", i);
             }
         }
-
     }
 }

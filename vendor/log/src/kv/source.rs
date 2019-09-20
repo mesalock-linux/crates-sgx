@@ -1,9 +1,9 @@
 //! Sources for key-value pairs.
 
+use kv::{Error, Key, ToKey, ToValue, Value};
 #[cfg(feature = "mesalock_sgx")]
 use std::prelude::v1::*;
 use std::fmt;
-use kv::{Error, Key, ToKey, Value, ToValue};
 
 /// A source of key-value pairs.
 ///
@@ -24,7 +24,7 @@ pub trait Source {
     fn visit<'kvs>(&'kvs self, visitor: &mut Visitor<'kvs>) -> Result<(), Error>;
 
     /// Get the value for a given key.
-    /// 
+    ///
     /// If the key appears multiple times in the source then which key is returned
     /// is implementation specific.
     ///
@@ -48,10 +48,7 @@ pub trait Source {
             }
         }
 
-        let mut get = Get {
-            key,
-            found: None,
-        };
+        let mut get = Get { key, found: None };
 
         let _ = self.visit(&mut get);
         get.found

@@ -113,7 +113,7 @@ v1 = []
 v3 = ["md5"]
 v4 = ["rand"]
 v5 = ["sha1"]
-wasm-bindgen = ["rand/wasm-bindgen"]
+#wasm-bindgen = ["rand/wasm-bindgen"]
 
 [target.'cfg(windows)'.dependencies.winapi]
 optional = true

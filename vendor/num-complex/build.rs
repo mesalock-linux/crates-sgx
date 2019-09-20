@@ -1,4 +1,4 @@
-//extern crate autocfg;
+extern crate autocfg;
 
 //use std::env;
 
@@ -10,5 +10,10 @@ fn main() {
     //    panic!("i128 support was not detected!");
     //}
 
-    //autocfg::rerun_path(file!());
+    // autocfg doesn't have a direct way to probe for `const fn` yet.
+    // if ac.probe_rustc_version(1, 31) {
+        autocfg::emit("has_const_fn");
+    //}
+
+    autocfg::rerun_path(file!());
 }

@@ -13,7 +13,7 @@ Add to Cargo.toml
 
 ```toml
 [dependencies]
-parity-wasm = "0.31"
+parity-wasm = "0.40"
 ```
 
 and then
@@ -50,11 +50,11 @@ Decoder can be fuzzed with `cargo-fuzz` using `wasm-opt` (https://github.com/Web
 ## `no_std` crates
 
 This crate has a feature, `std`, that is enabled by default. To use this crate
-in a `no_std` context, add the following to your `Cargo.toml`:
+in a `no_std` context, add the following to your `Cargo.toml` (still requires allocator though):
 
 ```toml
 [dependencies]
-parity-wasm = { version = "0.31", default-features = false }
+parity-wasm = { version = "0.40", default-features = false }
 ```
 
 Until allocator api is stabilized, this type of use is limited to nightly Rust.

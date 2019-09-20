@@ -8,7 +8,6 @@ use std::io::prelude::*;
 
 use traits::{Parameter, SetParameter};
 use common::Frame;
-use util;
 
 mod decoder;
 pub use self::decoder::{
@@ -182,7 +181,7 @@ impl<R> Reader<R> where R: Read {
         }
         // If the background color is invalid, ignore it
         if let &Some(ref palette) = &self.global_palette {
-            if self.bg_color.unwrap_or(0) as usize >= palette.len() {
+            if self.bg_color.unwrap_or(0) as usize >= (palette.len() / PLTE_CHANNELS) {
                 self.bg_color = None;
             }
         }
@@ -293,7 +292,7 @@ impl<R> Reader<R> where R: Read {
                     },
                     Indexed => {
                         let len = cmp::min(buf.len(), $data.len());
-                        util::copy_memory(&$data[..len], &mut buf[..len]);
+                        buf[..len].copy_from_slice(&$data[..len]);
                         (len, 1)
                     }
                 }

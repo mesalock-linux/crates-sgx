@@ -34,6 +34,7 @@ pub enum TiffFormatError {
     RequiredTagNotFound(Tag),
     UnknownPredictor(u32),
     UnsignedIntegerExpected(Value),
+    SignedIntegerExpected(Value),
 }
 
 impl fmt::Display for TiffFormatError {
@@ -51,6 +52,9 @@ impl fmt::Display for TiffFormatError {
             }
             UnsignedIntegerExpected(ref val) => {
                 write!(fmt, "Expected unsigned integer, {:?} found.", val)
+            }
+            SignedIntegerExpected(ref val) => {
+                write!(fmt, "Expected signed integer, {:?} found.", val)
             }
         }
     }
@@ -135,7 +139,7 @@ impl Error for TiffError {
         }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&dyn Error> {
         match *self {
             TiffError::IoError(ref e) => Some(e),
             _ => None,

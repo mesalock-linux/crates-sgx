@@ -285,7 +285,7 @@ impl<R: Read + Seek> Decoder<R> {
 
     fn read_header(&mut self) -> TiffResult<()> {
         let mut endianess = Vec::with_capacity(2);
-        try!(self.reader.by_ref().take(2).read_to_end(&mut endianess));
+        self.reader.by_ref().take(2).read_to_end(&mut endianess)?;
         match &*endianess {
             b"II" => {
                 self.byte_order = ByteOrder::LittleEndian;
@@ -301,12 +301,12 @@ impl<R: Read + Seek> Decoder<R> {
                 ))
             }
         }
-        if try!(self.read_short()) != 42 {
+        if self.read_short()? != 42 {
             return Err(TiffError::FormatError(
                 TiffFormatError::TiffSignatureInvalid,
             ));
         }
-        self.next_ifd = match try!(self.read_long()) {
+        self.next_ifd = match self.read_long()? {
             0 => None,
             n => Some(n),
         };
@@ -315,7 +315,7 @@ impl<R: Read + Seek> Decoder<R> {
 
     /// Initializes the decoder.
     pub fn init(mut self) -> TiffResult<Decoder<R>> {
-        try!(self.read_header());
+        self.read_header()?;
         self.next_image()?;
         Ok(self)
     }
@@ -324,13 +324,13 @@ impl<R: Read + Seek> Decoder<R> {
     /// If there is no further image in the TIFF file a format error is returned.
     /// To determine whether there are more images call `TIFFDecoder::more_images` instead.
     pub fn next_image(&mut self) -> TiffResult<()> {
-        self.ifd = Some(try!(self.read_ifd()));
-        self.width = try!(self.get_tag_u32(ifd::Tag::ImageWidth));
-        self.height = try!(self.get_tag_u32(ifd::Tag::ImageLength));
+        self.ifd = Some(self.read_ifd()?);
+        self.width = self.get_tag_u32(ifd::Tag::ImageWidth)?;
+        self.height = self.get_tag_u32(ifd::Tag::ImageLength)?;
         self.strip_decoder = None;
-        self.photometric_interpretation = match FromPrimitive::from_u32(try!(
-            self.get_tag_u32(ifd::Tag::PhotometricInterpretation)
-        )) {
+        self.photometric_interpretation = match FromPrimitive::from_u32(
+            self.get_tag_u32(ifd::Tag::PhotometricInterpretation)?
+        ) {
             Some(val) => val,
             None => {
                 return Err(TiffError::UnsupportedError(
@@ -338,7 +338,7 @@ impl<R: Read + Seek> Decoder<R> {
                 ))
             }
         };
-        if let Some(val) = try!(self.find_tag_u32(ifd::Tag::Compression)) {
+        if let Some(val) = self.find_tag_u32(ifd::Tag::Compression)? {
             match FromPrimitive::from_u32(val) {
                 Some(method) => self.compression_method = method,
                 None => {
@@ -348,17 +348,17 @@ impl<R: Read + Seek> Decoder<R> {
                 }
             }
         }
-        if let Some(val) = try!(self.find_tag_u32(ifd::Tag::SamplesPerPixel)) {
+        if let Some(val) = self.find_tag_u32(ifd::Tag::SamplesPerPixel)? {
             self.samples = val as u8
         }
         match self.samples {
             1 => {
-                if let Some(val) = try!(self.find_tag_u32(ifd::Tag::BitsPerSample)) {
+                if let Some(val) = self.find_tag_u32(ifd::Tag::BitsPerSample)? {
                     self.bits_per_sample = vec![val as u8]
                 }
             }
             3 | 4 => {
-                if let Some(val) = try!(self.find_tag_u32_vec(ifd::Tag::BitsPerSample)) {
+                if let Some(val) = self.find_tag_u32_vec(ifd::Tag::BitsPerSample)? {
                     self.bits_per_sample = val.iter().map(|&v| v as u8).collect()
                 }
             }
@@ -381,16 +381,36 @@ impl<R: Read + Seek> Decoder<R> {
         self.byte_order
     }
 
+    /// Reads a TIFF byte value
+    #[inline]
+    pub fn read_byte(&mut self) -> Result<u8, io::Error> {
+        let mut buf = [0; 1];
+        self.reader.read_exact(&mut buf)?;
+        Ok(buf[0])
+    }
+
     /// Reads a TIFF short value
     #[inline]
     pub fn read_short(&mut self) -> Result<u16, io::Error> {
         self.reader.read_u16()
     }
 
+    /// Reads a TIFF sshort value
+    #[inline]
+    pub fn read_sshort(&mut self) -> Result<i16, io::Error> {
+        self.reader.read_i16()
+    }
+
     /// Reads a TIFF long value
     #[inline]
     pub fn read_long(&mut self) -> Result<u32, io::Error> {
         self.reader.read_u32()
+    }
+
+    /// Reads a TIFF slong value
+    #[inline]
+    pub fn read_slong(&mut self) -> Result<i32, io::Error> {
+        self.reader.read_i32()
     }
 
     /// Reads a string
@@ -407,7 +427,7 @@ impl<R: Read + Seek> Decoder<R> {
     #[inline]
     pub fn read_offset(&mut self) -> Result<[u8; 4], io::Error> {
         let mut val = [0; 4];
-        try!(self.reader.read_exact(&mut val));
+        self.reader.read_exact(&mut val)?;
         Ok(val)
     }
 
@@ -427,13 +447,13 @@ impl<R: Read + Seek> Decoder<R> {
     // Count 4 bytes
     // Value 4 bytes either a pointer the value itself
     fn read_entry(&mut self) -> TiffResult<Option<(ifd::Tag, ifd::Entry)>> {
-        let tag = ifd::Tag::from_u16(try!(self.read_short()));
-        let type_: ifd::Type = match FromPrimitive::from_u16(try!(self.read_short())) {
+        let tag = ifd::Tag::from_u16(self.read_short()?);
+        let type_: ifd::Type = match FromPrimitive::from_u16(self.read_short()?) {
             Some(t) => t,
             None => {
                 // Unknown type. Skip this entry according to spec.
-                try!(self.read_long());
-                try!(self.read_long());
+                self.read_long()?;
+                self.read_long()?;
                 return Ok(None);
             }
         };
@@ -441,8 +461,8 @@ impl<R: Read + Seek> Decoder<R> {
             tag,
             ifd::Entry::new(
                 type_,
-                try!(self.read_long()),   // count
-                try!(self.read_offset()), // offset
+                self.read_long()?,   // count
+                self.read_offset()?, // offset
             ),
         )))
     }
@@ -456,16 +476,16 @@ impl<R: Read + Seek> Decoder<R> {
                     TiffFormatError::ImageFileDirectoryNotFound,
                 ))
             }
-            Some(offset) => try!(self.goto_offset(offset)),
+            Some(offset) => self.goto_offset(offset)?,
         }
-        for _ in 0..try!(self.read_short()) {
-            let (tag, entry) = match try!(self.read_entry()) {
+        for _ in 0..self.read_short()? {
+            let (tag, entry) = match self.read_entry()? {
                 Some(val) => val,
                 None => continue, // Unknown data type in tag, skip
             };
             dir.insert(tag, entry);
         }
-        self.next_ifd = match try!(self.read_long()) {
+        self.next_ifd = match self.read_long()? {
             0 => None,
             n => Some(n),
         };
@@ -482,7 +502,7 @@ impl<R: Read + Seek> Decoder<R> {
 
         let limits = self.limits.clone();
 
-        Ok(Some(try!(entry.val(&limits, self))))
+        Ok(Some(entry.val(&limits, self)?))
     }
 
     /// Tries to retrieve a tag and convert it to the desired type.
@@ -504,7 +524,7 @@ impl<R: Read + Seek> Decoder<R> {
     /// Tries to retrieve a tag.
     /// Returns an error if the tag is not present
     pub fn get_tag(&mut self, tag: ifd::Tag) -> TiffResult<ifd::Value> {
-        match try!(self.find_tag(tag)) {
+        match self.find_tag(tag)? {
             Some(val) => Ok(val),
             None => Err(TiffError::FormatError(
                 TiffFormatError::RequiredTagNotFound(tag),
@@ -531,9 +551,9 @@ impl<R: Read + Seek> Decoder<R> {
         length: u32,
         max_uncompressed_length: usize,
     ) -> TiffResult<usize> {
-        let color_type = try!(self.colortype());
-        try!(self.goto_offset(offset));
-        let (bytes, mut reader): (usize, Box<EndianReader>) = match self.compression_method {
+        let color_type = self.colortype()?;
+        self.goto_offset(offset)?;
+        let (bytes, mut reader): (usize, Box<dyn EndianReader>) = match self.compression_method {
             CompressionMethod::None => {
                 let order = self.reader.byte_order;
                 (
@@ -542,20 +562,20 @@ impl<R: Read + Seek> Decoder<R> {
                 )
             }
             CompressionMethod::LZW => {
-                let (bytes, reader) = try!(LZWReader::new(
+                let (bytes, reader) = LZWReader::new(
                     &mut self.reader,
                     length as usize,
                     max_uncompressed_length
-                ));
+                )?;
                 (bytes, Box::new(reader))
             }
             CompressionMethod::PackBits => {
                 let order = self.reader.byte_order;
-                let (bytes, reader) = try!(PackBitsReader::new(
+                let (bytes, reader) = PackBitsReader::new(
                     &mut self.reader,
                     order,
                     length as usize
-                ));
+                )?;
                 (bytes, Box::new(reader))
             }
             method => {
@@ -575,16 +595,16 @@ impl<R: Read + Seek> Decoder<R> {
             (ColorType::RGB(8), DecodingBuffer::U8(ref mut buffer))
             | (ColorType::RGBA(8), DecodingBuffer::U8(ref mut buffer))
             | (ColorType::CMYK(8), DecodingBuffer::U8(ref mut buffer)) => {
-                try!(reader.read_exact(&mut buffer[..bytes]));
+                reader.read_exact(&mut buffer[..bytes])?;
                 bytes
             }
             (ColorType::RGBA(16), DecodingBuffer::U16(ref mut buffer))
             | (ColorType::RGB(16), DecodingBuffer::U16(ref mut buffer)) => {
-                try!(reader.read_u16_into(&mut buffer[..bytes / 2]));
+                reader.read_u16_into(&mut buffer[..bytes / 2])?;
                 bytes / 2
             }
             (ColorType::Gray(16), DecodingBuffer::U16(ref mut buffer)) => {
-                try!(reader.read_u16_into(&mut buffer[..bytes / 2]));
+                reader.read_u16_into(&mut buffer[..bytes / 2])?;
                 if self.photometric_interpretation == PhotometricInterpretation::WhiteIsZero {
                     for datum in buffer[..bytes / 2].iter_mut() {
                         *datum = 0xffff - *datum
@@ -593,7 +613,7 @@ impl<R: Read + Seek> Decoder<R> {
                 bytes / 2
             }
             (ColorType::Gray(n), DecodingBuffer::U8(ref mut buffer)) if n <= 8 => {
-                try!(reader.read_exact(&mut buffer[..bytes]));
+                reader.read_exact(&mut buffer[..bytes])?;
                 if self.photometric_interpretation == PhotometricInterpretation::WhiteIsZero {
                     for byte in buffer[..bytes].iter_mut() {
                         *byte = 0xff - *byte

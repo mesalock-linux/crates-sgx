@@ -65,7 +65,7 @@ md5          = { git = "https://github.com/mesalock-linux/md5-sgx" }
 net2         = { git = "https://github.com/mesalock-linux/net2-rs" }
 num-bigint   = { git = "https://github.com/mesalock-linux/num-bigint-sgx" }
 num-traits   = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
-parity-wasm  = { git = "https://github.com/mesalock-linux/parity-wasm-sgx", branch = "v0.31.3" }
+parity-wasm  = { git = "https://github.com/mesalock-linux/parity-wasm-sgx" }
 png          = { git = "https://github.com/mesalock-linux/image-png-sgx" }
 quick-error  = { git = "https://github.com/mesalock-linux/quick-error-sgx" }
 rand         = { git = "https://github.com/mesalock-linux/rand-sgx", tag = "v0.6.5_sgx1.0.9" }
@@ -98,4 +98,6 @@ cfg-if       = "0.1.9"
 httparse     = { version = "1.3.4", default-features=false }
 itertools    = { version = "0.8.0", default-features = false }
 lazy_static  = { version = "1.4.0", features = ["spin_no_std"] }
+quote        = "0.6"
+syn          = "0.15"
 untrusted    = { version = "0.7.0" }

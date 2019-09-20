@@ -3,6 +3,7 @@
 #![allow(non_snake_case)]
 #![allow(non_camel_case_types)]
 #![allow(dead_code)]
+#![allow(missing_docs)] //FIXME
 
 use std::cmp;
 use std::mem;
@@ -17,7 +18,6 @@ use libc::{free, c_int, c_uint, c_char, c_uchar, c_void};
 
 use reader::{Decoder, Reader, Decoded};
 use c_api_utils::{CInterface, CFile, FnInputFile};
-use util;
 
 /// NOTE As of rust issue #954 `bool` is compatible with c_bool.
 pub type c_bool = bool;
@@ -295,7 +295,7 @@ fn DGifGetLine(this: *mut GifFileType, line: *mut GifPixelType, len: c_int) -> c
     let len = cmp::min(buffer.len(), len as usize);
     *offset = *offset + len;
     let line = slice::from_raw_parts_mut(line, len);
-    util::copy_memory(buffer, line);
+    line.copy_from_slice(&buffer[..len]);
     GIF_OK
 }
 //int DGifGetPixel(GifFileType *GifFile, GifPixelType GifPixel);

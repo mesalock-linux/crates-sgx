@@ -40,6 +40,7 @@
                 all(feature = "mesalock_sgx", not(target_env = "sgx"))),
             no_std)]
 #![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
+#![allow(clippy::unreadable_literal)]
 
 #[cfg(all(feature = "mesalock_sgx", not(target_env = "sgx")))]
 #[macro_use]
@@ -60,12 +61,14 @@ use core::ptr::copy_nonoverlapping;
 #[cfg(all(feature="alloc", not(feature="std")))] use alloc::boxed::Box;
 
 pub use error::Error;
+#[cfg(feature="getrandom")] pub use os::OsRng;
 
 
 mod error;
 pub mod block;
 pub mod impls;
 pub mod le;
+#[cfg(feature="getrandom")] mod os;
 
 
 /// The core of a random number generator.
@@ -79,7 +82,9 @@ pub mod le;
 /// optimal implementation of each is dependent on the type of generator. There
 /// is no required relationship between the output of each; e.g. many
 /// implementations of [`fill_bytes`] consume a whole number of `u32` or `u64`
-/// values and drop any remaining unused bytes.
+/// values and drop any remaining unused bytes. The same can happen with the
+/// [`next_u32`] and [`next_u64`] methods, implementations may discard some
+/// random bits for efficiency.
 ///
 /// The [`try_fill_bytes`] method is a variant of [`fill_bytes`] allowing error
 /// handling; it is not deemed sufficiently useful to add equivalents for
@@ -150,23 +155,23 @@ pub trait RngCore {
     /// RNGs must implement at least one method from this trait directly. In
     /// the case this method is not implemented directly, it can be implemented
     /// using `self.next_u64() as u32` or via
-    /// [`fill_bytes`][impls::next_u32_via_fill].
+    /// [`fill_bytes`](impls::next_u32_via_fill).
     fn next_u32(&mut self) -> u32;
 
     /// Return the next random `u64`.
     ///
     /// RNGs must implement at least one method from this trait directly. In
     /// the case this method is not implemented directly, it can be implemented
-    /// via [`next_u32`][impls::next_u64_via_u32] or via
-    /// [`fill_bytes`][impls::next_u64_via_fill].
+    /// via [`next_u32`](impls::next_u64_via_u32) or via
+    /// [`fill_bytes`](impls::next_u64_via_fill).
     fn next_u64(&mut self) -> u64;
 
     /// Fill `dest` with random data.
     ///
     /// RNGs must implement at least one method from this trait directly. In
     /// the case this method is not implemented directly, it can be implemented
-    /// via [`next_u*`][impls::fill_bytes_via_next] or
-    /// via [`try_fill_bytes`][RngCore::try_fill_bytes]; if this generator can
+    /// via [`next_u*`](impls::fill_bytes_via_next) or
+    /// via [`try_fill_bytes`](RngCore::try_fill_bytes); if this generator can
     /// fail the implementation must choose how best to handle errors here
     /// (e.g. panic with a descriptive message or log a warning and retry a few
     /// times).

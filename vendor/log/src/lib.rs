@@ -195,9 +195,8 @@
 //! # Compile time filters
 //!
 //! Log levels can be statically disabled at compile time via Cargo features. Log invocations at
-//! disabled levels will be skipped and will not even be present in the resulting binary unless the
-//! log level is specified dynamically. This level is configured separately for release and debug
-//! builds. The features are:
+//! disabled levels will be skipped and will not even be present in the resulting binary.
+//! This level is configured separately for release and debug builds. The features are:
 //!
 //! * `max_level_off`
 //! * `max_level_error`
@@ -317,7 +316,7 @@ pub mod kv;
 
 // The LOGGER static holds a pointer to the global logger. It is protected by
 // the STATE static which determines whether LOGGER has been initialized yet.
-static mut LOGGER: &'static Log = &NopLogger;
+static mut LOGGER: &dyn Log = &NopLogger;
 
 #[allow(deprecated)]
 static STATE: AtomicUsize = ATOMIC_USIZE_INIT;
@@ -843,7 +842,7 @@ impl<'a> Record<'a> {
         self.key_values.0
     }
 
-    /// Create a new [`Builder`](struct.Builder.html) based on this record.
+    /// Create a new [`RecordBuilder`](struct.RecordBuilder.html) based on this record.
     #[cfg(feature = "kv_unstable")]
     #[inline]
     pub fn to_builder(&self) -> RecordBuilder {
@@ -858,7 +857,7 @@ impl<'a> Record<'a> {
                 file: self.file,
                 line: self.line,
                 key_values: self.key_values.clone(),
-            }
+            },
         }
     }
 }
@@ -1221,7 +1220,7 @@ pub fn max_level() -> LevelFilter {
 ///
 /// [`set_logger`]: fn.set_logger.html
 #[cfg(all(feature = "std", atomic_cas))]
-pub fn set_boxed_logger(logger: Box<Log>) -> Result<(), SetLoggerError> {
+pub fn set_boxed_logger(logger: Box<dyn Log>) -> Result<(), SetLoggerError> {
     set_logger_inner(|| unsafe { &*Box::into_raw(logger) })
 }
 
@@ -1279,14 +1278,14 @@ pub fn set_boxed_logger(logger: Box<Log>) -> Result<(), SetLoggerError> {
 ///
 /// [`set_logger_racy`]: fn.set_logger_racy.html
 #[cfg(atomic_cas)]
-pub fn set_logger(logger: &'static Log) -> Result<(), SetLoggerError> {
+pub fn set_logger(logger: &'static dyn Log) -> Result<(), SetLoggerError> {
     set_logger_inner(|| logger)
 }
 
 #[cfg(atomic_cas)]
 fn set_logger_inner<F>(make_logger: F) -> Result<(), SetLoggerError>
 where
-    F: FnOnce() -> &'static Log,
+    F: FnOnce() -> &'static dyn Log,
 {
     unsafe {
         match STATE.compare_and_swap(UNINITIALIZED, INITIALIZING, Ordering::SeqCst) {
@@ -1323,7 +1322,7 @@ where
 /// (including all logging macros).
 ///
 /// [`set_logger`]: fn.set_logger.html
-pub unsafe fn set_logger_racy(logger: &'static Log) -> Result<(), SetLoggerError> {
+pub unsafe fn set_logger_racy(logger: &'static dyn Log) -> Result<(), SetLoggerError> {
     match STATE.load(Ordering::SeqCst) {
         UNINITIALIZED => {
             LOGGER = logger;
@@ -1383,7 +1382,7 @@ impl error::Error for ParseLevelError {
 /// Returns a reference to the logger.
 ///
 /// If a logger has not been set, a no-op implementation is returned.
-pub fn logger() -> &'static Log {
+pub fn logger() -> &'static dyn Log {
     unsafe {
         if STATE.load(Ordering::SeqCst) != INITIALIZED {
             static NOP: NopLogger = NopLogger;
@@ -1653,24 +1652,17 @@ mod tests {
             fn visit_pair(
                 &mut self,
                 _: kv::Key<'kvs>,
-                _: kv::Value<'kvs>
+                _: kv::Value<'kvs>,
             ) -> Result<(), kv::Error> {
                 self.seen_pairs += 1;
                 Ok(())
             }
         }
 
-        let kvs: &[(&str, i32)] = &[
-            ("a", 1),
-            ("b", 2)
-        ];
-        let record_test = Record::builder()
-            .key_values(&kvs)
-            .build();
+        let kvs: &[(&str, i32)] = &[("a", 1), ("b", 2)];
+        let record_test = Record::builder().key_values(&kvs).build();
 
-        let mut visitor = TestVisitor {
-            seen_pairs: 0,
-        };
+        let mut visitor = TestVisitor { seen_pairs: 0 };
 
         record_test.key_values().visit(&mut visitor).unwrap();
 

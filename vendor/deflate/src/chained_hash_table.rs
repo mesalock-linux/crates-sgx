@@ -1,4 +1,3 @@
-//use deflate_state::DebugCounter;
 use std::prelude::v1::*;
 
 pub const WINDOW_SIZE: usize = 32768;
@@ -20,8 +19,8 @@ impl Default for Tables {
     #[inline]
     fn default() -> Tables {
         Tables {
-            head: [0;WINDOW_SIZE],
-            prev: [0;WINDOW_SIZE],
+            head: [0; WINDOW_SIZE],
+            prev: [0; WINDOW_SIZE],
         }
     }
 }
@@ -61,7 +60,7 @@ pub fn update_hash(current_hash: u16, to_insert: u8) -> u16 {
 
 #[inline]
 fn update_hash_conf(current_hash: u16, to_insert: u8, shift: u16, mask: u16) -> u16 {
-    ((current_hash << shift) ^ (to_insert as u16)) & mask
+    ((current_hash << shift) ^ (u16::from(to_insert))) & mask
 }
 
 #[inline]
@@ -183,12 +182,10 @@ impl ChainedHashTable {
         let to_check = match_len.saturating_sub(2);
 
         let mut n = 0;
-        let mut smallest_prev =
-            self.get_prev(match_pos);
+        let mut smallest_prev = self.get_prev(match_pos);
         let mut smallest_pos = 0;
         while n < to_check {
-            let prev =
-                self.get_prev(match_pos + n);
+            let prev = self.get_prev(match_pos + n);
             if prev < smallest_prev {
                 smallest_prev = prev;
                 smallest_pos = n;

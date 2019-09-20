@@ -1,7 +1,5 @@
-use io;
-use std::vec::Vec;
-use std::string::String;
-use byteorder::{LittleEndian, ByteOrder};
+use crate::rust::{vec::Vec, string::String};
+use crate::{io, elements};
 use super::{Error, Deserialize, Serialize};
 
 /// Unsigned variable-length integer, limited to 32 bits,
@@ -29,7 +27,7 @@ impl From<u32> for VarUint32 {
 
 impl From<usize> for VarUint32 {
 	fn from(i: usize) -> VarUint32 {
-		assert!(i <= ::std::u32::MAX as usize);
+		assert!(i <= u32::max_value() as usize);
 		VarUint32(i as u32)
 	}
 }
@@ -141,7 +139,7 @@ impl From<u64> for VarUint64 {
 	}
 }
 
-/// 7-bit unsigned integer, encoded in LEB128 (always 1 byte length)
+/// 7-bit unsigned integer, encoded in LEB128 (always 1 byte length).
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct VarUint7(u8);
 
@@ -261,7 +259,7 @@ impl Serialize for Uint8 {
 }
 
 
-/// 32-bit signed integer, encoded in LEB128 (can be 1-5 bytes length)
+/// 32-bit signed integer, encoded in LEB128 (can be 1-5 bytes length).
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct VarInt32(i32);
 
@@ -334,7 +332,7 @@ impl Serialize for VarInt32 {
 	}
 }
 
-/// 64-bit signed integer, encoded in LEB128 (can be 1-9 bytes length)
+/// 64-bit signed integer, encoded in LEB128 (can be 1-9 bytes length).
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct VarInt64(i64);
 
@@ -406,7 +404,7 @@ impl Serialize for VarInt64 {
 	}
 }
 
-/// 32-bit unsigned integer, encoded in little endian
+/// 32-bit unsigned integer, encoded in little endian.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Uint32(u32);
 
@@ -417,7 +415,7 @@ impl Deserialize for Uint32 {
 		let mut buf = [0u8; 4];
 		reader.read(&mut buf)?;
 		// todo check range
-		Ok(Uint32(LittleEndian::read_u32(&buf)))
+		Ok(u32::from_le_bytes(buf).into())
 	}
 }
 
@@ -431,9 +429,7 @@ impl Serialize for Uint32 {
 	type Error = Error;
 
 	fn serialize<W: io::Write>(self, writer: &mut W) -> Result<(), Self::Error> {
-		let mut buf = [0u8; 4];
-		LittleEndian::write_u32(&mut buf, self.0);
-		writer.write(&buf)?;
+		writer.write(&self.0.to_le_bytes())?;
 		Ok(())
 	}
 }
@@ -442,7 +438,7 @@ impl From<u32> for Uint32 {
 	fn from(u: u32) -> Self { Uint32(u) }
 }
 
-/// 64-bit unsigned integer, encoded in little endian
+/// 64-bit unsigned integer, encoded in little endian.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Uint64(u64);
 
@@ -453,7 +449,7 @@ impl Deserialize for Uint64 {
 		let mut buf = [0u8; 8];
 		reader.read(&mut buf)?;
 		// todo check range
-		Ok(Uint64(LittleEndian::read_u64(&buf)))
+		Ok(u64::from_le_bytes(buf).into())
 	}
 }
 
@@ -461,9 +457,7 @@ impl Serialize for Uint64 {
 	type Error = Error;
 
 	fn serialize<W: io::Write>(self, writer: &mut W) -> Result<(), Self::Error> {
-		let mut buf = [0u8; 8];
-		LittleEndian::write_u64(&mut buf, self.0);
-		writer.write(&buf)?;
+		writer.write(&self.0.to_le_bytes())?;
 		Ok(())
 	}
 }
@@ -479,7 +473,7 @@ impl From<Uint64> for u64 {
 }
 
 
-/// VarUint1, 1-bit value (0/1)
+/// VarUint1, 1-bit value (0/1).
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct VarUint1(bool);
 
@@ -545,7 +539,7 @@ impl Serialize for String {
 }
 
 /// List for reading sequence of elements typed `T`, given
-/// they are preceded by length (serialized as VarUint32)
+/// they are preceded by length (serialized as VarUint32).
 #[derive(Debug, Clone)]
 pub struct CountedList<T: Deserialize>(Vec<T>);
 
@@ -574,7 +568,7 @@ pub struct CountedWriter<'a, W: 'a + io::Write> {
 }
 
 impl<'a, W: 'a + io::Write> CountedWriter<'a, W> {
-	/// New counted writer on top of the given serial writer
+	/// New counted writer on top of the given serial writer.
 	pub fn new(writer: &'a mut W) -> Self {
 		CountedWriter {
 			writer: writer,
@@ -603,11 +597,11 @@ impl<'a, W: 'a + io::Write> io::Write for CountedWriter<'a, W> {
 }
 
 /// Helper struct to write series of `T` preceded by the length of the sequence
-/// serialized as VarUint32
+/// serialized as VarUint32.
 #[derive(Debug, Clone)]
-pub struct CountedListWriter<I: Serialize<Error=::elements::Error>, T: IntoIterator<Item=I>>(pub usize, pub T);
+pub struct CountedListWriter<I: Serialize<Error=elements::Error>, T: IntoIterator<Item=I>>(pub usize, pub T);
 
-impl<I: Serialize<Error=::elements::Error>, T: IntoIterator<Item=I>> Serialize for CountedListWriter<I, T> {
+impl<I: Serialize<Error=elements::Error>, T: IntoIterator<Item=I>> Serialize for CountedListWriter<I, T> {
 	type Error = Error;
 
 	fn serialize<W: io::Write>(self, writer: &mut W) -> Result<(), Self::Error> {
@@ -627,7 +621,7 @@ mod tests {
 
 	use super::super::{deserialize_buffer, Serialize};
 	use super::{CountedList, VarInt7, VarUint32, VarInt32, VarInt64, VarUint64};
-	use elements::Error;
+	use crate::elements::Error;
 
 	fn varuint32_ser_test(val: u32, expected: Vec<u8>) {
 		let mut buf = Vec::new();

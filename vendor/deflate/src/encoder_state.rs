@@ -1,9 +1,9 @@
+use std::prelude::v1::*;
+use crate::bitstream::LsbWriter;
+use crate::huffman_table::HuffmanTable;
+use crate::lzvalue::LZType;
 #[cfg(test)]
 use std::mem;
-use std::prelude::v1::*;
-use huffman_table::HuffmanTable;
-use bitstream::LsbWriter;
-use lzvalue::LZType;
 
 // The first bits of each block, which describe the type of the block
 // `-TTF` - TT = type, 00 = stored, 01 = fixed, 10 = dynamic, 11 = reserved, F - 1 if final block
