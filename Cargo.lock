@@ -796,7 +796,7 @@ dependencies = [
 [[package]]
 name = "rusty-machine"
 version = "0.5.4"
-source = "git+https://github.com/mesalock-linux/rusty-machine-sgx#3f1e1e82e283538eb47b3bd3254435cb8bda0920"
+source = "git+https://github.com/mesalock-linux/rusty-machine-sgx#a9ce2f754e72f426d9c408c86b72baf5e6165ce6"
 dependencies = [
  "num 0.2.0 (git+https://github.com/mesalock-linux/num-sgx)",
  "rulinalg 0.4.2 (git+https://github.com/mesalock-linux/rulinalg-sgx)",
