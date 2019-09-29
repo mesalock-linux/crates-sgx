@@ -6,12 +6,12 @@ autocfg                       0.1.6
 base64                        0.10.1
 bincode                       1.1.4
 bit-vec                       0.6.1
-bitflags                      1.1.0
+bitflags                      1.2.0
 byteorder                     1.3.2
 bytes                         0.5.0
 c2-chacha                     0.2.2
 cc                            1.0.45
-cfg-if                        0.1.9
+cfg-if                        0.1.10
 chrono                        0.4.7
 color_quant                   1.0.1
 crc32fast                     1.2.0
@@ -62,7 +62,7 @@ parity-wasm                   0.40.2
 png                           0.15.0
 ppv-lite86                    0.2.5
 proc-macro2                   0.4.30
-proc-macro2                   1.0.3
+proc-macro2                   1.0.4
 profiler_builtins             0.1.0
 quick-error                   1.2.2
 quote                         0.3.15

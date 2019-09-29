@@ -8,6 +8,7 @@ use crate::error::TLSError;
 use crate::key_schedule;
 use crate::session::{SessionCommon, Protocol};
 
+use std::prelude::v1::*;
 use std::sync::Arc;
 use ring::hkdf;
 use webpki;

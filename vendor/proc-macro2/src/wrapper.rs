@@ -1,5 +1,6 @@
 use std::fmt;
 use std::iter;
+use std::ops::RangeBounds;
 use std::panic::{self, PanicInfo};
 #[cfg(super_unstable)]
 use std::path::PathBuf;
@@ -857,6 +858,16 @@ impl Literal {
             (Literal::Compiler(lit), Span::Compiler(s)) => lit.set_span(s),
             (Literal::Fallback(lit), Span::Fallback(s)) => lit.set_span(s),
             _ => mismatch(),
+        }
+    }
+
+    pub fn subspan<R: RangeBounds<usize>>(&self, range: R) -> Option<Span> {
+        match self {
+            #[cfg(proc_macro_span)]
+            Literal::Compiler(lit) => lit.subspan(range).map(Span::Compiler),
+            #[cfg(not(proc_macro_span))]
+            Literal::Compiler(_lit) => None,
+            Literal::Fallback(lit) => lit.subspan(range).map(Span::Fallback),
         }
     }
 

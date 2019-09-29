@@ -4,6 +4,7 @@ use std::cell::RefCell;
 use std::cmp;
 use std::fmt;
 use std::iter;
+use std::ops::RangeBounds;
 #[cfg(procmacro2_semver_exempt)]
 use std::path::Path;
 use std::path::PathBuf;
@@ -776,6 +777,10 @@ impl Literal {
 
     pub fn set_span(&mut self, span: Span) {
         self.span = span;
+    }
+
+    pub fn subspan<R: RangeBounds<usize>>(&self, _range: R) -> Option<Span> {
+        None
     }
 }
 

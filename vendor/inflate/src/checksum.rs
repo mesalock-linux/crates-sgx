@@ -2,8 +2,10 @@ use std::prelude::v1::*;
 use adler32::RollingAdler32;
 
 pub fn adler32_from_bytes(bytes: &[u8; 4]) -> u32 {
-    (bytes[3] as u32) | ((bytes[2] as u32) << 8) |
-       ((bytes[1] as u32) << 16) | ((bytes[0] as u32) << 24)
+    (u32::from(bytes[3]))
+        | (u32::from(bytes[2]) << 8)
+        | (u32::from(bytes[1]) << 16)
+        | (u32::from(bytes[0]) << 24)
 }
 
 /// Whether we should validate the checksum, and what type of checksum it is.
@@ -42,9 +44,7 @@ impl Checksum {
     }
 
     pub fn new(checksum_type: ChecksumType) -> Checksum {
-        Checksum {
-            checksum_type: checksum_type,
-        }
+        Checksum { checksum_type }
     }
 
     #[inline]
@@ -66,9 +66,8 @@ impl Checksum {
                 } else {
                     Err("Checksum mismatch!".to_owned())
                 }
-            },
+            }
         }
-
     }
 
     #[inline]
@@ -78,7 +77,6 @@ impl Checksum {
             _ => 0,
         }
     }
-
 }
 
 #[cfg(test)]

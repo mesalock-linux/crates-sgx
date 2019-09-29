@@ -39,7 +39,7 @@ srcdir=`dirname $0`
 ORIGDIR=`pwd`
 cd $srcdir
 
-autoreconf -v --install || exit $?
+autoreconf -v --force --install || exit $?
 cd $ORIGDIR             || exit $?
 
 CFLAGS="$CFLAGS -std=c99 -fno-builtin -DHAVE_SGX=1 -fPIC -DUNW_LOCAL_ONLY"
@@ -66,6 +66,8 @@ if [ -f /usr/bin/dpkg ]; then
     fi
 fi
 
+sed -i "s/rtmk-nova\*/rtmk-nova\* | linux-sgx/" $srcdir/config/config.sub
+
 export CFLAGS
 $srcdir/configure $HOST_OPT --enable-shared=no \
    --disable-block-signals \
@@ -73,3 +75,4 @@ $srcdir/configure $HOST_OPT --enable-shared=no \
    --enable-debug-frame=no \
    --enable-cxx-exceptions \
    "$@"
+
