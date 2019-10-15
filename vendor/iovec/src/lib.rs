@@ -5,12 +5,13 @@
 //! [`IoVec`]: struct.IoVec.html
 
 #![no_std]
+#![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
 
-#[cfg(unix)]
+//#[cfg(unix)]
 extern crate sgx_libc as libc;
 
-#[cfg(windows)]
-extern crate winapi;
+//#[cfg(windows)]
+//extern crate winapi;
 
 mod sys;
 

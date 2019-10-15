@@ -52,6 +52,7 @@ gzip-header  = { git = "https://github.com/mesalock-linux/gzip-header-sgx" }
 heapsize     = { git = "https://github.com/mesalock-linux/heapsize-sgx" }
 hex          = { git = "https://github.com/mesalock-linux/rust-hex-sgx" }
 http         = { git = "https://github.com/mesalock-linux/http-sgx" }
+http_req     = { git = "https://github.com/mesalock-linux/http_req-sgx" }
 iovec        = { git = "https://github.com/mesalock-linux/iovec-sgx" }
 image        = { git = "https://github.com/mesalock-linux/image-sgx" }
 inflate      = { git = "https://github.com/mesalock-linux/inflate-sgx" }

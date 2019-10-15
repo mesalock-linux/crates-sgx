@@ -1,6 +1,6 @@
 [package]
 name = "matrixmultiply"
-version = "0.2.2"
+version = "0.2.3"
 authors = [
     "bluss",
     "R. Janis Goldschmidt"
@@ -39,11 +39,12 @@ sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", 
 
 [dev-dependencies]
 bencher = "0.1.2"
-itertools = "0.7.11"
+itertools = "0.8"
 
 [profile.release]
 [profile.bench]
 
 [package.metadata.release]
 no-dev-version = true
+tag-name = "{{version}}"
 

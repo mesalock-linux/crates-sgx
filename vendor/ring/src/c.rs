@@ -22,9 +22,9 @@
 
 // Keep in sync with the checks in base.h that verify these assumptions.
 
-pub(crate) type int = sgx_types::c_int;
-pub(crate) type uint = sgx_types::c_uint;
-pub(crate) type size_t = sgx_types::size_t;
+pub(crate) type int = i32;
+pub(crate) type uint = u32;
+pub(crate) type size_t = usize;
 
 //#[cfg(all(test, any(unix, windows)))]
 //mod tests {

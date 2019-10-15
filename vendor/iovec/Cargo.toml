@@ -14,8 +14,8 @@ Portable buffer type for scatter/gather I/O operations
 categories = ["no-std", "network-programming", "api-bindings"]
 exclude = ["/sgx/*"]
 
-[target.'cfg(unix)'.dependencies]
+[target.'cfg(not(target_env = "sgx"))'.dependencies]
 sgx_libc   = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git" }
 
-[target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = ["minwindef", "ws2def"] }
+#[target.'cfg(windows)'.dependencies]
+#winapi = { version = "0.3", features = ["minwindef", "ws2def"] }

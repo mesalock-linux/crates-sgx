@@ -6,7 +6,7 @@ autocfg                       0.1.6
 base64                        0.10.1
 bincode                       1.1.4
 bit-vec                       0.6.1
-bitflags                      1.2.0
+bitflags                      1.2.1
 byteorder                     1.3.2
 bytes                         0.5.0
 c2-chacha                     0.2.2
@@ -15,7 +15,7 @@ cfg-if                        0.1.10
 chrono                        0.4.7
 color_quant                   1.0.1
 crc32fast                     1.2.0
-ctor                          0.1.11
+ctor                          0.1.12
 deflate                       0.8.0
 either                        1.5.3
 env_logger                    0.6.2
@@ -26,11 +26,12 @@ getrandom                     0.1.12
 ghost                         0.1.1
 gif                           0.10.3
 gzip-header                   0.3.0
-half                          1.3.0
+half                          1.4.0
 hashbrown                     0.3.1
 heapsize                      0.4.2
 hex                           0.4.0
 http                          0.1.18
+http_req                      0.5.3
 httparse                      1.3.4
 humantime                     1.3.0
 image                         0.22.1
@@ -46,7 +47,7 @@ libc                          0.2.62
 linked-hash-map               0.5.2
 log                           0.4.8
 lzw                           0.10.0
-matrixmultiply                0.2.2
+matrixmultiply                0.2.3
 md5                           0.6.1
 memchr                        2.2.1
 memory_units                  0.3.0
@@ -62,7 +63,7 @@ parity-wasm                   0.40.2
 png                           0.15.0
 ppv-lite86                    0.2.5
 proc-macro2                   0.4.30
-proc-macro2                   1.0.4
+proc-macro2                   1.0.5
 profiler_builtins             0.1.0
 quick-error                   1.2.2
 quote                         0.3.15
@@ -79,11 +80,11 @@ ring                          0.16.9
 rulinalg                      0.4.2
 rustls                        0.16.0
 rusty-machine                 0.5.4
-ryu                           1.0.0
+ryu                           1.0.2
 sct                           0.6.0
 serde                         1.0.101
 serde-big-array               0.1.5
-serde_cbor                    0.10.1
+serde_cbor                    0.10.2
 serde_derive                  1.0.101
 serde_json                    1.0.40
 sha-1                         0.8.1
@@ -102,11 +103,13 @@ toml                          0.5.3
 typenum                       1.11.2
 typetag                       0.1.4
 typetag-impl                  0.1.4
+unicase                       2.5.1
 unicode-xid                   0.0.4
 unicode-xid                   0.1.0
 unicode-xid                   0.2.0
 untrusted                     0.7.0
 uuid                          0.7.4
+version_check                 0.1.5
 wabt                          0.6.0
 wasmi                         0.5.1
 wasmi-validation              0.2.0

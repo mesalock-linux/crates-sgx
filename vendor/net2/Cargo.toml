@@ -15,8 +15,9 @@ exclude = ["/sgx/*"]
 [target."cfg(windows)".dependencies]
 winapi = { version = "0.3", features = ["handleapi", "winsock2", "ws2def", "ws2ipdef", "ws2tcpip"] }
 
-[target.'cfg(any(target_os="redox", unix, target_os="wasi"))'.dependencies]
+#[target.'cfg(any(target_os="redox", unix, target_os="wasi"))'.dependencies]
 #libc = "0.2.54"
+[target.'cfg(not(target_env = "sgx"))'.dependencies]
 sgx_libc = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", features = ["net"], optional = true }
 
