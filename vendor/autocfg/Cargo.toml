@@ -12,7 +12,7 @@
 
 [package]
 name = "autocfg"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["Josh Stone <cuviper@gmail.com>"]
 description = "Automatic cfg for Rust compiler features"
 readme = "README.md"

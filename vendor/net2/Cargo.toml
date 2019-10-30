@@ -13,7 +13,7 @@ Extensions to the standard library's networking types as proposed in RFC 1158.
 exclude = ["/sgx/*"]
 
 [target."cfg(windows)".dependencies]
-winapi = { version = "0.3", features = ["handleapi", "winsock2", "ws2def", "ws2ipdef", "ws2tcpip"] }
+#winapi = { version = "0.3", features = ["handleapi", "winsock2", "ws2def", "ws2ipdef", "ws2tcpip"] }
 
 #[target.'cfg(any(target_os="redox", unix, target_os="wasi"))'.dependencies]
 #libc = "0.2.54"

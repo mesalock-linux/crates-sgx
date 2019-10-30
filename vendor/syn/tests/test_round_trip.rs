@@ -2,19 +2,16 @@
 #![recursion_limit = "1024"]
 #![feature(rustc_private)]
 
-extern crate quote;
-extern crate rayon;
-extern crate syn;
 extern crate syntax;
 extern crate syntax_pos;
-extern crate walkdir;
 
 mod features;
 
 use quote::quote;
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use syntax::ast;
-use syntax::parse::{self, PResult, ParseSess};
+use syntax::parse::{self, PResult};
+use syntax::sess::ParseSess;
 use syntax::source_map::FilePathMapping;
 use syntax_pos::edition::Edition;
 use syntax_pos::FileName;

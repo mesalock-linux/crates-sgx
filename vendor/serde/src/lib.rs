@@ -75,7 +75,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Serde types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/serde/1.0.101")]
+#![doc(html_root_url = "https://docs.rs/serde/1.0.102")]
 // Support using Serde without the standard library!
 #![cfg_attr(not(feature = "std"), no_std)]
 // Unstable functionality only if the user asks for it. For tracking and
@@ -112,6 +112,10 @@
         too_many_lines,
         // preference
         doc_markdown,
+        // false positive
+        needless_doctest_main,
+        // noisy
+        must_use_candidate,
     )
 )]
 // Rustc lints.

@@ -18,13 +18,13 @@ name = "byteorder"
 bench = false
 
 [dev-dependencies]
-quickcheck = { version = "0.8", default-features = false }
-rand = "0.6"
-doc-comment = "0.3"
+#quickcheck = { version = "0.8", default-features = false }
+#rand = "0.6"
+#doc-comment = "0.3"
 
 [features]
 default = ["std","mesalock_sgx"]
-std = []
+std = ["mesalock_sgx"]
 mesalock_sgx = ["std", "sgx_tstd"]
 
 # This feature is no longer used and is DEPRECATED. This crate now
