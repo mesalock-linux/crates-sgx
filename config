@@ -81,8 +81,8 @@ git = "https://github.com/mesalock-linux/gzip-header-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
-[source."https://github.com/mesalock-linux/hashes-sgx-fake"]
-git = "https://github.com/mesalock-linux/hashes-sgx-fake"
+[source."https://github.com/mesalock-linux/hashes-sgx"]
+git = "https://github.com/mesalock-linux/hashes-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
@@ -221,6 +221,11 @@ git = "https://github.com/mesalock-linux/parity-wasm-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/prost-sgx"]
+git = "https://github.com/mesalock-linux/prost-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/quick-error-sgx"]
 git = "https://github.com/mesalock-linux/quick-error-sgx"
 branch = "master"
@@ -278,6 +283,11 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/rustcrypto-traits-sgx"]
 git = "https://github.com/mesalock-linux/rustcrypto-traits-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/rustcrypto-utils-sgx"]
+git = "https://github.com/mesalock-linux/rustcrypto-utils-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 

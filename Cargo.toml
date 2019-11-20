@@ -68,6 +68,7 @@ num-bigint   = { git = "https://github.com/mesalock-linux/num-bigint-sgx" }
 num-traits   = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
 parity-wasm  = { git = "https://github.com/mesalock-linux/parity-wasm-sgx" }
 png          = { git = "https://github.com/mesalock-linux/image-png-sgx" }
+prost        = { git = "https://github.com/mesalock-linux/prost-sgx" }
 quick-error  = { git = "https://github.com/mesalock-linux/quick-error-sgx" }
 rand         = { git = "https://github.com/mesalock-linux/rand-sgx", tag = "v0.6.5_sgx1.0.9" }
 regex        = { git = "https://github.com/mesalock-linux/regex-sgx" }
@@ -80,9 +81,9 @@ serde        = { git = "https://github.com/mesalock-linux/serde-sgx" }
 serde_cbor   = { git = "https://github.com/mesalock-linux/cbor-sgx" }
 serde_derive = { git = "https://github.com/mesalock-linux/serde-sgx" }
 serde_json   = { git = "https://github.com/mesalock-linux/serde-json-sgx" }
-sha-1        = { git = "https://github.com/mesalock-linux/hashes-sgx-fake" }
+sha-1        = { git = "https://github.com/mesalock-linux/hashes-sgx" }
 sha1         = { git = "https://github.com/mesalock-linux/rust-sha1-sgx" }
-sha2         = { git = "https://github.com/mesalock-linux/hashes-sgx-fake" }
+sha2         = { git = "https://github.com/mesalock-linux/hashes-sgx" }
 tiff         = { git = "https://github.com/mesalock-linux/image-tiff-sgx" }
 toml         = { git = "https://github.com/mesalock-linux/toml-rs-sgx" }
 uuid         = { git = "https://github.com/mesalock-linux/uuid-sgx" }

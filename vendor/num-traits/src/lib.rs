@@ -25,13 +25,17 @@ extern crate sgx_tstd as std;
 #[cfg(all(feature = "std", feature = "mesalock_sgx", target_env = "sgx"))]
 extern crate std;
 
+// Only `no_std` builds actually use `libm`.
+#[cfg(all(not(feature = "std"), feature = "libm"))]
+extern crate libm;
+
 use core::fmt;
 use core::num::Wrapping;
 use core::ops::{Add, Div, Mul, Rem, Sub};
 use core::ops::{AddAssign, DivAssign, MulAssign, RemAssign, SubAssign};
 
 pub use bounds::Bounded;
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", feature = "libm"))]
 pub use float::Float;
 pub use float::FloatConst;
 // pub use real::{FloatCore, Real}; // NOTE: Don't do this, it breaks `use num_traits::*;`.
@@ -58,7 +62,6 @@ pub mod identities;
 pub mod int;
 pub mod ops;
 pub mod pow;
-#[cfg(feature = "std")]
 pub mod real;
 pub mod sign;
 
@@ -369,6 +372,8 @@ float_trait_impl!(Num for f32 f64);
 ///  If input is less than min then this returns min.
 ///  If input is greater than max then this returns max.
 ///  Otherwise this returns input.
+///
+/// **Panics** in debug mode if `!(min <= max)`.
 #[inline]
 pub fn clamp<T: PartialOrd>(input: T, min: T, max: T) -> T {
     debug_assert!(min <= max, "min must be less than or equal to max");
@@ -386,8 +391,11 @@ pub fn clamp<T: PartialOrd>(input: T, min: T, max: T) -> T {
 ///  If input is less than min then this returns min.
 ///  Otherwise this returns input.
 ///  `clamp_min(std::f32::NAN, 1.0)` preserves `NAN` different from `f32::min(std::f32::NAN, 1.0)`.
+///
+/// **Panics** in debug mode if `!(min == min)`. (This occurs if `min` is `NAN`.)
 #[inline]
 pub fn clamp_min<T: PartialOrd>(input: T, min: T) -> T {
+    debug_assert!(min == min, "min must not be NAN");
     if input < min {
         min
     } else {
@@ -400,8 +408,11 @@ pub fn clamp_min<T: PartialOrd>(input: T, min: T) -> T {
 ///  If input is greater than max then this returns max.
 ///  Otherwise this returns input.
 ///  `clamp_max(std::f32::NAN, 1.0)` preserves `NAN` different from `f32::max(std::f32::NAN, 1.0)`.
+///
+/// **Panics** in debug mode if `!(max == max)`. (This occurs if `max` is `NAN`.)
 #[inline]
 pub fn clamp_max<T: PartialOrd>(input: T, max: T) -> T {
+    debug_assert!(max == max, "max must not be NAN");
     if input > max {
         max
     } else {
@@ -431,6 +442,41 @@ fn clamp_test() {
     assert!(clamp(::core::f32::NAN, -1.0, 1.0).is_nan());
     assert!(clamp_min(::core::f32::NAN, 1.0).is_nan());
     assert!(clamp_max(::core::f32::NAN, 1.0).is_nan());
+}
+
+#[test]
+#[should_panic]
+#[cfg(debug_assertions)]
+fn clamp_nan_min() {
+    clamp(0., ::core::f32::NAN, 1.);
+}
+
+#[test]
+#[should_panic]
+#[cfg(debug_assertions)]
+fn clamp_nan_max() {
+    clamp(0., -1., ::core::f32::NAN);
+}
+
+#[test]
+#[should_panic]
+#[cfg(debug_assertions)]
+fn clamp_nan_min_max() {
+    clamp(0., ::core::f32::NAN, ::core::f32::NAN);
+}
+
+#[test]
+#[should_panic]
+#[cfg(debug_assertions)]
+fn clamp_min_nan_min() {
+    clamp_min(0., ::core::f32::NAN);
+}
+
+#[test]
+#[should_panic]
+#[cfg(debug_assertions)]
+fn clamp_max_nan_max() {
+    clamp_max(0., ::core::f32::NAN);
 }
 
 #[test]

@@ -1,0 +1,21 @@
+[package]
+name = "prost-derive"
+# NB: When modifying, also modify html_root_url in lib.rs
+version = "0.5.0"
+authors = ["Dan Burkert <dan@danburkert.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/danburkert/prost"
+documentation = "https://docs.rs/prost-derive"
+readme = "README.md"
+description = "A Protocol Buffers implementation for the Rust Language."
+edition = "2018"
+
+[lib]
+proc_macro = true
+
+[dependencies]
+failure = { version = "0.1", default-features = false, features = ["std"] }
+itertools = "0.8"
+proc-macro2 = "0.4.4"
+quote = "0.6.3"
+syn = { version = "0.15", features = [ "extra-traits" ] }
