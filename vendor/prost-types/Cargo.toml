@@ -1,0 +1,24 @@
+[package]
+name = "prost-types"
+# NB: When modifying, also modify html_root_url in lib.rs
+version = "0.5.0"
+authors = ["Dan Burkert <dan@danburkert.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/danburkert/prost"
+documentation = "https://docs.rs/prost-types"
+readme = "README.md"
+description = "A Protocol Buffers implementation for the Rust Language."
+edition = "2018"
+
+[lib]
+doctest = false
+test = false
+
+[dependencies]
+bytes = { git = "https://github.com/mesalock-linux/bytes-sgx" }
+prost = { git = "https://github.com/mesalock-linux/prost-sgx" }
+sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+
+[features]
+default = ["mesalock_sgx"]
+mesalock_sgx = ["sgx_tstd"]

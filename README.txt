@@ -76,6 +76,7 @@ proc-macro2        1.0.6
 profiler_builtins  0.1.0
 prost              0.5.0
 prost-derive       0.5.0
+prost-types        0.5.0
 quick-error        1.2.2
 quote              0.3.15
 quote              0.6.13
