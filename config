@@ -281,6 +281,11 @@ git = "https://github.com/mesalock-linux/rust-sha1-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/rust_rdrand-sgx"]
+git = "https://github.com/mesalock-linux/rust_rdrand-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/rustcrypto-traits-sgx"]
 git = "https://github.com/mesalock-linux/rustcrypto-traits-sgx"
 branch = "master"
