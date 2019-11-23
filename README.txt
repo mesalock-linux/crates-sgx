@@ -83,9 +83,11 @@ quote              0.6.13
 quote              1.0.2
 rand               0.7.2
 rand_chacha        0.2.1
+rand_core          0.4.2
 rand_core          0.5.1
 rand_hc            0.2.0
 rawpointer         0.2.1
+rdrand             0.6.0
 regex              1.3.1
 regex-syntax       0.6.12
 ring               0.16.9

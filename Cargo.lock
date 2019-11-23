@@ -209,6 +209,7 @@ dependencies = [
  "quick-error 1.2.2 (git+https://github.com/mesalock-linux/quick-error-sgx)",
  "quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.2 (git+https://github.com/mesalock-linux/rand-sgx?tag=v0.6.5_sgx1.0.9)",
+ "rdrand 0.6.0 (git+https://github.com/mesalock-linux/rust_rdrand-sgx)",
  "regex 1.3.1 (git+https://github.com/mesalock-linux/regex-sgx)",
  "ring 0.16.9 (git+https://github.com/mesalock-linux/ring-sgx?tag=v0.16.5)",
  "rulinalg 0.4.2 (git+https://github.com/mesalock-linux/rulinalg-sgx)",
@@ -831,6 +832,11 @@ dependencies = [
 
 [[package]]
 name = "rand_core"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "rand_core"
 version = "0.5.1"
 source = "git+https://github.com/mesalock-linux/rand-sgx?tag=v0.6.5_sgx1.0.9#9a802b70dc66301a6156580f5b96cea7292ef14a"
 dependencies = [
@@ -850,6 +856,14 @@ dependencies = [
 name = "rawpointer"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "rdrand"
+version = "0.6.0"
+source = "git+https://github.com/mesalock-linux/rust_rdrand-sgx#a9babd9b2f39a85d564b1d53fb30de84c87a8790"
+dependencies = [
+ "rand_core 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "regex"
@@ -1556,9 +1570,11 @@ dependencies = [
 "checksum quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "053a8c8bcc71fcce321828dc897a98ab9760bef03a4fc36693c231e5b3216cfe"
 "checksum rand 0.7.2 (git+https://github.com/mesalock-linux/rand-sgx?tag=v0.6.5_sgx1.0.9)" = "<none>"
 "checksum rand_chacha 0.2.1 (git+https://github.com/mesalock-linux/rand-sgx?tag=v0.6.5_sgx1.0.9)" = "<none>"
+"checksum rand_core 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "9c33a3c44ca05fa6f1807d8e6743f3824e8509beca625669633be0acbdf509dc"
 "checksum rand_core 0.5.1 (git+https://github.com/mesalock-linux/rand-sgx?tag=v0.6.5_sgx1.0.9)" = "<none>"
 "checksum rand_hc 0.2.0 (git+https://github.com/mesalock-linux/rand-sgx?tag=v0.6.5_sgx1.0.9)" = "<none>"
 "checksum rawpointer 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "60a357793950651c4ed0f3f52338f53b2f809f32d83a07f72909fa13e4c6c1e3"
+"checksum rdrand 0.6.0 (git+https://github.com/mesalock-linux/rust_rdrand-sgx)" = "<none>"
 "checksum regex 1.3.1 (git+https://github.com/mesalock-linux/regex-sgx)" = "<none>"
 "checksum regex-syntax 0.6.12 (git+https://github.com/mesalock-linux/regex-sgx)" = "<none>"
 "checksum ring 0.16.9 (git+https://github.com/mesalock-linux/ring-sgx?tag=v0.16.5)" = "<none>"
