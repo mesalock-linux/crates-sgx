@@ -47,7 +47,7 @@ inflate            0.4.5
 inventory          0.1.4
 inventory-impl     0.1.4
 iovec              0.2.0
-itertools          0.8.1
+itertools          0.8.2
 itoa               0.4.4
 jpeg-decoder       0.1.15
 lazy_static        1.4.0
@@ -97,10 +97,10 @@ rustls             0.16.0
 rusty-machine      0.5.4
 ryu                1.0.2
 sct                0.6.0
-serde              1.0.102
+serde              1.0.103
 serde-big-array    0.1.5
 serde_cbor         0.10.2
-serde_derive       1.0.102
+serde_derive       1.0.103
 serde_json         1.0.40
 sha-1              0.8.1
 sha1               0.6.0
