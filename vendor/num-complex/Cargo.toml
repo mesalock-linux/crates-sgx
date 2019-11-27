@@ -33,7 +33,7 @@ version = "1.0"
 [dependencies.rand]
 optional = true
 git = "https://github.com/mesalock-linux/rand-sgx"
-rev = "v0.6.5_sgx1.0.9"
+tag = "v0.6.5_sgx1.0.9"
 #version = "0.6"
 #default-features = false
 

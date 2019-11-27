@@ -655,7 +655,7 @@ dependencies = [
 [[package]]
 name = "num-complex"
 version = "0.2.3"
-source = "git+https://github.com/mesalock-linux/num-complex-sgx#ad308ab68ae109ecfcacab5ef211f358ce9619c4"
+source = "git+https://github.com/mesalock-linux/num-complex-sgx#37ae481b65ccfaa2f94260fccdbb42e9ee60ea1d"
 dependencies = [
  "autocfg 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-traits 0.2.9 (git+https://github.com/mesalock-linux/num-traits-sgx)",
@@ -1431,7 +1431,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "uuid"
 version = "0.7.4"
-source = "git+https://github.com/mesalock-linux/uuid-sgx#3165643591deaab3dc3574448fc3be6a82654ce1"
+source = "git+https://github.com/mesalock-linux/uuid-sgx#d25b56a61da69c9de5acc1513ca2c313da1a18f4"
 dependencies = [
  "byteorder 1.3.2 (git+https://github.com/mesalock-linux/byteorder-sgx)",
  "sgx_tstd 1.0.9 (git+https://github.com/baidu/rust-sgx-sdk?rev=v1.0.9)",
