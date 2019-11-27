@@ -881,7 +881,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "rdrand"
 version = "0.6.0"
-source = "git+https://github.com/mesalock-linux/rust_rdrand-sgx#a9babd9b2f39a85d564b1d53fb30de84c87a8790"
+source = "git+https://github.com/mesalock-linux/rust_rdrand-sgx#e72fdafbfd4d4b3ca18307690a45079bf1636344"
 dependencies = [
  "rand_core 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
