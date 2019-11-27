@@ -29,6 +29,7 @@ erased-serde       0.3.9
 failure            0.1.6
 fake-simd          0.1.2
 fnv                1.0.6
+gbdt               0.1.0
 generic-array      0.12.3
 getrandom          0.1.12
 ghost              0.1.1

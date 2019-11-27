@@ -71,6 +71,11 @@ git = "https://github.com/mesalock-linux/erased-serde-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/gbdt-rs"]
+git = "https://github.com/mesalock-linux/gbdt-rs"
+branch = "mesatee-sgx"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/getrandom-sgx"]
 git = "https://github.com/mesalock-linux/getrandom-sgx"
 branch = "master"
