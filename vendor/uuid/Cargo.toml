@@ -63,7 +63,7 @@ git = "https://github.com/mesalock-linux/byteorder-sgx"
 
 [dependencies.md5]
 optional = true
-version = "0.6"
+version = "0.7"
 git = "https://github.com/mesalock-linux/md5-sgx"
 
 [dependencies.rand]

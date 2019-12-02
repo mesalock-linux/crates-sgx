@@ -8,6 +8,7 @@
 //! The adler32 code has been translated (as accurately as I could manage) from
 //! the zlib implementation.
 
+#![forbid(unsafe_code)]
 #![cfg_attr(all(feature = "mesalock_sgx",
                 not(target_env = "sgx")), no_std)]
 #![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]

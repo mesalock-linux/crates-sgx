@@ -28,6 +28,7 @@
 // https://people.csail.mit.edu/rivest/Md5.c
 // https://tools.ietf.org/html/rfc1321
 
+#![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(not(target_env = "sgx"), no_std)]
 #![cfg_attr(target_env = "sgx", feature(rustc_private))]
 
@@ -35,12 +36,17 @@
 #[macro_use]
 extern crate sgx_tstd as std;
 
-use std::prelude::v1::*;
+#[cfg(all(feature = "std", target_env = "sgx"))]
+use std as core;
 
-use std::convert;
-use std::fmt;
+use core::convert;
+use core::fmt;
+use core::ops;
+
+#[cfg(all(feature = "std", target_env = "sgx"))]
+use core::io;
+#[cfg(all(feature = "std", not(target_env = "sgx")))]
 use std::io;
-use std::ops;
 
 /// A digest.
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
@@ -81,7 +87,7 @@ macro_rules! implement {
         impl fmt::$kind for Digest {
             fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 for value in &self.0 {
-                    try!(write!(formatter, $format, value));
+                    write!(formatter, $format, value)?;
                 }
                 Ok(())
             }
@@ -128,7 +134,7 @@ impl Context {
     /// Consume data.
     #[cfg(target_pointer_width = "64")]
     pub fn consume<T: AsRef<[u8]>>(&mut self, data: T) {
-        for chunk in data.as_ref().chunks(std::u32::MAX as usize) {
+        for chunk in data.as_ref().chunks(core::u32::MAX as usize) {
             consume(self, chunk);
         }
     }
@@ -172,6 +178,7 @@ impl convert::From<Context> for Digest {
     }
 }
 
+#[cfg(feature = "std")]
 impl io::Write for Context {
     #[inline]
     fn write(&mut self, data: &[u8]) -> io::Result<usize> {

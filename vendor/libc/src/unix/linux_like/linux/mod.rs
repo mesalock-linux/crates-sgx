@@ -1127,6 +1127,38 @@ pub const IFLA_MTU: ::c_ushort = 4;
 pub const IFLA_LINK: ::c_ushort = 5;
 pub const IFLA_QDISC: ::c_ushort = 6;
 pub const IFLA_STATS: ::c_ushort = 7;
+pub const IFLA_COST: ::c_ushort = 8;
+pub const IFLA_PRIORITY: ::c_ushort = 9;
+pub const IFLA_MASTER: ::c_ushort = 10;
+pub const IFLA_WIRELESS: ::c_ushort = 11;
+pub const IFLA_PROTINFO: ::c_ushort = 12;
+pub const IFLA_TXQLEN: ::c_ushort = 13;
+pub const IFLA_MAP: ::c_ushort = 14;
+pub const IFLA_WEIGHT: ::c_ushort = 15;
+pub const IFLA_OPERSTATE: ::c_ushort = 16;
+pub const IFLA_LINKMODE: ::c_ushort = 17;
+pub const IFLA_LINKINFO: ::c_ushort = 18;
+pub const IFLA_NET_NS_PID: ::c_ushort = 19;
+pub const IFLA_IFALIAS: ::c_ushort = 20;
+pub const IFLA_NUM_VF: ::c_ushort = 21;
+pub const IFLA_VFINFO_LIST: ::c_ushort = 22;
+pub const IFLA_STATS64: ::c_ushort = 23;
+pub const IFLA_VF_PORTS: ::c_ushort = 24;
+pub const IFLA_PORT_SELF: ::c_ushort = 25;
+pub const IFLA_AF_SPEC: ::c_ushort = 26;
+pub const IFLA_GROUP: ::c_ushort = 27;
+pub const IFLA_NET_NS_FD: ::c_ushort = 28;
+pub const IFLA_EXT_MASK: ::c_ushort = 29;
+pub const IFLA_PROMISCUITY: ::c_ushort = 30;
+pub const IFLA_NUM_TX_QUEUES: ::c_ushort = 31;
+pub const IFLA_NUM_RX_QUEUES: ::c_ushort = 32;
+pub const IFLA_CARRIER: ::c_ushort = 33;
+pub const IFLA_PHYS_PORT_ID: ::c_ushort = 34;
+pub const IFLA_CARRIER_CHANGES: ::c_ushort = 35;
+pub const IFLA_PHYS_SWITCH_ID: ::c_ushort = 36;
+pub const IFLA_LINK_NETNSID: ::c_ushort = 37;
+pub const IFLA_PHYS_PORT_NAME: ::c_ushort = 38;
+pub const IFLA_PROTO_DOWN: ::c_ushort = 39;
 
 pub const IFLA_INFO_UNSPEC: ::c_ushort = 0;
 pub const IFLA_INFO_KIND: ::c_ushort = 1;
@@ -1530,11 +1562,11 @@ pub const IP_ORIGDSTADDR: ::c_int = 20;
 pub const IP_RECVORIGDSTADDR: ::c_int = IP_ORIGDSTADDR;
 pub const IPV6_ORIGDSTADDR: ::c_int = 74;
 pub const IPV6_RECVORIGDSTADDR: ::c_int = IPV6_ORIGDSTADDR;
-pub const IPV6_FLOWINFO: ::c_int = 11;
 pub const IPV6_FLOWLABEL_MGR: ::c_int = 32;
 pub const IPV6_FLOWINFO_SEND: ::c_int = 33;
 pub const IPV6_FLOWINFO_FLOWLABEL: ::c_int = 0x000fffff;
 pub const IPV6_FLOWINFO_PRIORITY: ::c_int = 0x0ff00000;
+
 pub const IUTF8: ::tcflag_t = 0x00004000;
 pub const CMSPAR: ::tcflag_t = 0o10000000000;
 
@@ -1663,6 +1695,83 @@ pub const NLMSG_ERROR: ::c_int = 0x2;
 pub const NLMSG_DONE: ::c_int = 0x3;
 pub const NLMSG_OVERRUN: ::c_int = 0x4;
 pub const NLMSG_MIN_TYPE: ::c_int = 0x10;
+
+// linux/netfilter/nfnetlink.h
+pub const NFNLGRP_NONE: ::c_int = 0;
+pub const NFNLGRP_CONNTRACK_NEW: ::c_int = 1;
+pub const NFNLGRP_CONNTRACK_UPDATE: ::c_int = 2;
+pub const NFNLGRP_CONNTRACK_DESTROY: ::c_int = 3;
+pub const NFNLGRP_CONNTRACK_EXP_NEW: ::c_int = 4;
+pub const NFNLGRP_CONNTRACK_EXP_UPDATE: ::c_int = 5;
+pub const NFNLGRP_CONNTRACK_EXP_DESTROY: ::c_int = 6;
+pub const NFNLGRP_NFTABLES: ::c_int = 7;
+pub const NFNLGRP_ACCT_QUOTA: ::c_int = 8;
+
+pub const NFNETLINK_V0: ::c_int = 0;
+
+pub const NFNL_SUBSYS_NONE: ::c_int = 0;
+pub const NFNL_SUBSYS_CTNETLINK: ::c_int = 1;
+pub const NFNL_SUBSYS_CTNETLINK_EXP: ::c_int = 2;
+pub const NFNL_SUBSYS_QUEUE: ::c_int = 3;
+pub const NFNL_SUBSYS_ULOG: ::c_int = 4;
+pub const NFNL_SUBSYS_OSF: ::c_int = 5;
+pub const NFNL_SUBSYS_IPSET: ::c_int = 6;
+pub const NFNL_SUBSYS_ACCT: ::c_int = 7;
+pub const NFNL_SUBSYS_CTNETLINK_TIMEOUT: ::c_int = 8;
+pub const NFNL_SUBSYS_CTHELPER: ::c_int = 9;
+pub const NFNL_SUBSYS_NFTABLES: ::c_int = 10;
+pub const NFNL_SUBSYS_NFT_COMPAT: ::c_int = 11;
+pub const NFNL_SUBSYS_COUNT: ::c_int = 12;
+
+pub const NFNL_MSG_BATCH_BEGIN: ::c_int = NLMSG_MIN_TYPE;
+pub const NFNL_MSG_BATCH_END: ::c_int = NLMSG_MIN_TYPE + 1;
+
+// linux/netfilter/nfnetlink_log.h
+pub const NFULNL_MSG_PACKET: ::c_int = 0;
+pub const NFULNL_MSG_CONFIG: ::c_int = 1;
+
+pub const NFULA_UNSPEC: ::c_int = 0;
+pub const NFULA_PACKET_HDR: ::c_int = 1;
+pub const NFULA_MARK: ::c_int = 2;
+pub const NFULA_TIMESTAMP: ::c_int = 3;
+pub const NFULA_IFINDEX_INDEV: ::c_int = 4;
+pub const NFULA_IFINDEX_OUTDEV: ::c_int = 5;
+pub const NFULA_IFINDEX_PHYSINDEV: ::c_int = 6;
+pub const NFULA_IFINDEX_PHYSOUTDEV: ::c_int = 7;
+pub const NFULA_HWADDR: ::c_int = 8;
+pub const NFULA_PAYLOAD: ::c_int = 9;
+pub const NFULA_PREFIX: ::c_int = 10;
+pub const NFULA_UID: ::c_int = 11;
+pub const NFULA_SEQ: ::c_int = 12;
+pub const NFULA_SEQ_GLOBAL: ::c_int = 13;
+pub const NFULA_GID: ::c_int = 14;
+pub const NFULA_HWTYPE: ::c_int = 15;
+pub const NFULA_HWHEADER: ::c_int = 16;
+pub const NFULA_HWLEN: ::c_int = 17;
+pub const NFULA_CT: ::c_int = 18;
+pub const NFULA_CT_INFO: ::c_int = 19;
+
+pub const NFULNL_CFG_CMD_NONE: ::c_int = 0;
+pub const NFULNL_CFG_CMD_BIND: ::c_int = 1;
+pub const NFULNL_CFG_CMD_UNBIND: ::c_int = 2;
+pub const NFULNL_CFG_CMD_PF_BIND: ::c_int = 3;
+pub const NFULNL_CFG_CMD_PF_UNBIND: ::c_int = 4;
+
+pub const NFULA_CFG_UNSPEC: ::c_int = 0;
+pub const NFULA_CFG_CMD: ::c_int = 1;
+pub const NFULA_CFG_MODE: ::c_int = 2;
+pub const NFULA_CFG_NLBUFSIZ: ::c_int = 3;
+pub const NFULA_CFG_TIMEOUT: ::c_int = 4;
+pub const NFULA_CFG_QTHRESH: ::c_int = 5;
+pub const NFULA_CFG_FLAGS: ::c_int = 6;
+
+pub const NFULNL_COPY_NONE: ::c_int = 0x00;
+pub const NFULNL_COPY_META: ::c_int = 0x01;
+pub const NFULNL_COPY_PACKET: ::c_int = 0x02;
+
+pub const NFULNL_CFG_F_SEQ: ::c_int = 0x0001;
+pub const NFULNL_CFG_F_SEQ_GLOBAL: ::c_int = 0x0002;
+pub const NFULNL_CFG_F_CONNTRACK: ::c_int = 0x0004;
 
 pub const GENL_NAMSIZ: ::c_int = 16;
 

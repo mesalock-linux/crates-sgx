@@ -2,6 +2,7 @@ use byteorder::NativeEndian;
 use std::prelude::v1::*;
 use std::collections::BTreeMap;
 use std::io::{Seek, Write};
+use std::mem;
 
 use decoder::ifd::{self, Tag};
 use error::{TiffError, TiffFormatError, TiffResult};
@@ -352,6 +353,8 @@ impl<W: Write + Seek> TiffEncoder<W> {
         };
 
         NativeEndian::write_header(&mut encoder.writer)?;
+        // blank the IFD offset location
+        encoder.writer.write_u32(0)?;
 
         Ok(encoder)
     }
@@ -418,9 +421,9 @@ pub struct DirectoryEncoder<'a, W: 'a + Write + Seek> {
 
 impl<'a, W: 'a + Write + Seek> DirectoryEncoder<'a, W> {
     fn new(writer: &'a mut TiffWriter<W>) -> TiffResult<DirectoryEncoder<'a, W>> {
+        // the previous word is the IFD offset position
+        let ifd_pointer_pos = writer.offset() - mem::size_of::<u32>() as u64;
         writer.pad_word_boundary()?;
-        let ifd_pointer_pos = writer.offset();
-        writer.write_u32(0)?;
         Ok(DirectoryEncoder {
             writer,
             dropped: false,
@@ -439,7 +442,7 @@ impl<'a, W: 'a + Write + Seek> DirectoryEncoder<'a, W> {
         }
 
         self.ifd
-            .insert(tag.to_u16(), (<T>::FIELD_TYPE as u16, value.count(), bytes));
+            .insert(tag.to_u16(), (<T>::FIELD_TYPE.to_u16(), value.count(), bytes));
     }
 
     fn write_directory(&mut self) -> TiffResult<u64> {
@@ -566,7 +569,7 @@ impl<'a, W: 'a + Write + Seek, T: ColorType> ImageEncoder<'a, W, T> {
         encoder.write_tag(Tag::Compression, 1u16);
 
         encoder.write_tag(Tag::BitsPerSample, <T>::BITS_PER_SAMPLE);
-        encoder.write_tag(Tag::PhotometricInterpretation, <T>::TIFF_VALUE as u16);
+        encoder.write_tag(Tag::PhotometricInterpretation, <T>::TIFF_VALUE.to_u16());
 
         encoder.write_tag(Tag::RowsPerStrip, rows_per_strip as u32);
 

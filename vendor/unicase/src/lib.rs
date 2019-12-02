@@ -1,7 +1,14 @@
 #![cfg_attr(test, deny(missing_docs))]
 #![cfg_attr(test, deny(warnings))]
-#![doc(html_root_url = "https://docs.rs/unicase/2.5.1")]
+#![doc(html_root_url = "https://docs.rs/unicase/2.6.0")]
 #![cfg_attr(feature = "nightly", feature(test))]
+//#![cfg_attr(
+//    all(
+//        __unicase__core_and_alloc,
+//        not(test),
+//    ),
+//    no_std,
+//)]
 
 #![cfg_attr(all(feature = "mesalock_sgx",
                 not(target_env = "sgx")), no_std)]
@@ -52,14 +59,29 @@ extern crate sgx_tstd as std;
 #[cfg(feature = "nightly")]
 extern crate test;
 
+//#[cfg(all(__unicase__core_and_alloc, not(test)))]
+//extern crate alloc;
+//#[cfg(all(__unicase__core_and_alloc, not(test)))]
+//use alloc::string::String;
+//
+//#[cfg(not(all(__unicase__core_and_alloc, not(test))))]
+//extern crate std as alloc;
+//#[cfg(not(all(__unicase__core_and_alloc, not(test))))]
+//extern crate std as core;
+//
+//use alloc::borrow::Cow;
+#[cfg(target_env = "sgx")]
+extern crate core;
+
+extern crate alloc;
 use std::prelude::v1::*;
 use std::borrow::Cow;
 #[cfg(__unicase__iter_cmp)]
-use std::cmp::Ordering;
-use std::fmt;
-use std::hash::{Hash, Hasher};
-use std::ops::{Deref, DerefMut};
-use std::str::FromStr;
+use core::cmp::Ordering;
+use core::fmt;
+use core::hash::{Hash, Hasher};
+use core::ops::{Deref, DerefMut};
+use core::str::FromStr;
 
 use self::unicode::Unicode;
 
@@ -126,8 +148,10 @@ impl<S: AsRef<str>> UniCase<S> {
     ///
     /// Note: This scans the text to determine if it is all ASCII or not.
     pub fn new(s: S) -> UniCase<S> {
+        #[cfg(not(__unicase__core_and_alloc))]
         #[allow(deprecated, unused)]
         use std::ascii::AsciiExt;
+
         if s.as_ref().is_ascii() {
             UniCase(Encoding::Ascii(Ascii(s)))
         } else {
@@ -349,7 +373,9 @@ mod tests {
         let c = UniCase::ascii("FoObAr");
 
         assert_eq!(a, b);
+        assert_eq!(b, a);
         assert_eq!(a, c);
+        assert_eq!(c, a);
         assert_eq!(hash(&a), hash(&b));
         assert_eq!(hash(&a), hash(&c));
         assert!(a.is_ascii());
@@ -357,12 +383,24 @@ mod tests {
         assert!(c.is_ascii());
     }
 
+
     #[test]
     fn test_eq_unicode() {
         let a = UniCase::new("στιγμας");
         let b = UniCase::new("στιγμασ");
         assert_eq!(a, b);
+        assert_eq!(b, a);
         assert_eq!(hash(&a), hash(&b));
+    }
+
+    #[test]
+    fn test_eq_unicode_left_is_substring() {
+        // https://github.com/seanmonstar/unicase/issues/38
+        let a = UniCase::unicode("foo");
+        let b = UniCase::unicode("foobar");
+
+        assert!(a != b);
+        assert!(b != a);
     }
 
     #[cfg(feature = "nightly")]

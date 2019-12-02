@@ -1,7 +1,7 @@
 // crate minimums: sse2, x86_64
 
-use crate::types::*;
 use core::arch::x86_64::{__m128i, __m256i};
+use crate::types::*;
 
 mod sse2;
 
@@ -222,76 +222,69 @@ impl_into!(vec512_storage, [u128; 4], u128x4);
 macro_rules! dispatch {
     ($mach:ident, $MTy:ident, { $([$pub:tt$(($krate:tt))*])* fn $name:ident($($arg:ident: $argty:ty),* $(,)*) -> $ret:ty $body:block }) => {
         #[cfg(feature = "std")]
-        #[inline(always)]
         $($pub$(($krate))*)* fn $name($($arg: $argty),*) -> $ret {
             #[inline(always)]
             fn fn_impl<$MTy: $crate::Machine>($mach: $MTy, $($arg: $argty),*) -> $ret $body
-            type FnTy = unsafe fn($($arg: $argty),*) -> $ret;
-            lazy_static! {
-                static ref IMPL: FnTy = { dispatch_init() };
+            use core::arch::x86_64::*;
+            //#[target_feature(enable = "avx2")]
+            unsafe fn impl_avx2($($arg: $argty),*) -> $ret {
+                let ret = fn_impl($crate::x86_64::AVX2::instance(), $($arg),*);
+                _mm256_zeroupper();
+                ret
             }
-            #[cold]
-            fn dispatch_init() -> FnTy {
-                use core::arch::x86_64::*;
-                //if is_x86_feature_detected!("avx2") {
-                //    #[target_feature(enable = "avx2")]
-                    unsafe fn impl_avx2($($arg: $argty),*) -> $ret {
-                        let ret = fn_impl($crate::x86_64::AVX2::instance(), $($arg),*);
-                        _mm256_zeroupper();
-                        ret
-                    }
-                    impl_avx2
-                //} else if is_x86_feature_detected!("avx") {
-                //    #[target_feature(enable = "avx")]
-                //    #[target_feature(enable = "sse4.1")]
-                //    #[target_feature(enable = "ssse3")]
-                //    unsafe fn impl_avx($($arg: $argty),*) -> $ret {
-                //        let ret = fn_impl($crate::x86_64::AVX::instance(), $($arg),*);
-                //        _mm256_zeroupper();
-                //        ret
-                //    }
-                //    impl_avx
-                //} else if is_x86_feature_detected!("sse4.1") {
-                //    #[target_feature(enable = "sse4.1")]
-                //    #[target_feature(enable = "ssse3")]
-                //    unsafe fn impl_sse41($($arg: $argty),*) -> $ret {
-                //        fn_impl($crate::x86_64::SSE41::instance(), $($arg),*)
-                //    }
-                //    impl_sse41
-                //} else if is_x86_feature_detected!("ssse3") {
-                //    #[target_feature(enable = "ssse3")]
-                //    unsafe fn impl_ssse3($($arg: $argty),*) -> $ret {
-                //        fn_impl($crate::x86_64::SSSE3::instance(), $($arg),*)
-                //    }
-                //    impl_ssse3
-                //} else if is_x86_feature_detected!("sse2") {
-                //    #[target_feature(enable = "sse2")]
-                //    unsafe fn impl_sse2($($arg: $argty),*) -> $ret {
-                //        fn_impl($crate::x86_64::SSE2::instance(), $($arg),*)
-                //    }
-                //    impl_sse2
-                //} else {
-                //    unimplemented!()
-                //}
+            #[target_feature(enable = "avx")]
+            #[target_feature(enable = "sse4.1")]
+            #[target_feature(enable = "ssse3")]
+            unsafe fn impl_avx($($arg: $argty),*) -> $ret {
+                let ret = fn_impl($crate::x86_64::AVX::instance(), $($arg),*);
+                _mm256_zeroupper();
+                ret
             }
-            unsafe { IMPL($($arg),*) }
+            //#[target_feature(enable = "sse4.1")]
+            //#[target_feature(enable = "ssse3")]
+            //unsafe fn impl_sse41($($arg: $argty),*) -> $ret {
+            //    fn_impl($crate::x86_64::SSE41::instance(), $($arg),*)
+            //}
+            //#[target_feature(enable = "ssse3")]
+            //unsafe fn impl_ssse3($($arg: $argty),*) -> $ret {
+            //    fn_impl($crate::x86_64::SSSE3::instance(), $($arg),*)
+            //}
+            //#[target_feature(enable = "sse2")]
+            //unsafe fn impl_sse2($($arg: $argty),*) -> $ret {
+            //    fn_impl($crate::x86_64::SSE2::instance(), $($arg),*)
+            //}
+            unsafe {
+            //    if is_x86_feature_detected!("avx2") {
+                    impl_avx2($($arg),*)
+            //    } else if is_x86_feature_detected!("avx") {
+            //        impl_avx($($arg),*)
+            //    } else if is_x86_feature_detected!("sse4.1") {
+            //        impl_sse41($($arg),*)
+            //    } else if is_x86_feature_detected!("ssse3") {
+            //        impl_ssse3($($arg),*)
+            //    } else if is_x86_feature_detected!("sse2") {
+            //        impl_sse2($($arg),*)
+            //    } else {
+            //        unimplemented!()
+            //    }
+            }
         }
         #[cfg(not(feature = "std"))]
         #[inline(always)]
         $($pub$(($krate))*)* fn $name($($arg: $argty),*) -> $ret {
             unsafe fn fn_impl<$MTy: $crate::Machine>($mach: $MTy, $($arg: $argty),*) -> $ret $body
             unsafe {
-                if cfg!(target_feature = "avx2") {
+                //if cfg!(target_feature = "avx2") {
                     fn_impl($crate::x86_64::AVX2::instance(), $($arg),*)
-                } else if cfg!(target_feature = "avx") {
-                    fn_impl($crate::x86_64::AVX::instance(), $($arg),*)
-                } else if cfg!(target_feature = "sse4.1") {
-                    fn_impl($crate::x86_64::SSE41::instance(), $($arg),*)
-                } else if cfg!(target_feature = "ssse3") {
-                    fn_impl($crate::x86_64::SSSE3::instance(), $($arg),*)
-                } else {
-                    fn_impl($crate::x86_64::SSE2::instance(), $($arg),*)
-                }
+                //} else if cfg!(target_feature = "avx") {
+                //    fn_impl($crate::x86_64::AVX::instance(), $($arg),*)
+                //} else if cfg!(target_feature = "sse4.1") {
+                //    fn_impl($crate::x86_64::SSE41::instance(), $($arg),*)
+                //} else if cfg!(target_feature = "ssse3") {
+                //    fn_impl($crate::x86_64::SSSE3::instance(), $($arg),*)
+                //} else {
+                //    fn_impl($crate::x86_64::SSE2::instance(), $($arg),*)
+                //}
             }
         }
     };
@@ -312,34 +305,27 @@ macro_rules! dispatch {
 macro_rules! dispatch_light128 {
     ($mach:ident, $MTy:ident, { $([$pub:tt$(($krate:tt))*])* fn $name:ident($($arg:ident: $argty:ty),* $(,)*) -> $ret:ty $body:block }) => {
         #[cfg(feature = "std")]
-        #[inline(always)]
         $($pub $(($krate))*)* fn $name($($arg: $argty),*) -> $ret {
             #[inline(always)]
             fn fn_impl<$MTy: $crate::Machine>($mach: $MTy, $($arg: $argty),*) -> $ret $body
-            type FnTy = unsafe fn($($arg: $argty),*) -> $ret;
-            lazy_static! {
-                static ref IMPL: FnTy = { dispatch_init() };
+            use core::arch::x86_64::*;
+            //#[target_feature(enable = "avx")]
+            unsafe fn impl_avx($($arg: $argty),*) -> $ret {
+                fn_impl($crate::x86_64::AVX::instance(), $($arg),*)
             }
-            #[cold]
-            fn dispatch_init() -> FnTy {
-                use core::arch::x86_64::*;
+            #[target_feature(enable = "sse2")]
+            unsafe fn impl_sse2($($arg: $argty),*) -> $ret {
+                fn_impl($crate::x86_64::SSE2::instance(), $($arg),*)
+            }
+            unsafe {
                 //if is_x86_feature_detected!("avx") {
-                //    #[target_feature(enable = "avx")]
-                    unsafe fn impl_avx($($arg: $argty),*) -> $ret {
-                        fn_impl($crate::x86_64::AVX::instance(), $($arg),*)
-                    }
-                    impl_avx
+                    impl_avx($($arg),*)
                 //} else if is_x86_feature_detected!("sse2") {
-                //    #[target_feature(enable = "sse2")]
-                //    unsafe fn impl_sse2($($arg: $argty),*) -> $ret {
-                //        fn_impl($crate::x86_64::SSE2::instance(), $($arg),*)
-                //    }
-                //    impl_sse2
+                //    impl_sse2($($arg),*)
                 //} else {
                 //    unimplemented!()
                 //}
             }
-            unsafe { IMPL($($arg),*) }
         }
         #[cfg(not(feature = "std"))]
         #[inline(always)]
@@ -377,56 +363,49 @@ macro_rules! dispatch_light128 {
 macro_rules! dispatch_light256 {
     ($mach:ident, $MTy:ident, { $([$pub:tt$(($krate:tt))*])* fn $name:ident($($arg:ident: $argty:ty),* $(,)*) -> $ret:ty $body:block }) => {
         #[cfg(feature = "std")]
-        #[inline(always)]
         $([$pub $(($krate))*])* fn $name($($arg: $argty),*) -> $ret {
             #[inline(always)]
             fn fn_impl<$MTy: $crate::Machine>($mach: $MTy, $($arg: $argty),*) -> $ret $body
-            type FnTy = unsafe fn($($arg: $argty),*) -> $ret;
-            lazy_static! {
-                static ref IMPL: FnTy = { dispatch_init() };
+            use core::arch::x86_64::*;
+            //#[target_feature(enable = "avx")]
+            unsafe fn impl_avx($($arg: $argty),*) -> $ret {
+                fn_impl($crate::x86_64::AVX::instance(), $($arg),*)
             }
-            #[cold]
-            fn dispatch_init() -> FnTy {
-                use core::arch::x86_64::*;
-                //if is_x86_feature_detected!("avx") {
-                //    #[target_feature(enable = "avx")]
-                    unsafe fn impl_avx($($arg: $argty),*) -> $ret {
-                        fn_impl($crate::x86_64::AVX::instance(), $($arg),*)
-                    }
-                    impl_avx
-                //} else if is_x86_feature_detected!("sse2") {
-                //    #[target_feature(enable = "sse2")]
-                //    unsafe fn impl_sse2($($arg: $argty),*) -> $ret {
-                //        fn_impl($crate::x86_64::SSE2::instance(), $($arg),*)
-                //    }
-                //    impl_sse2
-                //} else {
-                //    unimplemented!()
-                //}
+            #[target_feature(enable = "sse2")]
+            unsafe fn impl_sse2($($arg: $argty),*) -> $ret {
+                fn_impl($crate::x86_64::SSE2::instance(), $($arg),*)
             }
-            unsafe { IMPL($($arg),*) }
+            unsafe {
+            //    if is_x86_feature_detected!("avx") {
+                    impl_avx($($arg),*)
+            //    } else if is_x86_feature_detected!("sse2") {
+            //        impl_sse2($($arg),*)
+            //    } else {
+            //        unimplemented!()
+            //    }
+            }
         }
         #[cfg(not(feature = "std"))]
         #[inline(always)]
         $($pub$(($krate))*)* fn $name($($arg: $argty),*) -> $ret {
             unsafe fn fn_impl<$MTy: $crate::Machine>($mach: $MTy, $($arg: $argty),*) -> $ret $body
             unsafe {
-                if cfg!(target_feature = "avx2") {
+                //if cfg!(target_feature = "avx2") {
                     fn_impl($crate::x86_64::AVX2::instance(), $($arg),*)
-                } else if cfg!(target_feature = "avx") {
-                    fn_impl($crate::x86_64::AVX::instance(), $($arg),*)
-                } else if cfg!(target_feature = "sse4.1") {
-                    fn_impl($crate::x86_64::SSE41::instance(), $($arg),*)
-                } else if cfg!(target_feature = "ssse3") {
-                    fn_impl($crate::x86_64::SSSE3::instance(), $($arg),*)
-                } else {
-                    fn_impl($crate::x86_64::SSE2::instance(), $($arg),*)
-                }
+                //} else if cfg!(target_feature = "avx") {
+                //    fn_impl($crate::x86_64::AVX::instance(), $($arg),*)
+                //} else if cfg!(target_feature = "sse4.1") {
+                //    fn_impl($crate::x86_64::SSE41::instance(), $($arg),*)
+                //} else if cfg!(target_feature = "ssse3") {
+                //    fn_impl($crate::x86_64::SSSE3::instance(), $($arg),*)
+                //} else {
+                //    fn_impl($crate::x86_64::SSE2::instance(), $($arg),*)
+                //}
             }
         }
     };
     ($mach:ident, $MTy:ident, { $([$pub:tt$(($krate:tt))*])* fn $name:ident($($arg:ident: $argty:ty),* $(,)*) $body:block }) => {
-        dispatch_light128!($mach, $MTy, {
+        dispatch_light256!($mach, $MTy, {
             $([$pub $(($krate))*])* fn $name($($arg: $argty),*) -> () $body
         });
     }

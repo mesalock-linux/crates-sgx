@@ -5,50 +5,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [1.4.0] - 2019-10-13 <a name="1.4.0"></a>
-### Added
-- Added a `bf16` type implementing the alternative
-  [`bfloat16`](https://en.wikipedia.org/wiki/Bfloat16_floating-point_format) 16-bit floating point
-  format. By [@tspiteri].
-- `f16::from_bits`, `f16::to_bits`, `f16::is_nan`, `f16::is_infinite`, `f16::is_finite`,
-  `f16::is_sign_positive`, and `f16::is_sign_negative` are now `const` fns.
-- `slice::HalfBitsSliceExt` and `slice::HalfBitsSliceExt` extension traits have been added for
-  performing efficient reinterpret casts and conversions of slices to and from `[f16]` and
-  `[bf16]`.  These traits will use hardware SIMD conversion instructions when available and the
-  `use-intrinsics` cargo feature is enabled.
-- `vec::HalfBitsVecExt` and `vec::HalfFloatVecExt` extension traits have been added for
-   performing efficient reinterpret casts to and from `Vec<f16>` and `Vec<bf16>`. These traits
-   are only available with the `std` cargo feature.
-- `prelude` has been added, for easy importing of most common functionality. Currently the
-  prelude imports `f16`, `bf16`, and the new slice and vec extension traits.
-- New associated constants on `f16` type to replace deprecated `consts` module.
-
-### Fixed
-- Software conversion (when not using `use-intrinsics` feature) now matches hardware rounding
-  by rounding to nearest, ties to even. Fixes [#24], by [@tspiteri].
-- NaN value conversions now behave like `f32` to `f64` conversions, retaining sign. Fixes [#23],
-  by [@tspiteri].
-
-### Changed
-- Minimum rustc version bumped to 1.32.
-- Runtime target host feature detection is now used if both `std` and `use-intrinsics` features are enabled
-  and the compile target host does not support required features.
-- When `use-intrinsics` feature is enabled, will now always compile and run without error correctly regardless
-  of compile target options.
-
-### Deprecated
-- `consts` module and all its constants have been deprecated; use the associated constants on `f16` instead.
-- `slice::from_bits` has been deprecated; use `slice::HalfBitsSliceExt::reinterpret_cast` instead.
-- `slice::from_bits_mut` has been deprecated; use `slice::HalfBitsSliceExt::reinterpret_cast_mut` instead.
-- `slice::to_bits` has been deprecated; use `slice::HalfFloatSliceExt::reinterpret_cast` instead.
-- `slice::to_bits_mut` has been deprecated; use `slice::HalfFloatSliceExt::reinterpret_cast_mut` instead.
-- `vec::from_bits` has been deprecated; use `vec::HalfBitsVecExt::reinterpret_into` instead.
-- `vec::to_bits` has been deprecated; use `vec::HalfFloatVecExt::reinterpret_into` instead.
-
 ## [1.3.1] - 2019-10-04 <a name="1.3.1"></a>
 ### Fixed
 - Corrected values of constants `EPSILON`, `MAX_10_EXP`, `MAX_EXP`, `MIN_10_EXP`, and `MIN_EXP`
-  in `consts` module, as well as setting `consts::NAN` to match value of `f32::NAN` converted to
+  in `consts` module, as well as setting `consts::NAN` to match value of `f32::NAN` convertd to
   `f16`. By [@tspiteri].
 
 ## [1.3.0] - 2018-10-02 <a name="1.3.0"></a>
@@ -121,16 +81,13 @@ converted to `f16` infinity instead of NaN. Fixes [#5], by [@tspiteri].
 [#12]: https://github.com/starkat99/half-rs/issues/12
 [#14]: https://github.com/starkat99/half-rs/issues/14
 [#16]: https://github.com/starkat99/half-rs/issues/16
-[#23]: https://github.com/starkat99/half-rs/issues/23
-[#24]: https://github.com/starkat99/half-rs/issues/24
 
 [@tspiteri]: https://github.com/tspiteri
 [@PSeitz]: https://github.com/PSeitz
 [@Moongoodboy-K]: https://github.com/Moongoodboy-K
 [@johannesvollmer]: https://github.com/johannesvollmer
 
-[Unreleased]: https://github.com/starkat99/half-rs/compare/v1.4.0...HEAD
-[1.4.0]: https://github.com/starkat99/half-rs/compare/v1.3.1...v1.4.0
+[Unreleased]: https://github.com/starkat99/half-rs/compare/v1.3.1...HEAD
 [1.3.1]: https://github.com/starkat99/half-rs/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/starkat99/half-rs/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/starkat99/half-rs/compare/v1.1.2...v1.2.0

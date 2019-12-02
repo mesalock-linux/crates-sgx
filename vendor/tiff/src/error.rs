@@ -6,24 +6,32 @@ use std::string;
 
 use decoder::ifd::{Tag, Value};
 use decoder::{CompressionMethod, PhotometricInterpretation, PlanarConfiguration};
+use miniz_oxide::inflate::TINFLStatus;
 use ColorType;
 
 /// Tiff error kinds.
 #[derive(Debug)]
 pub enum TiffError {
-    /// The Image is not formatted properly
+    /// The Image is not formatted properly.
     FormatError(TiffFormatError),
 
-    /// The Decoder does not support this image format
+    /// The Decoder does not support features required by the image.
     UnsupportedError(TiffUnsupportedError),
 
-    /// An I/O Error occurred while decoding the image
+    /// An I/O Error occurred while decoding the image.
     IoError(io::Error),
 
-    /// The Limits of the Decoder is exceeded,
+    /// The Limits of the Decoder is exceeded.
     LimitsExceeded,
 }
 
+/// The image is not formatted properly.
+///
+/// This indicates that the encoder producing the image might behave incorrectly or that the input
+/// file has been corrupted.
+///
+/// The list of variants may grow to incorporate errors of future features. Matching against this
+/// exhaustively is not covered by interface stability guarantees.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TiffFormatError {
     TiffSignatureNotFound,
@@ -35,6 +43,10 @@ pub enum TiffFormatError {
     UnknownPredictor(u32),
     UnsignedIntegerExpected(Value),
     SignedIntegerExpected(Value),
+    InflateError(InflateError),
+    #[doc(hidden)]
+    /// Do not match against this variant. It may get removed.
+    __NonExhaustive,
 }
 
 impl fmt::Display for TiffFormatError {
@@ -56,10 +68,38 @@ impl fmt::Display for TiffFormatError {
             SignedIntegerExpected(ref val) => {
                 write!(fmt, "Expected signed integer, {:?} found.", val)
             }
+            InflateError(_) => write!(fmt, "Failed to decode inflate data."),
+            __NonExhaustive => unreachable!(),
         }
     }
 }
 
+/// Decompression failed due to faulty compressed data.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct InflateError {
+    status: TINFLStatus,
+}
+
+impl InflateError {
+    pub(crate) fn new(status: TINFLStatus) -> Self {
+        Self { status }
+    }
+}
+
+impl TiffError {
+    pub(crate) fn from_inflate_status(status: TINFLStatus) -> Self {
+        TiffError::FormatError(TiffFormatError::InflateError(InflateError::new(status)))
+    }
+}
+
+/// The Decoder does not support features required by the image.
+///
+/// This only captures known failures for which the standard either does not require support or an
+/// implementation has been planned but not yet completed. Some variants may become unused over
+/// time and will then get deprecated before being removed.
+///
+/// The list of variants may grow. Matching against this exhaustively is not covered by interface
+/// stability guarantees.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TiffUnsupportedError {
     HorizontalPredictor(ColorType),
@@ -72,6 +112,9 @@ pub enum TiffUnsupportedError {
     UnsupportedBitsPerChannel(u8),
     UnsupportedPlanarConfig(Option<PlanarConfiguration>),
     UnsupportedDataType,
+    #[doc(hidden)]
+    /// Do not match against this variant. It may get removed.
+    __NonExhaustive,
 }
 
 impl fmt::Display for TiffUnsupportedError {
@@ -109,6 +152,7 @@ impl fmt::Display for TiffUnsupportedError {
                 write!(fmt, "Unsupported planar configuration “{:?}”.", config)
             }
             UnsupportedDataType => write!(fmt, "Unsupported data type."),
+            __NonExhaustive => unreachable!(),
         }
     }
 }

@@ -16,15 +16,13 @@ extern crate sgx_tstd as std;
 
 extern crate byteorder;
 extern crate lzw;
-#[macro_use]
-extern crate num_derive;
-extern crate num_traits;
+extern crate miniz_oxide;
 
 pub mod decoder;
 pub mod encoder;
 mod error;
 
-pub use self::error::{TiffError, TiffFormatError, TiffResult, TiffUnsupportedError};
+pub use self::error::{InflateError, TiffError, TiffFormatError, TiffResult, TiffUnsupportedError};
 
 /// An enumeration over supported color types and their bit depths
 #[derive(Copy, PartialEq, Eq, Debug, Clone, Hash)]

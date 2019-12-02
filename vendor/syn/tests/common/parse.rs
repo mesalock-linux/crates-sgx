@@ -1,8 +1,9 @@
+extern crate rustc_parse as parse;
 extern crate syntax;
+extern crate syntax_expand;
 extern crate syntax_pos;
 
 use syntax::ast;
-use syntax::parse;
 use syntax::ptr::P;
 use syntax::sess::ParseSess;
 use syntax::source_map::FilePathMapping;

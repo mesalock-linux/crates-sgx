@@ -34,6 +34,7 @@ pub type nl_item = ::c_int;
 pub type mqd_t = *mut ::c_void;
 pub type id_t = ::c_int;
 pub type idtype_t = ::c_uint;
+pub type shmatt_t = ::c_ulong;
 
 pub type door_attr_t = ::c_uint;
 pub type door_id_t = ::c_ulonglong;
@@ -55,6 +56,16 @@ s! {
     pub struct ip_mreq {
         pub imr_multiaddr: in_addr,
         pub imr_interface: in_addr,
+    }
+
+    pub struct ipc_perm {
+        pub uid: ::uid_t,
+        pub gid: ::gid_t,
+        pub cuid: ::uid_t,
+        pub cgid: ::gid_t,
+        pub mode: ::mode_t,
+        pub seq: ::c_uint,
+        pub key: ::key_t,
     }
 
     pub struct sockaddr {
@@ -206,6 +217,33 @@ s! {
         pub ai_next: *mut addrinfo,
     }
 
+    pub struct shmid_ds {
+        pub shm_perm: ipc_perm,
+        pub shm_segsz: ::size_t,
+        #[cfg(target_os = "illumos")]
+        pub shm_amp: *mut ::c_void,
+        #[cfg(target_os = "solaris")]
+        pub shm_flags: ::uintptr_t,
+        pub shm_lkcnt: ::c_ushort,
+        pub shm_lpid: ::pid_t,
+        pub shm_cpid: ::pid_t,
+        pub shm_nattch: ::shmatt_t,
+        pub shm_cnattch: ::c_ulong,
+        pub shm_atime: ::time_t,
+        pub shm_dtime: ::time_t,
+        pub shm_ctime: ::time_t,
+        #[cfg(target_os = "illumos")]
+        pub shm_pad4: [i64; 4],
+        #[cfg(target_os = "solaris")]
+        pub shm_amp: *mut ::c_void,
+        #[cfg(target_os = "solaris")]
+        pub shm_gransize: u64,
+        #[cfg(target_os = "solaris")]
+        pub shm_allocated: u64,
+        #[cfg(target_os = "solaris")]
+        pub shm_pad4: [i64; 1],
+    }
+
     pub struct sigset_t {
         bits: [u32; 4],
     }
@@ -348,6 +386,21 @@ s! {
         pub d_descriptor: ::c_int,
         pub d_id: ::door_id_t
     }
+
+    pub struct exit_status {
+        e_termination: ::c_short,
+        e_exit: ::c_short,
+    }
+
+    pub struct utmp {
+        pub ut_user: [::c_char; 8],
+        pub ut_id: [::c_char; 4],
+        pub ut_line: [::c_char; 12],
+        pub ut_pid: ::c_short,
+        pub ut_type: ::c_short,
+        pub ut_exit: exit_status,
+        pub ut_time: ::time_t,
+    }
 }
 
 s_no_extra_traits! {
@@ -355,6 +408,20 @@ s_no_extra_traits! {
     pub struct epoll_event {
         pub events: u32,
         pub u64: u64,
+    }
+
+    pub struct utmpx {
+        pub ut_user: [::c_char; _UTX_USERSIZE],
+        pub ut_id: [::c_char; _UTX_IDSIZE],
+        pub ut_line: [::c_char; _UTX_LINESIZE],
+        pub ut_pid: ::pid_t,
+        pub ut_type: ::c_short,
+        pub ut_exit: exit_status,
+        pub ut_tv: ::timeval,
+        pub ut_session: ::c_int,
+        pub ut_pad: [::c_int; _UTX_PADSIZE],
+        pub ut_syslen: ::c_short,
+        pub ut_host: [::c_char; _UTX_HOSTSIZE],
     }
 
     pub struct sockaddr_un {
@@ -434,6 +501,62 @@ s_no_extra_traits! {
 
 cfg_if! {
     if #[cfg(feature = "extra_traits")] {
+        impl PartialEq for utmpx {
+            fn eq(&self, other: &utmpx) -> bool {
+                self.ut_type == other.ut_type
+                    && self.ut_pid == other.ut_pid
+                    && self.ut_user == other.ut_user
+                    && self.ut_line == other.ut_line
+                    && self.ut_id == other.ut_id
+                    && self.ut_exit == other.ut_exit
+                    && self.ut_session == other.ut_session
+                    && self.ut_tv == other.ut_tv
+                    && self.ut_syslen == other.ut_syslen
+                    && self.ut_pad == other.ut_pad
+                    && self
+                    .ut_host
+                    .iter()
+                    .zip(other.ut_host.iter())
+                    .all(|(a,b)| a == b)
+            }
+        }
+
+        impl Eq for utmpx {}
+
+        impl ::fmt::Debug for utmpx {
+            fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
+                f.debug_struct("utmpx")
+                    .field("ut_user", &self.ut_user)
+                    .field("ut_id", &self.ut_id)
+                    .field("ut_line", &self.ut_line)
+                    .field("ut_pid", &self.ut_pid)
+                    .field("ut_type", &self.ut_type)
+                    .field("ut_exit", &self.ut_exit)
+                    .field("ut_tv", &self.ut_tv)
+                    .field("ut_session", &self.ut_session)
+                    .field("ut_pad", &self.ut_pad)
+                    .field("ut_syslen", &self.ut_syslen)
+                    .field("ut_host", &self.ut_host)
+                    .finish()
+            }
+        }
+
+        impl ::hash::Hash for utmpx {
+            fn hash<H: ::hash::Hasher>(&self, state: &mut H) {
+                self.ut_user.hash(state);
+                self.ut_type.hash(state);
+                self.ut_pid.hash(state);
+                self.ut_line.hash(state);
+                self.ut_id.hash(state);
+                self.ut_host.hash(state);
+                self.ut_exit.hash(state);
+                self.ut_session.hash(state);
+                self.ut_tv.hash(state);
+                self.ut_syslen.hash(state);
+                self.ut_pad.hash(state);
+            }
+        }
+
         impl PartialEq for epoll_event {
             fn eq(&self, other: &epoll_event) -> bool {
                 self.events == other.events
@@ -981,6 +1104,7 @@ pub const MAP_PRIVATE: ::c_int = 0x0002;
 pub const MAP_FIXED: ::c_int = 0x0010;
 pub const MAP_NORESERVE: ::c_int = 0x40;
 pub const MAP_ANON: ::c_int = 0x0100;
+pub const MAP_ANONYMOUS: ::c_int = 0x0100;
 pub const MAP_RENAME: ::c_int = 0x20;
 pub const MAP_ALIGN: ::c_int = 0x200;
 pub const MAP_TEXT: ::c_int = 0x400;
@@ -1352,6 +1476,16 @@ pub const IFF_VIRTUAL: ::c_longlong = 0x2000000000; // Cannot send/receive pkts
 pub const IFF_DUPLICATE: ::c_longlong = 0x4000000000; // Local address in use
 pub const IFF_IPMP: ::c_longlong = 0x8000000000; // IPMP IP interface
 
+// sys/ipc.h:
+pub const IPC_ALLOC: ::c_int = 0x8000;
+pub const IPC_CREAT: ::c_int = 0x200;
+pub const IPC_EXCL: ::c_int = 0x400;
+pub const IPC_NOWAIT: ::c_int = 0x800;
+pub const IPC_PRIVATE: key_t = 0;
+pub const IPC_RMID: ::c_int = 10;
+pub const IPC_SET: ::c_int = 11;
+pub const IPC_SEAT: ::c_int = 12;
+
 pub const SHUT_RD: ::c_int = 0;
 pub const SHUT_WR: ::c_int = 1;
 pub const SHUT_RDWR: ::c_int = 2;
@@ -1615,6 +1749,24 @@ pub const PORT_SOURCE_FILE: ::c_int = 7;
 pub const PORT_SOURCE_POSTWAIT: ::c_int = 8;
 pub const PORT_SOURCE_SIGNAL: ::c_int = 9;
 
+pub const NONROOT_USR: ::c_short = 2;
+pub const _UTX_USERSIZE: usize = 32;
+pub const _UTX_LINESIZE: usize = 32;
+pub const _UTX_PADSIZE: usize = 5;
+pub const _UTX_IDSIZE: usize = 4;
+pub const _UTX_HOSTSIZE: usize = 257;
+pub const EMPTY: ::c_short = 0;
+pub const RUN_LVL: ::c_short = 1;
+pub const BOOT_TIME: ::c_short = 2;
+pub const OLD_TIME: ::c_short = 3;
+pub const NEW_TIME: ::c_short = 4;
+pub const INIT_PROCESS: ::c_short = 5;
+pub const LOGIN_PROCESS: ::c_short = 6;
+pub const USER_PROCESS: ::c_short = 7;
+pub const DEAD_PROCESS: ::c_short = 8;
+pub const ACCOUNTING: ::c_short = 9;
+pub const DOWN_TIME: ::c_short = 10;
+
 const _TIOC: ::c_int = ('T' as i32) << 8;
 const tIOC: ::c_int = ('t' as i32) << 8;
 pub const TCGETA: ::c_int = (_TIOC | 1);
@@ -1802,6 +1954,11 @@ pub const VWERASE: usize = 14;
 pub const VLNEXT: usize = 15;
 pub const VSTATUS: usize = 16;
 pub const VERASE2: usize = 17;
+
+// 3SOCKET flags
+pub const SOCK_CLOEXEC: ::c_int = 0x080000;
+pub const SOCK_NONBLOCK: ::c_int = 0x100000;
+pub const SOCK_NDELAY: ::c_int = 0x200000;
 
 f! {
     pub fn FD_CLR(fd: ::c_int, set: *mut fd_set) -> () {
@@ -2011,6 +2168,22 @@ extern "C" {
         advice: ::c_int,
     ) -> ::c_int;
 
+    pub fn shmat(
+        shmid: ::c_int,
+        shmaddr: *const ::c_void,
+        shmflg: ::c_int,
+    ) -> *mut ::c_void;
+
+    pub fn shmctl(
+        shmid: ::c_int,
+        cmd: ::c_int,
+        buf: *mut ::shmid_ds,
+    ) -> ::c_int;
+
+    pub fn shmdt(shmaddr: *const ::c_void) -> ::c_int;
+
+    pub fn shmget(key: key_t, size: ::size_t, shmflg: ::c_int) -> ::c_int;
+
     pub fn shm_open(
         name: *const ::c_char,
         oflag: ::c_int,
@@ -2049,6 +2222,7 @@ extern "C" {
         path: *const ::c_char,
         times: *const ::timeval,
     ) -> ::c_int;
+    pub fn futimens(dirfd: ::c_int, times: *const ::timespec) -> ::c_int;
     pub fn utimensat(
         dirfd: ::c_int,
         path: *const ::c_char,
@@ -2296,6 +2470,29 @@ extern "C" {
         attributes: door_attr_t,
     ) -> ::c_int;
     pub fn fattach(fildes: ::c_int, path: *const ::c_char) -> ::c_int;
+
+    pub fn makeutx(ux: *const utmpx) -> *mut utmpx;
+    pub fn modutx(ux: *const utmpx) -> *mut utmpx;
+    pub fn updwtmpx(file: *const ::c_char, ut: *const utmpx) -> ::c_int;
+    pub fn utmpxname(file: *const ::c_char) -> ::c_int;
+    pub fn getutxent() -> *mut utmpx;
+    pub fn getutxid(ut: *const utmpx) -> *mut utmpx;
+    pub fn getutxline(ut: *const utmpx) -> *mut utmpx;
+    pub fn pututxline(ut: *const utmpx) -> *mut utmpx;
+    pub fn setutxent();
+    pub fn endutxent();
+
+    pub fn endutent();
+    pub fn getutent() -> *mut utmp;
+    pub fn getutid(u: *const utmp) -> *mut utmp;
+    pub fn getutline(u: *const utmp) -> *mut utmp;
+    pub fn pututline(u: *const utmp) -> *mut utmp;
+    pub fn setutent();
+    pub fn utmpname(file: *const ::c_char) -> ::c_int;
+
+    pub fn getutmp(ux: *const utmpx, u: *mut utmp);
+    pub fn getutmpx(u: *const utmp, ux: *mut utmpx);
+    pub fn updwtmp(file: *const ::c_char, u: *mut utmp);
 }
 
 mod compat;

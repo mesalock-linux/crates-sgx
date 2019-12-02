@@ -306,6 +306,21 @@ s! {
         pub ar_pln: u8,
         pub ar_op: u16,
     }
+
+    pub struct shmid_ds {
+        pub shm_perm: ::ipc_perm,
+        pub shm_segsz: ::c_int,
+        pub shm_lpid: ::pid_t,
+        pub shm_cpid: ::pid_t,
+        pub shm_nattch: ::c_short,
+        pub shm_atime: ::time_t,
+        __shm_atimensec: c_long,
+        pub shm_dtime: ::time_t,
+        __shm_dtimensec: c_long,
+        pub shm_ctime: ::time_t,
+        __shm_ctimensec: c_long,
+        pub shm_internal: *mut ::c_void,
+    }
 }
 
 impl siginfo_t {
@@ -1430,6 +1445,15 @@ extern "C" {
         addr: *mut ::c_void,
         len: ::size_t,
         prot: ::c_int,
+    ) -> ::c_int;
+    pub fn pthread_attr_getguardsize(
+        attr: *const ::pthread_attr_t,
+        guardsize: *mut ::size_t,
+    ) -> ::c_int;
+    pub fn pthread_attr_getstack(
+        attr: *const ::pthread_attr_t,
+        stackaddr: *mut *mut ::c_void,
+        stacksize: *mut ::size_t,
     ) -> ::c_int;
     pub fn pthread_main_np() -> ::c_int;
     pub fn pthread_set_name_np(tid: ::pthread_t, name: *const ::c_char);

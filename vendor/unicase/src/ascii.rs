@@ -1,12 +1,13 @@
-use std::prelude::v1::*;
-//#[allow(deprecated, unused)]
-//use std::ascii::AsciiExt;
+use alloc::string::String;
 #[cfg(__unicase__iter_cmp)]
-use std::cmp::Ordering;
-use std::fmt;
-use std::hash::{Hash, Hasher};
-use std::ops::{Deref, DerefMut};
-use std::str::FromStr;
+use core::cmp::Ordering;
+use core::fmt;
+use core::hash::{Hash, Hasher};
+use core::ops::{Deref, DerefMut};
+use core::str::FromStr;
+#[cfg(not(__unicase__core_and_alloc))]
+#[allow(deprecated, unused)]
+use std::ascii::AsciiExt;
 
 use super::{Ascii, Encoding, UniCase};
 

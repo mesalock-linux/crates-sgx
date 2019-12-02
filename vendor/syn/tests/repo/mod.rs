@@ -1,6 +1,11 @@
-use std::process::Command;
-
+use anyhow::Result;
+use flate2::read::GzDecoder;
+use std::fs;
+use std::path::Path;
+use tar::Archive;
 use walkdir::DirEntry;
+
+const REVISION: &str = "7979016aff545f7b41cc517031026020b340989d";
 
 pub fn base_dir_filter(entry: &DirEntry) -> bool {
     let path = entry.path();
@@ -55,6 +60,41 @@ pub fn base_dir_filter(entry: &DirEntry) -> bool {
 }
 
 pub fn clone_rust() {
-    let result = Command::new("tests/clone.sh").status().unwrap();
-    assert!(result.success());
+    let needs_clone = match fs::read_to_string("tests/rust/COMMIT") {
+        Err(_) => true,
+        Ok(contents) => contents.trim() != REVISION,
+    };
+    if needs_clone {
+        download_and_unpack().unwrap();
+    }
+}
+
+fn download_and_unpack() -> Result<()> {
+    let url = format!(
+        "https://github.com/rust-lang/rust/archive/{}.tar.gz",
+        REVISION
+    );
+    let response = reqwest::blocking::get(&url)?.error_for_status()?;
+    let decoder = GzDecoder::new(response);
+    let mut archive = Archive::new(decoder);
+    let prefix = format!("rust-{}", REVISION);
+
+    let tests_rust = Path::new("tests/rust");
+    if tests_rust.exists() {
+        fs::remove_dir_all(tests_rust)?;
+    }
+
+    for entry in archive.entries()? {
+        let mut entry = entry?;
+        let path = entry.path()?;
+        if path == Path::new("pax_global_header") {
+            continue;
+        }
+        let relative = path.strip_prefix(&prefix)?;
+        let out = tests_rust.join(relative);
+        entry.unpack(&out)?;
+    }
+
+    fs::write("tests/rust/COMMIT", REVISION)?;
+    Ok(())
 }

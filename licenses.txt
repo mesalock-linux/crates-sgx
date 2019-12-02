@@ -60,10 +60,10 @@ matrixmultiply: MIT/Apache-2.0
 md5: Apache-2.0/MIT
 memchr: Unlicense/MIT
 memory_units: MPL-2.0
+miniz_oxide: MIT
 net2: MIT/Apache-2.0
 num-bigint: MIT/Apache-2.0
 num-complex: MIT/Apache-2.0
-num-derive: MIT/Apache-2.0
 num-integer: MIT/Apache-2.0
 num-iter: MIT/Apache-2.0
 num: MIT/Apache-2.0

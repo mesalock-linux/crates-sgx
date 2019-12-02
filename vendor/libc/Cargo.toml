@@ -12,7 +12,7 @@
 
 [package]
 name = "libc"
-version = "0.2.65"
+version = "0.2.66"
 authors = ["The Rust Project Developers"]
 build = "build.rs"
 exclude = ["/ci/*", "/azure-pipelines.yml"]
@@ -30,6 +30,7 @@ optional = true
 
 [features]
 align = []
+const-extern-fn = []
 default = ["std"]
 extra_traits = []
 rustc-dep-of-std = ["align", "rustc-std-workspace-core"]

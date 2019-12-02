@@ -22,6 +22,8 @@ pub type ino_t = ::c_ulong;
 pub type __CPU_BITTYPE = ::c_ulong;
 pub type idtype_t = ::c_int;
 pub type loff_t = ::c_longlong;
+pub type __kernel_loff_t = ::c_longlong;
+pub type __kernel_pid_t = ::c_int;
 
 s! {
     pub struct stack_t {
@@ -76,6 +78,14 @@ s! {
         pub l_start: ::off_t,
         pub l_len: ::off_t,
         pub l_pid: ::pid_t,
+    }
+
+    pub struct flock64 {
+        pub l_type: ::c_short,
+        pub l_whence: ::c_short,
+        pub l_start: ::__kernel_loff_t,
+        pub l_len: ::__kernel_loff_t,
+        pub l_pid: ::__kernel_pid_t,
     }
 
     pub struct cpu_set_t {
@@ -1309,6 +1319,83 @@ pub const NLMSG_DONE: ::c_int = 0x3;
 pub const NLMSG_OVERRUN: ::c_int = 0x4;
 pub const NLMSG_MIN_TYPE: ::c_int = 0x10;
 
+// linux/netfilter/nfnetlink.h
+pub const NFNLGRP_NONE: ::c_int = 0;
+pub const NFNLGRP_CONNTRACK_NEW: ::c_int = 1;
+pub const NFNLGRP_CONNTRACK_UPDATE: ::c_int = 2;
+pub const NFNLGRP_CONNTRACK_DESTROY: ::c_int = 3;
+pub const NFNLGRP_CONNTRACK_EXP_NEW: ::c_int = 4;
+pub const NFNLGRP_CONNTRACK_EXP_UPDATE: ::c_int = 5;
+pub const NFNLGRP_CONNTRACK_EXP_DESTROY: ::c_int = 6;
+pub const NFNLGRP_NFTABLES: ::c_int = 7;
+pub const NFNLGRP_ACCT_QUOTA: ::c_int = 8;
+
+pub const NFNETLINK_V0: ::c_int = 0;
+
+pub const NFNL_SUBSYS_NONE: ::c_int = 0;
+pub const NFNL_SUBSYS_CTNETLINK: ::c_int = 1;
+pub const NFNL_SUBSYS_CTNETLINK_EXP: ::c_int = 2;
+pub const NFNL_SUBSYS_QUEUE: ::c_int = 3;
+pub const NFNL_SUBSYS_ULOG: ::c_int = 4;
+pub const NFNL_SUBSYS_OSF: ::c_int = 5;
+pub const NFNL_SUBSYS_IPSET: ::c_int = 6;
+pub const NFNL_SUBSYS_ACCT: ::c_int = 7;
+pub const NFNL_SUBSYS_CTNETLINK_TIMEOUT: ::c_int = 8;
+pub const NFNL_SUBSYS_CTHELPER: ::c_int = 9;
+pub const NFNL_SUBSYS_NFTABLES: ::c_int = 10;
+pub const NFNL_SUBSYS_NFT_COMPAT: ::c_int = 11;
+pub const NFNL_SUBSYS_COUNT: ::c_int = 12;
+
+pub const NFNL_MSG_BATCH_BEGIN: ::c_int = NLMSG_MIN_TYPE;
+pub const NFNL_MSG_BATCH_END: ::c_int = NLMSG_MIN_TYPE + 1;
+
+// linux/netfilter/nfnetlink_log.h
+pub const NFULNL_MSG_PACKET: ::c_int = 0;
+pub const NFULNL_MSG_CONFIG: ::c_int = 1;
+
+pub const NFULA_UNSPEC: ::c_int = 0;
+pub const NFULA_PACKET_HDR: ::c_int = 1;
+pub const NFULA_MARK: ::c_int = 2;
+pub const NFULA_TIMESTAMP: ::c_int = 3;
+pub const NFULA_IFINDEX_INDEV: ::c_int = 4;
+pub const NFULA_IFINDEX_OUTDEV: ::c_int = 5;
+pub const NFULA_IFINDEX_PHYSINDEV: ::c_int = 6;
+pub const NFULA_IFINDEX_PHYSOUTDEV: ::c_int = 7;
+pub const NFULA_HWADDR: ::c_int = 8;
+pub const NFULA_PAYLOAD: ::c_int = 9;
+pub const NFULA_PREFIX: ::c_int = 10;
+pub const NFULA_UID: ::c_int = 11;
+pub const NFULA_SEQ: ::c_int = 12;
+pub const NFULA_SEQ_GLOBAL: ::c_int = 13;
+pub const NFULA_GID: ::c_int = 14;
+pub const NFULA_HWTYPE: ::c_int = 15;
+pub const NFULA_HWHEADER: ::c_int = 16;
+pub const NFULA_HWLEN: ::c_int = 17;
+pub const NFULA_CT: ::c_int = 18;
+pub const NFULA_CT_INFO: ::c_int = 19;
+
+pub const NFULNL_CFG_CMD_NONE: ::c_int = 0;
+pub const NFULNL_CFG_CMD_BIND: ::c_int = 1;
+pub const NFULNL_CFG_CMD_UNBIND: ::c_int = 2;
+pub const NFULNL_CFG_CMD_PF_BIND: ::c_int = 3;
+pub const NFULNL_CFG_CMD_PF_UNBIND: ::c_int = 4;
+
+pub const NFULA_CFG_UNSPEC: ::c_int = 0;
+pub const NFULA_CFG_CMD: ::c_int = 1;
+pub const NFULA_CFG_MODE: ::c_int = 2;
+pub const NFULA_CFG_NLBUFSIZ: ::c_int = 3;
+pub const NFULA_CFG_TIMEOUT: ::c_int = 4;
+pub const NFULA_CFG_QTHRESH: ::c_int = 5;
+pub const NFULA_CFG_FLAGS: ::c_int = 6;
+
+pub const NFULNL_COPY_NONE: ::c_int = 0x00;
+pub const NFULNL_COPY_META: ::c_int = 0x01;
+pub const NFULNL_COPY_PACKET: ::c_int = 0x02;
+
+pub const NFULNL_CFG_F_SEQ: ::c_int = 0x0001;
+pub const NFULNL_CFG_F_SEQ_GLOBAL: ::c_int = 0x0002;
+pub const NFULNL_CFG_F_CONNTRACK: ::c_int = 0x0004;
+
 pub const GENL_NAMSIZ: ::c_int = 16;
 
 pub const GENL_MIN_ID: ::c_int = NLMSG_MIN_TYPE;
@@ -1403,11 +1490,11 @@ pub const IP_ORIGDSTADDR: ::c_int = 20;
 pub const IP_RECVORIGDSTADDR: ::c_int = IP_ORIGDSTADDR;
 pub const IPV6_ORIGDSTADDR: ::c_int = 74;
 pub const IPV6_RECVORIGDSTADDR: ::c_int = IPV6_ORIGDSTADDR;
-pub const IPV6_FLOWINFO: ::c_int = 11;
 pub const IPV6_FLOWLABEL_MGR: ::c_int = 32;
 pub const IPV6_FLOWINFO_SEND: ::c_int = 33;
 pub const IPV6_FLOWINFO_FLOWLABEL: ::c_int = 0x000fffff;
 pub const IPV6_FLOWINFO_PRIORITY: ::c_int = 0x0ff00000;
+
 pub const IUTF8: ::tcflag_t = 0x00004000;
 pub const CMSPAR: ::tcflag_t = 0o10000000000;
 pub const O_TMPFILE: ::c_int = 0o20000000 | O_DIRECTORY;

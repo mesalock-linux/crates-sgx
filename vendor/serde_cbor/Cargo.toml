@@ -1,6 +1,6 @@
 [package]
 name = "serde_cbor"
-version = "0.10.2"
+version = "0.10.3"
 authors = [
     "Pyfisch <pyfisch@gmail.com>",
     "Steven Fackler <sfackler@gmail.com>"]
@@ -19,7 +19,10 @@ maintenance = { status = "actively-developed" }
 
 [dependencies]
 byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
-half = "1.2.0"
+# Starting with v1.4.0 half requires Rust v1.32 or newer
+# serde_cbor v0.10.0 msrv is v1.31
+# remove when next minor version is released 
+half = ">= 1.2.0, < 1.4.0"
 serde = { git = "https://github.com/mesalock-linux/serde-sgx" }
 sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
 

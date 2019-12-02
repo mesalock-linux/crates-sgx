@@ -24,6 +24,12 @@ s! {
         pub imr_interface: in_addr,
     }
 
+    pub struct ip_mreq_source {
+        pub imr_multiaddr: in_addr,
+        pub imr_interface: in_addr,
+        pub imr_sourceaddr: in_addr,
+    }
+
     pub struct sockaddr {
         pub sa_family: sa_family_t,
         pub sa_data: [::c_char; 14],
@@ -810,14 +816,32 @@ pub const IP_RECVTOS: ::c_int = 13;
 pub const IP_RECVERR: ::c_int = 11;
 pub const IP_ADD_MEMBERSHIP: ::c_int = 35;
 pub const IP_DROP_MEMBERSHIP: ::c_int = 36;
+pub const IP_ADD_SOURCE_MEMBERSHIP: ::c_int = 39;
+pub const IP_DROP_SOURCE_MEMBERSHIP: ::c_int = 40;
 pub const IP_TRANSPARENT: ::c_int = 19;
+pub const IPV6_ADDRFORM: ::c_int = 1;
+pub const IPV6_2292PKTINFO: ::c_int = 2;
+pub const IPV6_2292HOPOPTS: ::c_int = 3;
+pub const IPV6_2292DSTOPTS: ::c_int = 4;
+pub const IPV6_2292RTHDR: ::c_int = 5;
+pub const IPV6_2292PKTOPTIONS: ::c_int = 6;
+pub const IPV6_CHECKSUM: ::c_int = 7;
+pub const IPV6_2292HOPLIMIT: ::c_int = 8;
+pub const IPV6_NEXTHOP: ::c_int = 9;
+pub const IPV6_FLOWINFO: ::c_int = 11;
 pub const IPV6_UNICAST_HOPS: ::c_int = 16;
 pub const IPV6_MULTICAST_IF: ::c_int = 17;
 pub const IPV6_MULTICAST_HOPS: ::c_int = 18;
 pub const IPV6_MULTICAST_LOOP: ::c_int = 19;
 pub const IPV6_ADD_MEMBERSHIP: ::c_int = 20;
 pub const IPV6_DROP_MEMBERSHIP: ::c_int = 21;
+pub const IPV6_ROUTER_ALERT: ::c_int = 22;
+pub const IPV6_MTU_DISCOVER: ::c_int = 23;
+pub const IPV6_MTU: ::c_int = 24;
+pub const IPV6_RECVERR: ::c_int = 25;
 pub const IPV6_V6ONLY: ::c_int = 26;
+pub const IPV6_JOIN_ANYCAST: ::c_int = 27;
+pub const IPV6_LEAVE_ANYCAST: ::c_int = 28;
 pub const IPV6_RECVPKTINFO: ::c_int = 49;
 pub const IPV6_PKTINFO: ::c_int = 50;
 pub const IPV6_RECVTCLASS: ::c_int = 66;
@@ -1165,8 +1189,10 @@ pub const ARPHRD_IEEE802154: u16 = 804;
 pub const ARPHRD_VOID: u16 = 0xFFFF;
 pub const ARPHRD_NONE: u16 = 0xFFFE;
 
-fn CMSG_ALIGN(len: usize) -> usize {
-    len + ::mem::size_of::<usize>() - 1 & !(::mem::size_of::<usize>() - 1)
+const_fn! {
+    {const} fn CMSG_ALIGN(len: usize) -> usize {
+        len + ::mem::size_of::<usize>() - 1 & !(::mem::size_of::<usize>() - 1)
+    }
 }
 
 f! {
@@ -1182,7 +1208,7 @@ f! {
         cmsg.offset(1) as *mut ::c_uchar
     }
 
-    pub fn CMSG_SPACE(length: ::c_uint) -> ::c_uint {
+    pub {const} fn CMSG_SPACE(length: ::c_uint) -> ::c_uint {
         (CMSG_ALIGN(length as usize) + CMSG_ALIGN(::mem::size_of::<cmsghdr>()))
             as ::c_uint
     }
@@ -1458,6 +1484,10 @@ extern "C" {
     pub fn acct(filename: *const ::c_char) -> ::c_int;
     pub fn brk(addr: *mut ::c_void) -> ::c_int;
     pub fn sbrk(increment: ::intptr_t) -> *mut ::c_void;
+    #[deprecated(
+        since = "0.2.66",
+        note = "causes memory corruption, see rust-lang/libc#1596"
+    )]
     pub fn vfork() -> ::pid_t;
     pub fn setresgid(rgid: ::gid_t, egid: ::gid_t, sgid: ::gid_t) -> ::c_int;
     pub fn setresuid(ruid: ::uid_t, euid: ::uid_t, suid: ::uid_t) -> ::c_int;

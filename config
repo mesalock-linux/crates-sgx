@@ -181,6 +181,11 @@ git = "https://github.com/mesalock-linux/md5-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/miniz_oxide"]
+git = "https://github.com/mesalock-linux/miniz_oxide"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/net2-rs"]
 git = "https://github.com/mesalock-linux/net2-rs"
 branch = "master"
@@ -393,11 +398,6 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/yasna.rs-sgx"]
 git = "https://github.com/mesalock-linux/yasna.rs-sgx"
-branch = "master"
-replace-with = "vendored-sources"
-
-[source."https://github.com/rust-num/num-derive"]
-git = "https://github.com/rust-num/num-derive"
 branch = "master"
 replace-with = "vendored-sources"
 

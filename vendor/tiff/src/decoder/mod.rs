@@ -1,4 +1,3 @@
-use num_traits::{FromPrimitive, Num};
 use std::prelude::v1::*;
 use std::collections::HashMap;
 use std::io::{self, Read, Seek};
@@ -8,8 +7,9 @@ use {ColorType, TiffError, TiffFormatError, TiffResult, TiffUnsupportedError};
 
 use self::ifd::Directory;
 
-use self::stream::{ByteOrder, EndianReader, LZWReader, PackBitsReader, SmartReader};
+use self::stream::{ByteOrder, EndianReader, LZWReader, DeflateReader, PackBitsReader, SmartReader};
 
+#[macro_use]
 pub mod ifd;
 mod stream;
 
@@ -81,8 +81,8 @@ impl<'a> DecodingBuffer<'a> {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, FromPrimitive)]
-pub enum PhotometricInterpretation {
+tags! {
+pub enum PhotometricInterpretation(u16) {
     WhiteIsZero = 0,
     BlackIsZero = 1,
     RGB = 2,
@@ -92,28 +92,74 @@ pub enum PhotometricInterpretation {
     YCbCr = 6,
     CIELab = 8,
 }
+}
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, FromPrimitive)]
-pub enum CompressionMethod {
+tags! {
+pub enum CompressionMethod(u16) {
     None = 1,
     Huffman = 2,
     Fax3 = 3,
     Fax4 = 4,
     LZW = 5,
     JPEG = 6,
+    Deflate = 8,
+    OldDeflate = 0x80B2,
     PackBits = 0x8005,
 }
+}
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, FromPrimitive)]
-pub enum PlanarConfiguration {
+tags! {
+pub enum PlanarConfiguration(u16) {
     Chunky = 1,
     Planar = 2,
 }
+}
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, FromPrimitive)]
-enum Predictor {
+tags! {
+enum Predictor(u16) {
     None = 1,
     Horizontal = 2,
+}
+}
+
+impl PhotometricInterpretation {
+    pub fn from_u16(val: u16) -> Option<Self> {
+        Self::__from_inner_type(val).ok()
+    }
+
+    pub fn to_u16(&self) -> u16 {
+        Self::__to_inner_type(self)
+    }
+}
+
+impl CompressionMethod {
+    pub fn from_u16(val: u16) -> Option<Self> {
+        Self::__from_inner_type(val).ok()
+    }
+
+    pub fn to_u16(&self) -> u16 {
+        Self::__to_inner_type(self)
+    }
+}
+
+impl PlanarConfiguration {
+    pub fn from_u16(val: u16) -> Option<Self> {
+        Self::__from_inner_type(val).ok()
+    }
+
+    pub fn to_u16(&self) -> u16 {
+        Self::__to_inner_type(self)
+    }
+}
+
+impl Predictor {
+    pub fn from_u16(val: u16) -> Option<Self> {
+        Self::__from_inner_type(val).ok()
+    }
+
+    pub fn to_u16(&self) -> u16 {
+        Self::__to_inner_type(self)
+    }
 }
 
 #[derive(Debug)]
@@ -130,10 +176,14 @@ pub struct Limits {
     /// 256MiB. If the entire image is decoded at once, then this will
     /// be the maximum size of the image. If it is decoded one strip at a
     /// time, this will be the maximum size of a strip.
-    decoding_buffer_size: usize,
+    pub decoding_buffer_size: usize,
     /// The maximum size of any ifd value in bytes, the default is
     /// 1MiB.
-    ifd_value_size: usize,
+    pub ifd_value_size: usize,
+    /// The purpose of this is to prevent all the fields of the struct from
+    /// being public, as this would make adding new fields a major version
+    /// bump.
+    _non_exhaustive: (),
 }
 
 impl Default for Limits {
@@ -141,6 +191,7 @@ impl Default for Limits {
         Limits {
             decoding_buffer_size: 256 * 1024 * 1024,
             ifd_value_size: 1024 * 1024,
+            _non_exhaustive: (),
         }
     }
 }
@@ -185,7 +236,7 @@ impl Wrapping for u16 {
 
 fn rev_hpredict_nsamp<T>(image: &mut [T], size: (u32, u32), samples: usize)
 where
-    T: Num + Copy + Wrapping,
+    T: Copy + Wrapping,
 {
     let width = size.0 as usize;
     let height = size.1 as usize;
@@ -328,8 +379,9 @@ impl<R: Read + Seek> Decoder<R> {
         self.width = self.get_tag_u32(ifd::Tag::ImageWidth)?;
         self.height = self.get_tag_u32(ifd::Tag::ImageLength)?;
         self.strip_decoder = None;
-        self.photometric_interpretation = match FromPrimitive::from_u32(
-            self.get_tag_u32(ifd::Tag::PhotometricInterpretation)?
+        // TODO: error on non-SHORT value.
+        self.photometric_interpretation = match PhotometricInterpretation::from_u16(
+            self.get_tag_u32(ifd::Tag::PhotometricInterpretation)? as u16
         ) {
             Some(val) => val,
             None => {
@@ -338,8 +390,9 @@ impl<R: Read + Seek> Decoder<R> {
                 ))
             }
         };
+        // TODO: error on non-SHORT value.
         if let Some(val) = self.find_tag_u32(ifd::Tag::Compression)? {
-            match FromPrimitive::from_u32(val) {
+            match CompressionMethod::from_u16(val as u16) {
                 Some(method) => self.compression_method = method,
                 None => {
                     return Err(TiffError::UnsupportedError(
@@ -448,7 +501,7 @@ impl<R: Read + Seek> Decoder<R> {
     // Value 4 bytes either a pointer the value itself
     fn read_entry(&mut self) -> TiffResult<Option<(ifd::Tag, ifd::Entry)>> {
         let tag = ifd::Tag::from_u16(self.read_short()?);
-        let type_: ifd::Type = match FromPrimitive::from_u16(self.read_short()?) {
+        let type_ = match ifd::Type::from_u16(self.read_short()?) {
             Some(t) => t,
             None => {
                 // Unknown type. Skip this entry according to spec.
@@ -576,6 +629,10 @@ impl<R: Read + Seek> Decoder<R> {
                     order,
                     length as usize
                 )?;
+                (bytes, Box::new(reader))
+            }
+            CompressionMethod::OldDeflate => {
+                let (bytes, reader) = DeflateReader::new(&mut self.reader, max_uncompressed_length)?;
                 (bytes, Box::new(reader))
             }
             method => {
@@ -710,7 +767,8 @@ impl<R: Read + Seek> Decoder<R> {
             ));
         }
         if let Ok(predictor) = self.get_tag_u32(ifd::Tag::Predictor) {
-            match FromPrimitive::from_u32(predictor) {
+            // TODO: error on non-SHORT value.
+            match Predictor::from_u16(predictor as u16) {
                 Some(Predictor::None) => (),
                 Some(Predictor::Horizontal) => {
                     rev_hpredict(
@@ -724,6 +782,7 @@ impl<R: Read + Seek> Decoder<R> {
                         predictor,
                     )))
                 }
+                Some(Predictor::__NonExhaustive) => unreachable!(),
             }
         }
         Ok(())
