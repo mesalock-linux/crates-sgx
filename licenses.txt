@@ -20,6 +20,7 @@ cfg-if: MIT/Apache-2.0
 chrono: MIT/Apache-2.0
 color_quant: MIT
 crc32fast: MIT OR Apache-2.0
+crc: MIT OR Apache-2.0
 ctor: Apache-2.0 OR MIT
 deflate: MIT/Apache-2.0
 digest: MIT OR Apache-2.0
@@ -45,6 +46,7 @@ http_req: MIT
 humantime: MIT/Apache-2.0
 image: MIT
 inflate: MIT
+integer-encoding: see license file at integer-encoding/LICENSE
 inventory-impl: MIT OR Apache-2.0
 inventory: MIT OR Apache-2.0
 iovec: MIT/Apache-2.0
@@ -133,6 +135,7 @@ sgx_urts: see license file at sgx_urts/LICENSE
 sha1: BSD-3-Clause
 sha-1: MIT OR Apache-2.0
 sha2: MIT OR Apache-2.0
+snap: BSD-3-Clause
 spin: MIT
 stream-cipher: MIT OR Apache-2.0
 syn-0.11.11: MIT/Apache-2.0
