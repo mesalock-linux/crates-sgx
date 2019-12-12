@@ -43,6 +43,7 @@ byteorder    = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
 bytes        = { git = "https://github.com/mesalock-linux/bytes-sgx" }
 chrono       = { git = "https://github.com/mesalock-linux/chrono-sgx" }
 color_quant  = { git = "https://github.com/mesalock-linux/color_quant-sgx" }
+crc	     = { git = "https://github.com/mesalock-linux/crc-rs-sgx" }
 crc32fast    = { git = "https://github.com/mesalock-linux/rust-crc32fast-sgx" }
 deflate      = { git = "https://github.com/mesalock-linux/deflate-rs-sgx", branch = "dev" }
 env_logger   = { git = "https://github.com/mesalock-linux/env_logger-sgx" }
@@ -56,6 +57,7 @@ http         = { git = "https://github.com/mesalock-linux/http-sgx" }
 http_req     = { git = "https://github.com/mesalock-linux/http_req-sgx" }
 image        = { git = "https://github.com/mesalock-linux/image-sgx" }
 inflate      = { git = "https://github.com/mesalock-linux/inflate-sgx" }
+integer-encoding = { git = "https://github.com/mesalock-linux/integer-encoding-rs-sgx" }
 iovec        = { git = "https://github.com/mesalock-linux/iovec-sgx" }
 itoa         = { git = "https://github.com/mesalock-linux/itoa-sgx" }
 jpeg-decoder = { git = "https://github.com/mesalock-linux/jpeg-decoder-sgx" }
@@ -88,6 +90,7 @@ serde_json   = { git = "https://github.com/mesalock-linux/serde-json-sgx" }
 sha-1        = { git = "https://github.com/mesalock-linux/hashes-sgx" }
 sha1         = { git = "https://github.com/mesalock-linux/rust-sha1-sgx" }
 sha2         = { git = "https://github.com/mesalock-linux/hashes-sgx" }
+snap	     = { git = "https://github.com/mesalock-linux/rust-snappy-sgx" }
 tiff         = { git = "https://github.com/mesalock-linux/image-tiff-sgx" }
 toml         = { git = "https://github.com/mesalock-linux/toml-rs-sgx" }
 uuid         = { git = "https://github.com/mesalock-linux/uuid-sgx" }

@@ -51,6 +51,11 @@ git = "https://github.com/mesalock-linux/color_quant-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/crc-rs-sgx"]
+git = "https://github.com/mesalock-linux/crc-rs-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/cryptocorrosion-sgx"]
 git = "https://github.com/mesalock-linux/cryptocorrosion-sgx"
 branch = "master"
@@ -133,6 +138,11 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/inflate-sgx"]
 git = "https://github.com/mesalock-linux/inflate-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/integer-encoding-rs-sgx"]
+git = "https://github.com/mesalock-linux/integer-encoding-rs-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
@@ -293,6 +303,11 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/rust-sha1-sgx"]
 git = "https://github.com/mesalock-linux/rust-sha1-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/rust-snappy-sgx"]
+git = "https://github.com/mesalock-linux/rust-snappy-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 

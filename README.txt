@@ -19,6 +19,7 @@ cc                 1.0.47
 cfg-if             0.1.10
 chrono             0.4.7
 color_quant        1.0.1
+crc                2.0.0
 crc32fast          1.2.0
 ctor               0.1.12
 deflate            0.8.0
@@ -45,6 +46,7 @@ httparse           1.3.4
 humantime          1.3.0
 image              0.22.1
 inflate            0.4.5
+integer-encoding   1.0.7
 inventory          0.1.4
 inventory-impl     0.1.4
 iovec              0.2.0
@@ -108,6 +110,7 @@ serde_json         1.0.40
 sha-1              0.8.1
 sha1               0.6.0
 sha2               0.8.0
+snap               0.2.5
 spin               0.5.2
 stream-cipher      0.3.2
 syn                0.11.11
