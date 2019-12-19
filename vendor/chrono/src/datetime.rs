@@ -317,7 +317,7 @@ impl DateTime<FixedOffset> {
     pub fn parse_from_rfc2822(s: &str) -> ParseResult<DateTime<FixedOffset>> {
         const ITEMS: &'static [Item<'static>] = &[Item::Fixed(Fixed::RFC2822)];
         let mut parsed = Parsed::new();
-        try!(parse(&mut parsed, s, ITEMS.iter().cloned()));
+        parse(&mut parsed, s, ITEMS.iter().cloned())?;
         parsed.to_datetime()
     }
 
@@ -329,7 +329,7 @@ impl DateTime<FixedOffset> {
     pub fn parse_from_rfc3339(s: &str) -> ParseResult<DateTime<FixedOffset>> {
         const ITEMS: &'static [Item<'static>] = &[Item::Fixed(Fixed::RFC3339)];
         let mut parsed = Parsed::new();
-        try!(parse(&mut parsed, s, ITEMS.iter().cloned()));
+        parse(&mut parsed, s, ITEMS.iter().cloned())?;
         parsed.to_datetime()
     }
 
@@ -355,7 +355,7 @@ impl DateTime<FixedOffset> {
     /// ```
     pub fn parse_from_str(s: &str, fmt: &str) -> ParseResult<DateTime<FixedOffset>> {
         let mut parsed = Parsed::new();
-        try!(parse(&mut parsed, s, StrftimeItems::new(fmt)));
+        parse(&mut parsed, s, StrftimeItems::new(fmt))?;
         parsed.to_datetime()
     }
 }
@@ -624,7 +624,7 @@ impl str::FromStr for DateTime<FixedOffset> {
         ];
 
         let mut parsed = Parsed::new();
-        try!(parse(&mut parsed, s, ITEMS.iter().cloned()));
+        parse(&mut parsed, s, ITEMS.iter().cloned())?;
         parsed.to_datetime()
     }
 }
@@ -1043,7 +1043,7 @@ pub mod serde {
         pub fn deserialize<'de, D>(d: D) -> Result<DateTime<Utc>, D::Error>
             where D: de::Deserializer<'de>
         {
-            Ok(try!(d.deserialize_i64(NanoSecondsTimestampVisitor)))
+            Ok(d.deserialize_i64(NanoSecondsTimestampVisitor)?)
         }
 
         struct NanoSecondsTimestampVisitor;
@@ -1190,7 +1190,7 @@ pub mod serde {
         pub fn deserialize<'de, D>(d: D) -> Result<DateTime<Utc>, D::Error>
             where D: de::Deserializer<'de>
         {
-            Ok(try!(d.deserialize_i64(MilliSecondsTimestampVisitor).map(|dt| dt.with_timezone(&Utc))))
+            Ok(d.deserialize_i64(MilliSecondsTimestampVisitor).map(|dt| dt.with_timezone(&Utc))?)
         }
 
         struct MilliSecondsTimestampVisitor;
@@ -1337,7 +1337,7 @@ pub mod serde {
         pub fn deserialize<'de, D>(d: D) -> Result<DateTime<Utc>, D::Error>
             where D: de::Deserializer<'de>
         {
-            Ok(try!(d.deserialize_i64(SecondsTimestampVisitor)))
+            Ok(d.deserialize_i64(SecondsTimestampVisitor)?)
         }
 
         struct SecondsTimestampVisitor;

@@ -14,12 +14,12 @@ exclude = ["/sgx/*",]
 
 [dependencies]
 cfg-if = "0.1"
-sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
-bencher = "0.1"
-quickcheck = { version = "0.6", default-features = false }
-rand = "0.4"
+#bencher = "0.1"
+#quickcheck = { version = "0.6", default-features = false }
+#rand = "0.4"
 
 [features]
 default = ["std", "mesalock_sgx", "nightly"]

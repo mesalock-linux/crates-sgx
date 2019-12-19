@@ -482,7 +482,7 @@ fn bad_header() -> io::Error {
 /// Try to read a little-endian u16 from the provided reader.
 fn read_le_u16<R: Read>(r: &mut R) -> io::Result<u16> {
     let mut b = [0; 2];
-    try!(r.read_exact(&mut b));
+    r.read_exact(&mut b)?;
     Ok((b[0] as u16) | ((b[1] as u16) << 8))
 }
 
@@ -497,7 +497,7 @@ fn read_le_u16<R: Read>(r: &mut R) -> io::Result<u16> {
 pub fn read_gz_header<R: Read>(r: &mut R) -> io::Result<GzHeader> {
     let mut crc_reader = CrcReader::new(r);
     let mut header = [0; 10];
-    try!(crc_reader.read_exact(&mut header));
+    crc_reader.read_exact(&mut header)?;
 
     // `ID1` and `ID2` are fixed values to identify a gzip file.
     let id1 = header[0];
@@ -525,9 +525,9 @@ pub fn read_gz_header<R: Read>(r: &mut R) -> io::Result<GzHeader> {
 
     let extra = if flg & FEXTRA != 0 {
         // Length of the FEXTRA field.
-        let xlen = try!(read_le_u16(&mut crc_reader));
+        let xlen = read_le_u16(&mut crc_reader)?;
         let mut extra = vec![0; xlen as usize];
-        try!(crc_reader.read_exact(&mut extra));
+        crc_reader.read_exact(&mut extra)?;
         Some(extra)
     } else {
         None
@@ -536,7 +536,7 @@ pub fn read_gz_header<R: Read>(r: &mut R) -> io::Result<GzHeader> {
         // wow this is slow
         let mut b = Vec::new();
         for byte in crc_reader.by_ref().bytes() {
-            let byte = try!(byte);
+            let byte = byte?;
             if byte == 0 {
                 break;
             }
@@ -550,7 +550,7 @@ pub fn read_gz_header<R: Read>(r: &mut R) -> io::Result<GzHeader> {
         // wow this is slow
         let mut b = Vec::new();
         for byte in crc_reader.by_ref().bytes() {
-            let byte = try!(byte);
+            let byte = byte?;
             if byte == 0 {
                 break;
             }
@@ -565,7 +565,7 @@ pub fn read_gz_header<R: Read>(r: &mut R) -> io::Result<GzHeader> {
     // that needs to be validated.
     if flg & FHCRC != 0 {
         let calced_crc = crc_reader.crc().sum() as u16;
-        let stored_crc = try!(read_le_u16(&mut crc_reader));
+        let stored_crc = read_le_u16(&mut crc_reader)?;
         if calced_crc != stored_crc {
             return Err(corrupt());
         }

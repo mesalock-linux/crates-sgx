@@ -1,6 +1,6 @@
 # Image [![crates.io](https://img.shields.io/crates/v/image.svg)](https://crates.io/crates/image) [![Build Status](https://travis-ci.org/image-rs/image.svg?branch=master)](https://travis-ci.org/image-rs/image) [![Gitter](https://badges.gitter.im/image-rs/image.svg)](https://gitter.im/image-rs/image?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-Maintainers: @nwin, @ccgn
+Maintainers: @HeroicKatora, @fintelia
 
 [How to contribute](https://github.com/image-rs/organization/blob/master/CONTRIBUTING.md)
 
@@ -26,7 +26,7 @@ https://docs.rs/image
 | BMP    | Yes | RGB(8), RGBA(8), Gray(8), GrayA(8) |
 | ICO    | Yes | Yes |
 | TIFF   | Baseline(no fax support) + LZW + PackBits | RGB(8), RGBA(8), Gray(8) |
-| Webp   | Lossy(Luma channel only) | No |
+| WebP   | Lossy(Luma channel only) | No |
 | PNM    | PBM, PGM, PPM, standard PAM | Yes |
 
 ### 2.2 The ```ImageDecoder``` Trait

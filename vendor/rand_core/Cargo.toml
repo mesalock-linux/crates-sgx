@@ -27,4 +27,4 @@ mesalock_sgx = ["alloc", "sgx_tstd"]
 [dependencies]
 serde = { git = "https://github.com/mesalock-linux/serde-sgx.git", features = ["derive"], optional = true }
 getrandom = { git = "https://github.com/mesalock-linux/getrandom-sgx", optional = true }
-sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }

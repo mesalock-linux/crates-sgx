@@ -6,15 +6,13 @@ use std::io::{self, Write, BufRead};
 
 fn main() {
     match (|| -> io::Result<()> {
-        let mut encoder = try!(
-            lzw::Encoder::new(lzw::LsbWriter::new(io::stdout()), 8)
-        );
+        let mut encoder = lzw::Encoder::new(lzw::LsbWriter::new(io::stdout()), 8)?;
         let stdin = io::stdin();
         let mut stdin = stdin.lock();
         loop {
             let len = {
-                let buf = try!(stdin.fill_buf());
-                try!(encoder.encode_bytes(buf));
+                let buf = stdin.fill_buf()?;
+                encoder.encode_bytes(buf)?;
                 buf.len()
             };
             if len == 0 {

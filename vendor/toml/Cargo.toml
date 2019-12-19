@@ -25,11 +25,11 @@ travis-ci = { repository = "alexcrichton/toml-rs" }
 [dependencies]
 serde = { git = "https://github.com/mesalock-linux/serde-sgx", default-features = false, features = ["std"] }
 linked-hash-map = { git = "https://github.com/mesalock-linux/linked-hash-map-sgx", optional = true }
-sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
-serde_derive = "1.0"
-serde_json = "1.0"
+#serde_derive = "1.0"
+#serde_json = "1.0"
 
 [features]
 default = ["mesalock_sgx"]

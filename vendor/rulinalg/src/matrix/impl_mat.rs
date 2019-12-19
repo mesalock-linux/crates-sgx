@@ -451,18 +451,18 @@ impl<T: fmt::Display> fmt::Display for Matrix<T> {
                         -> Result<(), fmt::Error>
             where T: fmt::Display
         {
-            try!(write!(f, "{}", left_delimiter));
+            write!(f, "{}", left_delimiter)?;
             for (index, datum) in row.iter().enumerate() {
                 match f.precision() {
                     Some(places) => {
-                        try!(write!(f, "{:1$.2$}", datum, width, places));
+                        write!(f, "{:1$.2$}", datum, width, places)?;
                     }
                     None => {
-                        try!(write!(f, "{:1$}", datum, width));
+                        write!(f, "{:1$}", datum, width)?;
                     }
                 }
                 if index < row.len() - 1 {
-                    try!(write!(f, " "));
+                    write!(f, " ")?;
                 }
             }
             write!(f, "{}", right_delimiter)
@@ -471,19 +471,19 @@ impl<T: fmt::Display> fmt::Display for Matrix<T> {
         match self.rows {
             1 => write_row(f, &self.data, "[", "]", width),
             _ => {
-                try!(write_row(f,
+                write_row(f,
                                &self.data[0..self.cols],
                                "⎡", // \u{23a1} LEFT SQUARE BRACKET UPPER CORNER
                                "⎤", // \u{23a4} RIGHT SQUARE BRACKET UPPER CORNER
-                               width));
-                try!(f.write_str("\n"));
+                               width)?;
+                f.write_str("\n")?;
                 for row_index in 1..self.rows - 1 {
-                    try!(write_row(f,
+                    write_row(f,
                                    &self.data[row_index * self.cols..(row_index + 1) * self.cols],
                                    "⎢", // \u{23a2} LEFT SQUARE BRACKET EXTENSION
                                    "⎥", // \u{23a5} RIGHT SQUARE BRACKET EXTENSION
-                                   width));
-                    try!(f.write_str("\n"));
+                                   width)?;
+                    f.write_str("\n")?;
                 }
                 write_row(f,
                           &self.data[(self.rows - 1) * self.cols..self.rows * self.cols],

@@ -352,7 +352,7 @@ impl SampleLayout {
             }
         }
 
-        return true;
+        true
     }
 
     /// Check that the pixel and the channel index are in bounds.
@@ -361,7 +361,7 @@ impl SampleLayout {
     /// buffer index does not overflow. However, if such a buffer large enough to hold all samples
     /// actually exists in memory, this porperty of course follows.
     pub fn in_bounds(&self, channel: u8, x: u32, y: u32) -> bool {
-        return channel < self.channels && x < self.width && y < self.height
+        channel < self.channels && x < self.width && y < self.height
     }
 
     /// Resolve the index of a particular sample.
@@ -546,7 +546,7 @@ impl<Buffer> FlatSamples<Buffer> {
         where Buffer: AsMut<[T]>,
     {
         match self.index(channel, x, y) {
-            None => return None,
+            None => None,
             Some(idx) => self.samples.as_mut().get_mut(idx),
         }
     }
@@ -1289,7 +1289,7 @@ impl<Buffer, P: Pixel> GenericImageView for View<Buffer, P>
             *to = image[index];
         });
 
-        P::from_slice(&buffer[..channels]).clone()
+        *P::from_slice(&buffer[..channels])
     }
 
     fn inner(&self) -> &Self {
@@ -1334,7 +1334,7 @@ impl<Buffer, P: Pixel> GenericImageView for ViewMut<Buffer, P>
             *to = image[index];
         });
 
-        P::from_slice(&buffer[..channels]).clone()
+        *P::from_slice(&buffer[..channels])
     }
 
     fn inner(&self) -> &Self {

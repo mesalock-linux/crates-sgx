@@ -757,7 +757,7 @@ pub struct Record<'a> {
 // the underlying `Source`.
 #[cfg(feature = "kv_unstable")]
 #[derive(Clone)]
-struct KeyValues<'a>(&'a kv::Source);
+struct KeyValues<'a>(&'a dyn kv::Source);
 
 #[cfg(feature = "kv_unstable")]
 impl<'a> fmt::Debug for KeyValues<'a> {
@@ -838,7 +838,7 @@ impl<'a> Record<'a> {
     /// The structued key-value pairs associated with the message.
     #[cfg(feature = "kv_unstable")]
     #[inline]
-    pub fn key_values(&self) -> &kv::Source {
+    pub fn key_values(&self) -> &dyn kv::Source {
         self.key_values.0
     }
 
@@ -1012,7 +1012,7 @@ impl<'a> RecordBuilder<'a> {
     /// Set [`key_values`](struct.Record.html#method.key_values)
     #[cfg(feature = "kv_unstable")]
     #[inline]
-    pub fn key_values(&mut self, kvs: &'a kv::Source) -> &mut RecordBuilder<'a> {
+    pub fn key_values(&mut self, kvs: &'a dyn kv::Source) -> &mut RecordBuilder<'a> {
         self.record.key_values = KeyValues(kvs);
         self
     }

@@ -35,11 +35,11 @@ harness = false
 
 [dependencies]
 rawpointer = "0.2"
-sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
-bencher = "0.1.2"
-itertools = "0.8"
+#bencher = "0.1.2"
+#itertools = "0.8"
 
 [profile.release]
 [profile.bench]

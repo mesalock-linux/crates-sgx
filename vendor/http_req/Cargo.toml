@@ -13,7 +13,7 @@ exclude = [ "sgx/*", ]
 
 [dependencies]
 unicase = { git = "https://github.com/mesalock-linux/unicase-sgx" }
-sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true ,features = ["net"]}
+sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true ,features = ["net"]}
 
 [features]
 default = ["rust-tls", "mesalock_sgx"]

@@ -273,7 +273,7 @@ impl<T> PartialPivLu<T> where T: Any + Float {
         for i in 0 .. n {
             e[i] = T::one();
 
-            let col = try!(self.solve(e));
+            let col = self.solve(e)?;
 
             for j in 0 .. n {
                 inv[[j, i]] = col[j];
@@ -495,7 +495,7 @@ impl<T> FullPivLu<T> where T: Any + Float {
         for i in 0 .. n {
             e[i] = T::one();
 
-            let col = try!(self.solve(e));
+            let col = self.solve(e)?;
 
             for j in 0 .. n {
                 inv[[j, i]] = col[j];

@@ -765,8 +765,8 @@ where
     where
         V: de::Visitor<'de>,
     {
-        let v = try!(visitor.visit_seq(&mut self));
-        try!(self.end());
+        let v = visitor.visit_seq(&mut self)?;
+        self.end()?;
         Ok(v)
     }
 
@@ -977,8 +977,8 @@ where
     where
         V: de::Visitor<'de>,
     {
-        let value = try!(visitor.visit_map(&mut self));
-        try!(self.end());
+        let value = visitor.visit_map(&mut self)?;
+        self.end()?;
         Ok(value)
     }
 
@@ -986,8 +986,8 @@ where
     where
         V: de::Visitor<'de>,
     {
-        let value = try!(visitor.visit_seq(&mut self));
-        try!(self.end());
+        let value = visitor.visit_seq(&mut self)?;
+        self.end()?;
         Ok(value)
     }
 
@@ -1051,8 +1051,8 @@ where
     {
         match self.next_pair() {
             Some((key, value)) => {
-                let key = try!(kseed.deserialize(key.into_deserializer()));
-                let value = try!(vseed.deserialize(value.into_deserializer()));
+                let key = kseed.deserialize(key.into_deserializer())?;
+                let value = vseed.deserialize(value.into_deserializer())?;
                 Ok(Some((key, value)))
             }
             None => Ok(None),
@@ -1159,7 +1159,7 @@ where
         V: de::Visitor<'de>,
     {
         let mut pair_visitor = PairVisitor(Some(self.0), Some(self.1), PhantomData);
-        let pair = try!(visitor.visit_seq(&mut pair_visitor));
+        let pair = visitor.visit_seq(&mut pair_visitor)?;
         if pair_visitor.1.is_none() {
             Ok(pair)
         } else {

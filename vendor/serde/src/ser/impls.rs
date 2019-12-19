@@ -133,7 +133,7 @@ impl<T> Serialize for [T; 0] {
     where
         S: Serializer,
     {
-        try!(serializer.serialize_tuple(0)).end()
+        serializer.serialize_tuple(0)?.end()
     }
 }
 
@@ -230,9 +230,9 @@ where
         S: Serializer,
     {
         use super::SerializeStruct;
-        let mut state = try!(serializer.serialize_struct("Range", 2));
-        try!(state.serialize_field("start", &self.start));
-        try!(state.serialize_field("end", &self.end));
+        let mut state = serializer.serialize_struct("Range", 2)?;
+        state.serialize_field("start", &self.start)?;
+        state.serialize_field("end", &self.end)?;
         state.end()
     }
 }
@@ -249,9 +249,9 @@ where
         S: Serializer,
     {
         use super::SerializeStruct;
-        let mut state = try!(serializer.serialize_struct("RangeInclusive", 2));
-        try!(state.serialize_field("start", &self.start()));
-        try!(state.serialize_field("end", &self.end()));
+        let mut state = serializer.serialize_struct("RangeInclusive", 2)?;
+        state.serialize_field("start", &self.start())?;
+        state.serialize_field("end", &self.end())?;
         state.end()
     }
 }
@@ -617,9 +617,9 @@ impl Serialize for Duration {
         S: Serializer,
     {
         use super::SerializeStruct;
-        let mut state = try!(serializer.serialize_struct("Duration", 2));
-        try!(state.serialize_field("secs", &self.as_secs()));
-        try!(state.serialize_field("nanos", &self.subsec_nanos()));
+        let mut state = serializer.serialize_struct("Duration", 2)?;
+        state.serialize_field("secs", &self.as_secs())?;
+        state.serialize_field("nanos", &self.subsec_nanos())?;
         state.end()
     }
 }
@@ -636,9 +636,9 @@ impl Serialize for SystemTime {
         let duration_since_epoch = self
             .duration_since(UNIX_EPOCH)
             .expect("SystemTime must be later than UNIX_EPOCH");
-        let mut state = try!(serializer.serialize_struct("SystemTime", 2));
-        try!(state.serialize_field("secs_since_epoch", &duration_since_epoch.as_secs()));
-        try!(state.serialize_field("nanos_since_epoch", &duration_since_epoch.subsec_nanos()));
+        let mut state = serializer.serialize_struct("SystemTime", 2)?;
+        state.serialize_field("secs_since_epoch", &duration_since_epoch.as_secs())?;
+        state.serialize_field("nanos_since_epoch", &duration_since_epoch.subsec_nanos())?;
         state.end()
     }
 }

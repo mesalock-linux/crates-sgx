@@ -182,7 +182,7 @@ impl<'de> Visitor<'de> for IgnoredAny {
     where
         A: SeqAccess<'de>,
     {
-        while let Some(IgnoredAny) = try!(seq.next_element()) {
+        while let Some(IgnoredAny) = seq.next_element()? {
             // Gobble
         }
         Ok(IgnoredAny)
@@ -193,7 +193,7 @@ impl<'de> Visitor<'de> for IgnoredAny {
     where
         A: MapAccess<'de>,
     {
-        while let Some((IgnoredAny, IgnoredAny)) = try!(map.next_entry()) {
+        while let Some((IgnoredAny, IgnoredAny)) = map.next_entry()? {
             // Gobble
         }
         Ok(IgnoredAny)

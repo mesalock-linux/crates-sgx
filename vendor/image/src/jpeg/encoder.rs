@@ -1,4 +1,4 @@
-#![cfg_attr(feature = "cargo-clippy", allow(too_many_arguments))]
+#![allow(clippy::too_many_arguments)]
 
 use std::prelude::v1::*;
 use byteorder::{BigEndian, WriteBytesExt};
@@ -29,7 +29,7 @@ static APP0: u8 = 0xE0;
 
 // section K.1
 // table K.1
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 static STD_LUMA_QTABLE: [u8; 64] = [
     16, 11, 10, 16,  24,  40,  51,  61,
     12, 12, 14, 19,  26,  58,  60,  55,
@@ -42,7 +42,7 @@ static STD_LUMA_QTABLE: [u8; 64] = [
 ];
 
 // table K.2
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 static STD_CHROMA_QTABLE: [u8; 64] = [
     17, 18, 24, 47, 99, 99, 99, 99,
     18, 21, 26, 66, 99, 99, 99, 99,
@@ -121,7 +121,7 @@ static CHROMABLUEID: u8 = 2;
 static CHROMAREDID: u8 = 3;
 
 /// The permutation of dct coefficients.
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[rustfmt::skip]
 static UNZIGZAG: [u8; 64] = [
      0,  1,  8, 16,  9,  2,  3, 10,
     17, 24, 32, 25, 18, 11,  4,  5,
@@ -158,7 +158,7 @@ struct Component {
     _dc_pred: i32,
 }
 
-pub struct BitWriter<'a, W: 'a> {
+pub(crate) struct BitWriter<'a, W: 'a> {
     w: &'a mut W,
     accumulator: u32,
     nbits: u8,
@@ -375,7 +375,7 @@ impl<'a, W: Write> JPEGEncoder<'a, W> {
         height: u32,
         c: color::ColorType,
     ) -> io::Result<()> {
-        let n = color::num_components(c);
+        let n = color::channel_count(c);
         let num_components = if n == 1 || n == 2 { 1 } else { 3 };
 
         self.writer.write_segment(SOI, None)?;

@@ -75,14 +75,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Serde types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/serde/1.0.103")]
+#![doc(html_root_url = "https://docs.rs/serde/1.0.104")]
 // Support using Serde without the standard library!
 #![cfg_attr(not(feature = "std"), no_std)]
 // Unstable functionality only if the user asks for it. For tracking and
 // discussion of these features please refer to this issue:
 //
 //    https://github.com/serde-rs/serde/issues/812
-#![cfg_attr(feature = "unstable", feature(specialization, never_type))]
+#![cfg_attr(feature = "unstable", feature(specialization))]
 #![allow(unknown_lints, bare_trait_objects, deprecated)]
 #![cfg_attr(feature = "cargo-clippy", allow(renamed_and_removed_lints))]
 #![cfg_attr(feature = "cargo-clippy", deny(clippy, clippy_pedantic))]
@@ -115,6 +115,7 @@
         // false positive
         needless_doctest_main,
         // noisy
+        missing_errors_doc,
         must_use_candidate,
     )
 )]

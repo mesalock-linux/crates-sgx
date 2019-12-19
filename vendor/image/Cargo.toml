@@ -1,6 +1,6 @@
 [package]
 name = "image"
-version = "0.22.1"
+version = "0.22.3"
 license = "MIT"
 description = "Imaging library written in Rust. Provides basic filters and decoders for the most common image formats."
 authors = [
@@ -34,8 +34,7 @@ byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
 num-iter = { git = "https://github.com/mesalock-linux/num-iter-sgx" }
 num-rational = { git = "https://github.com/mesalock-linux/num-rational-sgx" }
 num-traits = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
-lzw = { git = "https://github.com/mesalock-linux/lzw-sgx" }
-sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dependencies.gif]
 #version = "0.10.0"

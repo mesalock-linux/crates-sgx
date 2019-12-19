@@ -21,15 +21,15 @@ serde = { git = "https://github.com/mesalock-linux/serde-sgx.git" }
 indexmap = { git = "https://github.com/mesalock-linux/indexmap-sgx.git", optional = true }
 itoa = { git = "https://github.com/mesalock-linux/itoa-sgx.git" }
 ryu = "1.0"
-sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
-automod = "0.1"
-rustversion = "0.1"
-serde_bytes = "0.11"
-serde_derive = "1.0"
-serde_stacker = "0.1"
-trybuild = "1.0"
+#automod = "0.1"
+#rustversion = "0.1"
+#serde_bytes = "0.11"
+#serde_derive = "1.0"
+#serde_stacker = "0.1"
+#trybuild = "1.0"
 
 #[workspace]
 #members = ["tests/crate"]

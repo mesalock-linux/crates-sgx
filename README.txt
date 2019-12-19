@@ -15,7 +15,7 @@ byte-tools         0.3.1
 byteorder          1.3.2
 bytes              0.5.0
 c2-chacha          0.2.3
-cc                 1.0.47
+cc                 1.0.48
 cfg-if             0.1.10
 chrono             0.4.7
 color_quant        1.0.1
@@ -44,7 +44,7 @@ http               0.1.18
 http_req           0.5.3
 httparse           1.3.4
 humantime          1.3.0
-image              0.22.1
+image              0.22.3
 inflate            0.4.5
 integer-encoding   1.0.7
 inventory          0.1.4
@@ -102,10 +102,10 @@ rustls             0.16.0
 rusty-machine      0.5.4
 ryu                1.0.2
 sct                0.6.0
-serde              1.0.103
+serde              1.0.104
 serde-big-array    0.1.5
 serde_cbor         0.10.3
-serde_derive       1.0.103
+serde_derive       1.0.104
 serde_json         1.0.40
 sha-1              0.8.1
 sha1               0.6.0
@@ -131,7 +131,7 @@ unicode-xid        0.2.0
 untrusted          0.7.0
 uuid               0.7.4
 version_check      0.9.1
-wabt               0.6.0
+wabt               0.9.2
 wasmi              0.6.0
 wasmi-validation   0.3.0
 webpki             0.21.0

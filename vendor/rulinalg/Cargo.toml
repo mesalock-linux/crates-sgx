@@ -24,19 +24,19 @@ fallback = ["matrixmultiply/fallback"]
 [dependencies]
 num = { git = "https://github.com/mesalock-linux/num-sgx" }
 matrixmultiply = { git = "https://github.com/mesalock-linux/matrixmultiply-sgx" }
-sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 serde = { git = "https://github.com/mesalock-linux/serde-sgx", optional = true }
 serde_derive = { git = "https://github.com/mesalock-linux/serde-sgx", optional = true }
 
 [dev-dependencies]
-rand = "0.3"
-quickcheck = "0.4"
-itertools = "0.5.9"
+#rand = "0.3"
+#quickcheck = "0.4"
+#itertools = "0.5.9"
 
-[dependencies.csv]
-version = "0.14.7"
-optional = true
+#[dependencies.csv]
+#version = "0.14.7"
+#optional = true
 
-[dependencies.rustc-serialize]
-version = "0.3"
-optional = true
+#[dependencies.rustc-serialize]
+#version = "0.3"
+#optional = true

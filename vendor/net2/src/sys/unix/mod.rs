@@ -67,7 +67,7 @@ impl Socket {
                 Err(e) => return Err(e),
             }
 
-            let fd = try!(::cvt(libc::socket(family, ty, 0)));
+            let fd = ::cvt(libc::socket(family, ty, 0))?;
             libc::ioctl_arg0(fd, c::FIOCLEX);
             Ok(Socket { fd: fd })
         }
@@ -78,7 +78,7 @@ impl Socket {
     #[cfg(any(target_os = "solaris", target_os = "emscripten"))]
     pub fn new(family: c_int, ty: c_int) -> io::Result<Socket> {
         unsafe {
-            let fd = try!(::cvt(libc::socket(family, ty, 0)));
+            let fd = ::cvt(libc::socket(family, ty, 0))?;
             libc::fcntl(fd, libc::FD_CLOEXEC);
             Ok(Socket { fd: fd })
         }

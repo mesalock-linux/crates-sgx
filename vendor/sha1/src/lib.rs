@@ -535,8 +535,8 @@ impl str::FromStr for Digest {
         }
         let mut rv: Digest = Default::default();
         for idx in 0..5 {
-            rv.data.state[idx] = try!(u32::from_str_radix(&s[idx * 8..idx * 8 + 8], 16)
-                .map_err(|_| DigestParseError(())));
+            rv.data.state[idx] = u32::from_str_radix(&s[idx * 8..idx * 8 + 8], 16)
+                .map_err(|_| DigestParseError(()))?;
         }
         Ok(rv)
     }
@@ -545,7 +545,7 @@ impl str::FromStr for Digest {
 impl fmt::Display for Digest {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for i in self.data.state.iter() {
-            try!(write!(f, "{:08x}", i));
+            write!(f, "{:08x}", i)?;
         }
         Ok(())
     }

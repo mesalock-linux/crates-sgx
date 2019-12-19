@@ -34,7 +34,15 @@ impl<'a, W: Write + 'a> BMPEncoder<'a, W> {
         let (dib_header_size, written_pixel_size, palette_color_count) = get_pixel_info(c)?;
         let row_pad_size = (4 - (width * written_pixel_size) % 4) % 4; // each row must be padded to a multiple of 4 bytes
 
-        let image_size = width * height * written_pixel_size + (height * row_pad_size);
+        let make_invalid_input_err =
+            || io::Error::new(io::ErrorKind::InvalidInput, "Overflowing dimensions");
+        let image_size = width
+            .checked_mul(height)
+            .ok_or_else(make_invalid_input_err)?
+            .checked_mul(written_pixel_size)
+            .ok_or_else(make_invalid_input_err)?
+            .checked_add(height * row_pad_size)
+            .ok_or_else(make_invalid_input_err)?;
         let palette_size = palette_color_count * 4; // all palette colors are BGRA
         let file_size = bmp_header_size + dib_header_size + palette_size + image_size;
 
@@ -44,20 +52,16 @@ impl<'a, W: Write + 'a> BMPEncoder<'a, W> {
         self.writer.write_u32::<LittleEndian>(file_size)?; // file size
         self.writer.write_u16::<LittleEndian>(0)?; // reserved 1
         self.writer.write_u16::<LittleEndian>(0)?; // reserved 2
-        try!(
-            self.writer
-                .write_u32::<LittleEndian>(bmp_header_size + dib_header_size + palette_size)
-        ); // image data offset
+        self.writer
+            .write_u32::<LittleEndian>(bmp_header_size + dib_header_size + palette_size)?; // image data offset
 
         // write DIB header
         self.writer.write_u32::<LittleEndian>(dib_header_size)?;
         self.writer.write_i32::<LittleEndian>(width as i32)?;
         self.writer.write_i32::<LittleEndian>(height as i32)?;
         self.writer.write_u16::<LittleEndian>(1)?; // color planes
-        try!(
-            self.writer
-                .write_u16::<LittleEndian>((written_pixel_size * 8) as u16)
-        ); // bits per pixel
+        self.writer
+            .write_u16::<LittleEndian>((written_pixel_size * 8) as u16)?; // bits per pixel
         if dib_header_size >= BITMAPV4HEADER_SIZE {
             // Assume BGRA32
             self.writer.write_u32::<LittleEndian>(3)?; // compression method - bitfields
@@ -76,6 +80,7 @@ impl<'a, W: Write + 'a> BMPEncoder<'a, W> {
             self.writer.write_u32::<LittleEndian>(0xff << 0)?; // blue mask
             self.writer.write_u32::<LittleEndian>(0xff << 24)?; // alpha mask
             self.writer.write_u32::<LittleEndian>(0x73524742)?; // colorspace - sRGB
+
             // endpoints (3x3) and gamma (3)
             for _ in 0..12 {
                 self.writer.write_u32::<LittleEndian>(0)?;
@@ -84,15 +89,9 @@ impl<'a, W: Write + 'a> BMPEncoder<'a, W> {
 
         // write image data
         match c {
-            color::ColorType::RGB(8) => {
-                self.encode_rgb(image, width, height, row_pad_size, 3)?
-            }
-            color::ColorType::RGBA(8) => {
-                self.encode_rgba(image, width, height, row_pad_size, 4)?
-            }
-            color::ColorType::Gray(8) => {
-                self.encode_gray(image, width, height, row_pad_size, 1)?
-            }
+            color::ColorType::RGB(8) => self.encode_rgb(image, width, height, row_pad_size, 3)?,
+            color::ColorType::RGBA(8) => self.encode_rgba(image, width, height, row_pad_size, 4)?,
+            color::ColorType::Gray(8) => self.encode_gray(image, width, height, row_pad_size, 1)?,
             color::ColorType::GrayA(8) => {
                 self.encode_gray(image, width, height, row_pad_size, 2)?
             }
@@ -270,6 +269,15 @@ mod tests {
         assert_eq!(255, decoded[0]);
         assert_eq!(0, decoded[1]);
         assert_eq!(0, decoded[2]);
+    }
+
+    #[test]
+    fn huge_files_return_error() {
+        let mut encoded_data = Vec::new();
+        let image = vec![0u8; 3 * 40_000 * 40_000]; // 40_000x40_000 pixels, 3 bytes per pixel, allocated on the heap
+        let mut encoder = BMPEncoder::new(&mut encoded_data);
+        let result = encoder.encode(&image, 40_000, 40_000, ColorType::RGB(8));
+        assert!(result.is_err());
     }
 
     #[test]

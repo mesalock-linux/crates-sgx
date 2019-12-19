@@ -136,18 +136,18 @@ impl<T> FromIterator<T> for Vector<T> {
 impl<T: fmt::Display> fmt::Display for Vector<T> {
     /// Displays the Vector.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "["));
+        write!(f, "[")?;
         for (i, datum) in self.data.iter().enumerate() {
             match f.precision() {
                 Some(places) => {
-                    try!(write!(f, " {:.*}", places, datum));
+                    write!(f, " {:.*}", places, datum)?;
                 }
                 None => {
-                    try!(write!(f, " {}", datum));
+                    write!(f, " {}", datum)?;
                 }
             }
             if i < self.data.len() - 1 {
-                try!(write!(f, ","));
+                write!(f, ",")?;
             }
         }
         write!(f, "]")

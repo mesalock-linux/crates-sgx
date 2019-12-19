@@ -38,14 +38,14 @@ impl<W: Write> ICOEncoder<W> {
         PNGEncoder::new(&mut image_data).encode(data, width, height, color)?;
 
         write_icondir(&mut self.w, 1)?;
-        try!(write_direntry(
+        write_direntry(
             &mut self.w,
             width,
             height,
             color,
             ICO_ICONDIR_SIZE + ICO_DIRENTRY_SIZE,
-            image_data.len() as u32
-        ));
+            image_data.len() as u32,
+        )?;
         self.w.write_all(&image_data)?;
         Ok(())
     }
@@ -79,7 +79,7 @@ fn write_direntry<W: Write>(
     // Color planes:
     w.write_u16::<LittleEndian>(0)?;
     // Bits per pixel:
-    w.write_u16::<LittleEndian>(bits_per_pixel(color) as u16)?;
+    w.write_u16::<LittleEndian>(bits_per_pixel(color))?;
     // Image data size, in bytes:
     w.write_u32::<LittleEndian>(data_size)?;
     // Image data offset, in bytes:

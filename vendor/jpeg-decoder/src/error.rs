@@ -42,7 +42,7 @@ pub enum Error {
     /// An I/O error occurred while decoding the image.
     Io(IoError),
     /// An internal error occurred while decoding the image.
-    Internal(Box<StdError>),
+    Internal(Box<dyn StdError>),
 }
 
 impl fmt::Display for Error {
@@ -67,7 +67,7 @@ impl StdError for Error {
         }
     }
 
-    fn cause(&self) -> Option<&StdError> {
+    fn cause(&self) -> Option<&dyn StdError> {
         match *self {
             Error::Io(ref err) => Some(err),
             Error::Internal(ref err) => Some(&**err),

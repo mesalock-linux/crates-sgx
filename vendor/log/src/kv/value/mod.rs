@@ -55,7 +55,7 @@ where
 /// A value slot to fill using the [`Fill`](trait.Fill.html) trait.
 pub struct Slot<'a> {
     filled: bool,
-    visitor: &'a mut Visitor,
+    visitor: &'a mut dyn Visitor,
 }
 
 impl<'a> fmt::Debug for Slot<'a> {
@@ -65,7 +65,7 @@ impl<'a> fmt::Debug for Slot<'a> {
 }
 
 impl<'a> Slot<'a> {
-    fn new(visitor: &'a mut Visitor) -> Self {
+    fn new(visitor: &'a mut dyn Visitor) -> Self {
         Slot {
             visitor,
             filled: false,
@@ -110,7 +110,7 @@ impl<'v> Value<'v> {
         }
     }
 
-    fn visit(&self, visitor: &mut Visitor) -> Result<(), Error> {
+    fn visit(&self, visitor: &mut dyn Visitor) -> Result<(), Error> {
         self.inner.visit(visitor)
     }
 }

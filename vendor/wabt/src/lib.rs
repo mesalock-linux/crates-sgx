@@ -2,8 +2,6 @@
 //!
 
 #![deny(missing_docs)]
-#![allow(unused)]
-#![allow(deprecated)]
 
 #![cfg_attr(all(feature = "mesalock_sgx",
                 not(target_env = "sgx")), no_std)]
@@ -15,29 +13,35 @@ extern crate sgx_tstd as std;
 
 use std::prelude::v1::*;
 
-//extern crate wabt_sys;
 extern crate serde;
-extern crate serde_json;
+//extern crate serde_json;
+//extern crate wabt_sys;
 #[macro_use]
 extern crate serde_derive;
 
-use std::os::raw::{c_void, c_int};
-use std::ffi::{CString, CStr, NulError};
-use std::slice;
-use std::ptr;
+//use std::collections::HashMap;
 use std::error;
+//use std::ffi::{CStr, CString, NulError};
+use std::ffi::NulError;
 use std::fmt;
-use std::collections::HashMap;
+//use std::os::raw::{c_int, c_void};
+//use std::ptr;
+//use std::slice;
 
 //use wabt_sys as ffi;
 
 pub mod script;
 
 /// A structure to represent errors coming out from wabt.
-///
-/// Actual errors are not yet published.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Error(ErrorKind);
+
+impl Error {
+    /// Returns the `ErrorKind` for this Error.
+    pub fn kind(&self) -> &ErrorKind {
+        &self.0
+    }
+}
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -61,15 +65,25 @@ impl error::Error for Error {
     }
 }
 
+/// ErrorKind describes an error condition from a wasm module operation, as well as the
+/// corresponding error message from `wabt`, if any.
 #[derive(Debug, PartialEq, Eq)]
-enum ErrorKind {
+pub enum ErrorKind {
+    /// Result contained an unexpected null byte.
     Nul,
+    /// Error deserializing binary wasm.
     Deserialize(String),
+    /// Error parsing textual wasm.
     Parse(String),
+    /// Error serializing a wasm module to text.
     WriteText,
+    /// Translating a wasm binary module to text yielded non-utf8 characters.
     NonUtf8Result,
+    /// Error serializing a wasm module to binary.
     WriteBinary,
+    /// Error resolving names in the wasm module.
     ResolveNames(String),
+    /// Error validating the wasm module.
     Validate(String),
 }
 
@@ -114,47 +128,251 @@ impl From<NulError> for Error {
 //    }
 //}
 //
-//struct ErrorHandler {
-//    raw_buffer: *mut ffi::ErrorHandlerBuffer,
+//struct Errors {
+//    raw: *mut ffi::Errors,
 //}
 //
-//impl ErrorHandler {
-//    fn new_binary() -> ErrorHandler {
-//        let raw_buffer = unsafe {
-//            ffi::wabt_new_binary_error_handler_buffer()
-//        };
-//        ErrorHandler {
-//            raw_buffer,
+//impl Errors {
+//    fn new() -> Errors {
+//        Errors {
+//            raw: unsafe { ffi::wabt_new_errors() },
 //        }
 //    }
 //
-//    fn new_text() -> ErrorHandler {
-//        let raw_buffer = unsafe {
-//            ffi::wabt_new_text_error_handler_buffer()
-//        };
-//        ErrorHandler {
-//            raw_buffer,
-//        }
-//    }
-//
-//    fn raw_message(&self) -> &[u8] {
+//    fn format_text(&self, lexer: &Lexer) -> WabtBuf {
 //        unsafe {
-//            let size = ffi::wabt_error_handler_buffer_get_size(self.raw_buffer);
-//            if size == 0 {
-//                return &[];
-//            }
+//            let raw_buffer = ffi::wabt_format_text_errors(self.raw, lexer.raw_lexer);
+//            WabtBuf { raw_buffer }
+//        }
+//    }
 //
-//            let data = ffi::wabt_error_handler_buffer_get_data(self.raw_buffer);
-//            slice::from_raw_parts(data as *const u8, size)
+//    fn format_binary(&self) -> WabtBuf {
+//        unsafe {
+//            let raw_buffer = ffi::wabt_format_binary_errors(self.raw);
+//            WabtBuf { raw_buffer }
 //        }
 //    }
 //}
 //
-//impl Drop for ErrorHandler {
+//impl Drop for Errors {
 //    fn drop(&mut self) {
+//        unsafe { ffi::wabt_destroy_errors(self.raw) }
+//    }
+//}
+//
+///// Represents which WebAssembly features are enabled in Wabt.
+//pub struct Features {
+//    raw: *mut ffi::Features,
+//}
+//
+//impl Clone for Features {
+//    fn clone(&self) -> Self {
+//        let mut new = Features::new();
+//        new.set_exceptions_enabled(self.exceptions_enabled());
+//        new.set_mutable_globals_enabled(self.mutable_globals_enabled());
+//        new.set_sat_float_to_int_enabled(self.sat_float_to_int_enabled());
+//        new.set_sign_extension_enabled(self.sign_extension_enabled());
+//        new.set_simd_enabled(self.simd_enabled());
+//        new.set_threads_enabled(self.threads_enabled());
+//        new.set_multi_value_enabled(self.multi_value_enabled());
+//        new.set_tail_call_enabled(self.tail_call_enabled());
+//        new.set_bulk_memory_enabled(self.bulk_memory_enabled());
+//        new.set_reference_types_enabled(self.reference_types_enabled());
+//        new.set_annotations_enabled(self.annotations_enabled());
+//        new
+//    }
+//}
+//
+//impl Features {
+//    #![allow(missing_docs)]
+//    pub fn new() -> Features {
+//        let raw = unsafe { ffi::wabt_new_features() };
+//        Features { raw }
+//    }
+//
+//    pub fn enable_all(&mut self) {
+//        self.enable_exceptions();
+//        self.enable_mutable_globals();
+//        self.enable_sat_float_to_int();
+//        self.enable_sign_extension();
+//        self.enable_simd();
+//        self.enable_threads();
+//        self.enable_multi_value();
+//        self.enable_tail_call();
+//        self.enable_bulk_memory();
+//        self.enable_reference_types();
+//        self.enable_annotations();
+//    }
+//
+//    pub fn exceptions_enabled(&self) -> bool {
+//        unsafe { ffi::wabt_exceptions_enabled(self.raw) }
+//    }
+//    pub fn enable_exceptions(&mut self) {
+//        self.set_exceptions_enabled(true);
+//    }
+//    pub fn disable_exceptions(&mut self) {
+//        self.set_exceptions_enabled(false);
+//    }
+//    pub fn set_exceptions_enabled(&mut self, value: bool) {
 //        unsafe {
-//            ffi::wabt_destroy_error_handler_buffer(self.raw_buffer);
+//            ffi::wabt_set_exceptions_enabled(self.raw, value.into());
 //        }
+//    }
+//
+//    pub fn mutable_globals_enabled(&self) -> bool {
+//        unsafe { ffi::wabt_mutable_globals_enabled(self.raw) }
+//    }
+//    pub fn enable_mutable_globals(&mut self) {
+//        self.set_mutable_globals_enabled(true);
+//    }
+//    pub fn disable_mutable_globals(&mut self) {
+//        self.set_mutable_globals_enabled(false);
+//    }
+//    pub fn set_mutable_globals_enabled(&mut self, value: bool) {
+//        unsafe {
+//            ffi::wabt_set_mutable_globals_enabled(self.raw, value.into());
+//        }
+//    }
+//
+//    pub fn sat_float_to_int_enabled(&self) -> bool {
+//        unsafe { ffi::wabt_sat_float_to_int_enabled(self.raw) }
+//    }
+//    pub fn enable_sat_float_to_int(&mut self) {
+//        self.set_sat_float_to_int_enabled(true);
+//    }
+//    pub fn disable_sat_float_to_int(&mut self) {
+//        self.set_sat_float_to_int_enabled(false);
+//    }
+//    pub fn set_sat_float_to_int_enabled(&mut self, value: bool) {
+//        unsafe {
+//            ffi::wabt_set_sat_float_to_int_enabled(self.raw, value.into());
+//        }
+//    }
+//
+//    pub fn sign_extension_enabled(&self) -> bool {
+//        unsafe { ffi::wabt_sign_extension_enabled(self.raw) }
+//    }
+//    pub fn enable_sign_extension(&mut self) {
+//        self.set_sign_extension_enabled(true);
+//    }
+//    pub fn disable_sign_extension(&mut self) {
+//        self.set_sign_extension_enabled(false);
+//    }
+//    pub fn set_sign_extension_enabled(&mut self, value: bool) {
+//        unsafe {
+//            ffi::wabt_set_sign_extension_enabled(self.raw, value.into());
+//        }
+//    }
+//
+//    pub fn simd_enabled(&self) -> bool {
+//        unsafe { ffi::wabt_simd_enabled(self.raw) }
+//    }
+//    pub fn enable_simd(&mut self) {
+//        self.set_simd_enabled(true);
+//    }
+//    pub fn disable_simd(&mut self) {
+//        self.set_simd_enabled(false);
+//    }
+//    pub fn set_simd_enabled(&mut self, value: bool) {
+//        unsafe {
+//            ffi::wabt_set_simd_enabled(self.raw, value.into());
+//        }
+//    }
+//
+//    pub fn threads_enabled(&self) -> bool {
+//        unsafe { ffi::wabt_threads_enabled(self.raw) }
+//    }
+//    pub fn enable_threads(&mut self) {
+//        self.set_threads_enabled(true);
+//    }
+//    pub fn disable_threads(&mut self) {
+//        self.set_threads_enabled(false);
+//    }
+//    pub fn set_threads_enabled(&mut self, value: bool) {
+//        unsafe {
+//            ffi::wabt_set_threads_enabled(self.raw, value.into());
+//        }
+//    }
+//
+//    pub fn multi_value_enabled(&self) -> bool {
+//        unsafe { ffi::wabt_multi_value_enabled(self.raw) }
+//    }
+//    pub fn enable_multi_value(&mut self) {
+//        self.set_multi_value_enabled(true);
+//    }
+//    pub fn disable_multi_value(&mut self) {
+//        self.set_multi_value_enabled(false);
+//    }
+//    pub fn set_multi_value_enabled(&mut self, value: bool) {
+//        unsafe {
+//            ffi::wabt_set_multi_value_enabled(self.raw, value.into());
+//        }
+//    }
+//
+//    pub fn tail_call_enabled(&self) -> bool {
+//        unsafe { ffi::wabt_tail_call_enabled(self.raw) }
+//    }
+//    pub fn enable_tail_call(&mut self) {
+//        self.set_tail_call_enabled(true);
+//    }
+//    pub fn disable_tail_call(&mut self) {
+//        self.set_tail_call_enabled(false);
+//    }
+//    pub fn set_tail_call_enabled(&mut self, value: bool) {
+//        unsafe {
+//            ffi::wabt_set_tail_call_enabled(self.raw, value.into());
+//        }
+//    }
+//
+//    pub fn bulk_memory_enabled(&self) -> bool {
+//        unsafe { ffi::wabt_bulk_memory_enabled(self.raw) }
+//    }
+//    pub fn enable_bulk_memory(&mut self) {
+//        self.set_bulk_memory_enabled(true);
+//    }
+//    pub fn disable_bulk_memory(&mut self) {
+//        self.set_bulk_memory_enabled(false);
+//    }
+//    pub fn set_bulk_memory_enabled(&mut self, value: bool) {
+//        unsafe {
+//            ffi::wabt_set_bulk_memory_enabled(self.raw, value.into());
+//        }
+//    }
+//
+//    pub fn reference_types_enabled(&self) -> bool {
+//        unsafe { ffi::wabt_reference_types_enabled(self.raw) }
+//    }
+//    pub fn enable_reference_types(&mut self) {
+//        self.set_reference_types_enabled(true);
+//    }
+//    pub fn disable_reference_types(&mut self) {
+//        self.set_reference_types_enabled(false);
+//    }
+//    pub fn set_reference_types_enabled(&mut self, value: bool) {
+//        unsafe {
+//            ffi::wabt_set_reference_types_enabled(self.raw, value.into());
+//        }
+//    }
+//
+//    pub fn annotations_enabled(&self) -> bool {
+//        unsafe { ffi::wabt_annotations_enabled(self.raw) }
+//    }
+//    pub fn enable_annotations(&mut self) {
+//        self.set_annotations_enabled(true);
+//    }
+//    pub fn disable_annotations(&mut self) {
+//        self.set_annotations_enabled(false);
+//    }
+//    pub fn set_annotations_enabled(&mut self, value: bool) {
+//        unsafe {
+//            ffi::wabt_set_annotations_enabled(self.raw, value.into());
+//        }
+//    }
+//}
+//
+//impl Drop for Features {
+//    fn drop(&mut self) {
+//        unsafe { ffi::wabt_destroy_features(self.raw) }
 //    }
 //}
 //
@@ -164,16 +382,12 @@ impl From<NulError> for Error {
 //
 //impl ParseWatResult {
 //    fn is_ok(&self) -> bool {
-//        unsafe {
-//            ffi::wabt_parse_wat_result_get_result(self.raw_result) == ffi::Result::Ok
-//        }
+//        unsafe { ffi::wabt_parse_wat_result_get_result(self.raw_result) == ffi::Result::Ok }
 //    }
 //
 //    fn take_module(self) -> Result<*mut ffi::WasmModule, ()> {
 //        if self.is_ok() {
-//            unsafe {
-//                Ok(ffi::wabt_parse_wat_result_release_module(self.raw_result))
-//            }
+//            unsafe { Ok(ffi::wabt_parse_wat_result_release_module(self.raw_result)) }
 //        } else {
 //            Err(())
 //        }
@@ -188,13 +402,9 @@ impl From<NulError> for Error {
 //    }
 //}
 //
-//fn parse_wat(lexer: &Lexer, error_handler: &ErrorHandler) -> ParseWatResult {
-//    let raw_result = unsafe {
-//        ffi::wabt_parse_wat(lexer.raw_lexer, error_handler.raw_buffer)
-//    };
-//    ParseWatResult {
-//        raw_result,
-//    }
+//fn parse_wat(lexer: &Lexer, features: &Features, errors: &Errors) -> ParseWatResult {
+//    let raw_result = unsafe { ffi::wabt_parse_wat(lexer.raw_lexer, features.raw, errors.raw) };
+//    ParseWatResult { raw_result }
 //}
 //
 //struct ReadBinaryResult {
@@ -203,16 +413,12 @@ impl From<NulError> for Error {
 //
 //impl ReadBinaryResult {
 //    fn is_ok(&self) -> bool {
-//        unsafe {
-//            ffi::wabt_read_binary_result_get_result(self.raw_result) == ffi::Result::Ok
-//        }
+//        unsafe { ffi::wabt_read_binary_result_get_result(self.raw_result) == ffi::Result::Ok }
 //    }
 //
 //    fn take_module(self) -> Result<*mut ffi::WasmModule, ()> {
 //        if self.is_ok() {
-//            unsafe {
-//                Ok(ffi::wabt_read_binary_result_release_module(self.raw_result))
-//            }
+//            unsafe { Ok(ffi::wabt_read_binary_result_release_module(self.raw_result)) }
 //        } else {
 //            Err(())
 //        }
@@ -280,19 +486,14 @@ impl From<NulError> for Error {
 //
 //impl WriteModuleResult {
 //    fn is_ok(&self) -> bool {
-//        unsafe {
-//            ffi::wabt_write_module_result_get_result(self.raw_result) == ffi::Result::Ok
-//        }
+//        unsafe { ffi::wabt_write_module_result_get_result(self.raw_result) == ffi::Result::Ok }
 //    }
 //
 //    fn take_wabt_buf(self) -> Result<WabtBuf, ()> {
 //        if self.is_ok() {
-//            let raw_buffer = unsafe {
-//                ffi::wabt_write_module_result_release_output_buffer(self.raw_result)
-//            };
-//            Ok(WabtBuf {
-//                raw_buffer,
-//            })
+//            let raw_buffer =
+//                unsafe { ffi::wabt_write_module_result_release_output_buffer(self.raw_result) };
+//            Ok(WabtBuf { raw_buffer })
 //        } else {
 //            Err(())
 //        }
@@ -301,9 +502,7 @@ impl From<NulError> for Error {
 //
 //impl Drop for WriteModuleResult {
 //    fn drop(&mut self) {
-//        unsafe {
-//            ffi::wabt_destroy_write_module_result(self.raw_result)
-//        }
+//        unsafe { ffi::wabt_destroy_write_module_result(self.raw_result) }
 //    }
 //}
 //
@@ -341,12 +540,14 @@ impl From<NulError> for Error {
 //
 ///// Options for reading read binary.
 //pub struct ReadBinaryOptions {
+//    features: Features,
 //    read_debug_names: bool,
 //}
 //
 //impl Default for ReadBinaryOptions {
 //    fn default() -> ReadBinaryOptions {
 //        ReadBinaryOptions {
+//            features: Features::new(),
 //            read_debug_names: false,
 //        }
 //    }
@@ -358,16 +559,12 @@ impl From<NulError> for Error {
 //
 //impl ParseWastResult {
 //    fn is_ok(&self) -> bool {
-//        unsafe {
-//            ffi::wabt_parse_wast_result_get_result(self.raw_result) == ffi::Result::Ok
-//        }
+//        unsafe { ffi::wabt_parse_wast_result_get_result(self.raw_result) == ffi::Result::Ok }
 //    }
 //
 //    fn take_script(self) -> Result<*mut ffi::Script, ()> {
 //        if self.is_ok() {
-//            unsafe {
-//                Ok(ffi::wabt_parse_wast_result_release_module(self.raw_result))
-//            }
+//            unsafe { Ok(ffi::wabt_parse_wast_result_release_module(self.raw_result)) }
 //        } else {
 //            Err(())
 //        }
@@ -382,48 +579,45 @@ impl From<NulError> for Error {
 //    }
 //}
 //
-//fn parse_wast(lexer: &Lexer, error_handler: &ErrorHandler) -> ParseWastResult {
-//    let raw_result = unsafe {
-//        ffi::wabt_parse_wast(lexer.raw_lexer, error_handler.raw_buffer)
-//    };
-//    ParseWastResult {
-//        raw_result,
-//    }
+//fn parse_wast(lexer: &Lexer, features: &Features, errors: &Errors) -> ParseWastResult {
+//    let raw_result = unsafe { ffi::wabt_parse_wast(lexer.raw_lexer, features.raw, errors.raw) };
+//    ParseWastResult { raw_result }
 //}
 //
 //struct Script {
 //    raw_script: *mut ffi::Script,
 //    lexer: Lexer,
+//    features: Features,
 //}
 //
 //impl Script {
-//    fn parse<S: AsRef<[u8]>>(filename: &str, source: S) -> Result<Script, Error> {
+//    fn parse<S: AsRef<[u8]>>(
+//        filename: &str,
+//        source: S,
+//        features: Features,
+//    ) -> Result<Script, Error> {
 //        let lexer = Lexer::new(filename, source.as_ref())?;
-//        let error_handler = ErrorHandler::new_text();
-//        match parse_wast(&lexer, &error_handler).take_script() {
-//            Ok(raw_script) => Ok(
-//                Script {
-//                    raw_script,
-//                    lexer,
-//                }
-//            ),
+//        let errors = Errors::new();
+//        match parse_wast(&lexer, &features, &errors).take_script() {
+//            Ok(raw_script) => Ok(Script {
+//                raw_script,
+//                features,
+//                lexer,
+//            }),
 //            Err(()) => {
-//                let msg = String::from_utf8_lossy(error_handler.raw_message()).to_string();
+//                let msg = String::from_utf8_lossy(errors.format_text(&lexer).as_ref()).to_string();
 //                Err(Error(ErrorKind::Parse(msg)))
 //            }
 //        }
 //    }
 //
 //    fn resolve_names(&self) -> Result<(), Error> {
-//        let error_handler = ErrorHandler::new_text();
+//        let errors = Errors::new();
 //        unsafe {
-//            let result = ffi::wabt_resolve_names_script(
-//                self.lexer.raw_lexer,
-//                self.raw_script,
-//                error_handler.raw_buffer
-//            );
+//            let result = ffi::wabt_resolve_names_script(self.raw_script, errors.raw);
 //            if result == ffi::Result::Error {
-//                let msg = String::from_utf8_lossy(error_handler.raw_message()).to_string();
+//                let msg =
+//                    String::from_utf8_lossy(errors.format_text(&self.lexer).as_ref()).to_string();
 //                return Err(Error(ErrorKind::ResolveNames(msg)));
 //            }
 //        }
@@ -431,15 +625,12 @@ impl From<NulError> for Error {
 //    }
 //
 //    fn validate(&self) -> Result<(), Error> {
-//        let error_handler = ErrorHandler::new_text();
+//        let errors = Errors::new();
 //        unsafe {
-//            let result = ffi::wabt_validate_script(
-//                self.lexer.raw_lexer,
-//                self.raw_script,
-//                error_handler.raw_buffer,
-//            );
+//            let result = ffi::wabt_validate_script(self.raw_script, self.features.raw, errors.raw);
 //            if result == ffi::Result::Error {
-//                let msg = String::from_utf8_lossy(error_handler.raw_message()).to_string();
+//                let msg =
+//                    String::from_utf8_lossy(errors.format_text(&self.lexer).as_ref()).to_string();
 //                return Err(Error(ErrorKind::Validate(msg)));
 //            }
 //        }
@@ -457,7 +648,8 @@ impl From<NulError> for Error {
 //                0,
 //                1,
 //                0,
-//                0);
+//                0,
+//            );
 //            Ok(WabtWriteScriptResult { raw_script_result })
 //        }
 //    }
@@ -467,22 +659,26 @@ impl From<NulError> for Error {
 //pub struct Module {
 //    raw_module: *mut ffi::WasmModule,
 //    lexer: Option<Lexer>,
+//    features: Features,
 //}
 //
 //impl Module {
 //    /// Parse source in WebAssembly text format.
-//    pub fn parse_wat<S: AsRef<[u8]>>(filename: &str, source: S) -> Result<Module, Error> {
+//    pub fn parse_wat<S: AsRef<[u8]>>(
+//        filename: &str,
+//        source: S,
+//        features: Features,
+//    ) -> Result<Module, Error> {
 //        let lexer = Lexer::new(filename, source.as_ref())?;
-//        let error_handler = ErrorHandler::new_text();
-//        match parse_wat(&lexer, &error_handler).take_module() {
-//            Ok(module) => Ok(
-//                Module {
-//                    raw_module: module,
-//                    lexer: Some(lexer),
-//                }
-//            ),
+//        let errors = Errors::new();
+//        match parse_wat(&lexer, &features, &errors).take_module() {
+//            Ok(module) => Ok(Module {
+//                raw_module: module,
+//                features,
+//                lexer: Some(lexer),
+//            }),
 //            Err(()) => {
-//                let msg = String::from_utf8_lossy(error_handler.raw_message()).to_string();
+//                let msg = String::from_utf8_lossy(errors.format_text(&lexer).as_ref()).to_string();
 //                Err(Error(ErrorKind::Parse(msg)))
 //            }
 //        }
@@ -494,8 +690,11 @@ impl From<NulError> for Error {
 //    /// call [`validate`].
 //    ///
 //    /// [`validate`]: #method.validate
-//    pub fn read_binary<S: AsRef<[u8]>>(wasm: S, options: &ReadBinaryOptions) -> Result<Module, Error> {
-//        let error_handler = ErrorHandler::new_binary();
+//    pub fn read_binary<S: AsRef<[u8]>>(
+//        wasm: S,
+//        options: &ReadBinaryOptions,
+//    ) -> Result<Module, Error> {
+//        let errors = Errors::new();
 //        let result = {
 //            let wasm = wasm.as_ref();
 //            let raw_result = unsafe {
@@ -503,34 +702,36 @@ impl From<NulError> for Error {
 //                    wasm.as_ptr(),
 //                    wasm.len(),
 //                    options.read_debug_names as c_int,
-//                    error_handler.raw_buffer
+//                    options.features.raw,
+//                    errors.raw,
 //                )
 //            };
-//            ReadBinaryResult {
-//                raw_result,
-//            }
+//            ReadBinaryResult { raw_result }
 //        };
 //        match result.take_module() {
-//            Ok(module) => Ok(
-//                Module {
-//                    raw_module: module,
-//                    lexer: None
-//                }
-//            ),
+//            Ok(module) => Ok(Module {
+//                raw_module: module,
+//                features: options.features.clone(),
+//                lexer: None,
+//            }),
 //            Err(()) => {
-//                let msg = String::from_utf8_lossy(error_handler.raw_message()).to_string();
+//                let msg = String::from_utf8_lossy(errors.format_binary().as_ref()).to_string();
 //                Err(Error(ErrorKind::Deserialize(msg)))
 //            }
 //        }
 //    }
 //
 //    fn resolve_names(&mut self) -> Result<(), Error> {
-//        let error_handler = ErrorHandler::new_text();
+//        let errors = Errors::new();
 //        unsafe {
-//            let raw_lexer = self.lexer.as_ref().map(|lexer| lexer.raw_lexer).unwrap_or(ptr::null_mut());
-//            let result = ffi::wabt_resolve_names_module(raw_lexer, self.raw_module, error_handler.raw_buffer);
+//            let result = ffi::wabt_resolve_names_module(self.raw_module, errors.raw);
 //            if result == ffi::Result::Error {
-//                let msg = String::from_utf8_lossy(error_handler.raw_message()).to_string();
+//                let buf = if let Some(ref lexer) = self.lexer {
+//                    errors.format_text(lexer)
+//                } else {
+//                    errors.format_binary()
+//                };
+//                let msg = String::from_utf8_lossy(buf.as_ref()).to_string();
 //                return Err(Error(ErrorKind::ResolveNames(msg)));
 //            }
 //        }
@@ -539,12 +740,16 @@ impl From<NulError> for Error {
 //
 //    /// Validate the module.
 //    pub fn validate(&self) -> Result<(), Error> {
-//        let error_handler = ErrorHandler::new_text();
+//        let errors = Errors::new();
 //        unsafe {
-//            let raw_lexer = self.lexer.as_ref().map(|lexer| lexer.raw_lexer).unwrap_or(ptr::null_mut());
-//            let result = ffi::wabt_validate_module(raw_lexer, self.raw_module, error_handler.raw_buffer);
+//            let result = ffi::wabt_validate_module(self.raw_module, self.features.raw, errors.raw);
 //            if result == ffi::Result::Error {
-//                let msg = String::from_utf8_lossy(error_handler.raw_message()).to_string();
+//                let buf = if let Some(ref lexer) = self.lexer {
+//                    errors.format_text(lexer)
+//                } else {
+//                    errors.format_binary()
+//                };
+//                let msg = String::from_utf8_lossy(buf.as_ref()).to_string();
 //                return Err(Error(ErrorKind::Validate(msg)));
 //            }
 //        }
@@ -626,6 +831,7 @@ impl From<NulError> for Error {
 //pub struct Wat2Wasm {
 //    validate: bool,
 //    write_binary_options: WriteBinaryOptions,
+//    features: Features,
 //}
 //
 //impl Wat2Wasm {
@@ -634,6 +840,7 @@ impl From<NulError> for Error {
 //        Wat2Wasm {
 //            write_binary_options: WriteBinaryOptions::default(),
 //            validate: true,
+//            features: Features::new(),
 //        }
 //    }
 //
@@ -675,7 +882,7 @@ impl From<NulError> for Error {
 //
 //    /// Perform conversion.
 //    pub fn convert<S: AsRef<[u8]>>(&self, source: S) -> Result<WabtBuf, Error> {
-//        let mut module = Module::parse_wat("test.wast", source)?;
+//        let mut module = Module::parse_wat("test.wast", source, self.features.clone())?;
 //        module.resolve_names()?;
 //
 //        if self.validate {
@@ -722,6 +929,12 @@ impl From<NulError> for Error {
 //            read_binary_options: ReadBinaryOptions::default(),
 //            write_text_options: WriteTextOptions::default(),
 //        }
+//    }
+//
+//    /// Support for pre-standard features.
+//    pub fn features(&mut self, features: Features) -> &mut Wasm2Wat {
+//        self.read_binary_options.features = features;
+//        self
 //    }
 //
 //    /// Read debug names in the binary file.
@@ -838,6 +1051,49 @@ impl From<NulError> for Error {
 //    Ok(result_buf.as_ref().to_vec())
 //}
 //
+///// Translate wasm text source to wasm binary format.
+/////
+///// If wasm source is valid wasm binary will be returned in the vector.
+///// Returned binary is validated and can be executed.
+/////
+///// This function will make translation with custom features.
+///// If you want to find out what default parameters are or you want to tweak them
+///// you can use [`Wat2Wasm`]
+/////
+///// For more examples and online demo you can check online version
+///// of [wat2wasm](https://cdn.rawgit.com/WebAssembly/wabt/aae5a4b7/demo/wat2wasm/).
+/////
+///// [`Wat2Wasm`]: struct.Wat2Wasm.html
+/////
+///// # Examples
+/////
+///// ```rust
+///// extern crate wabt;
+///// use wabt::{Features, wat2wasm_with_features};
+/////
+///// fn main() {
+/////     let mut features = Features::new();
+/////     features.enable_simd();
+/////     assert_eq!(
+/////         wat2wasm_with_features("(module)", features).unwrap(),
+/////         &[
+/////             0, 97, 115, 109, // \0ASM - magic
+/////             1, 0, 0, 0       //  0x01 - version
+/////         ]
+/////     );
+///// }
+///// ```
+/////
+//pub fn wat2wasm_with_features<S: AsRef<[u8]>>(
+//    source: S,
+//    features: Features,
+//) -> Result<Vec<u8>, Error> {
+//    let mut wat2wasm = Wat2Wasm::new();
+//    wat2wasm.features = features;
+//    let result_buf = wat2wasm.convert(source)?;
+//    Ok(result_buf.as_ref().to_vec())
+//}
+//
 ///// Disassemble wasm binary to wasm text format.
 /////
 ///// # Examples
@@ -858,9 +1114,37 @@ impl From<NulError> for Error {
 ///// ```
 /////
 //pub fn wasm2wat<S: AsRef<[u8]>>(wasm: S) -> Result<String, Error> {
-//    let result_buf = Wasm2Wat::new().convert(wasm)?;
+//    wasm2wat_with_features(wasm, Features::new())
+//}
+//
+///// Disassemble wasm binary to wasm text format with the given features.
+/////
+///// # Examples
+/////
+///// ```rust
+///// extern crate wabt;
+///// use wabt::{Features, wasm2wat_with_features};
+/////
+///// fn main() {
+/////     let mut features = Features::new();
+/////     features.enable_simd();
+/////     assert_eq!(
+/////         wasm2wat_with_features(&[
+/////             0, 97, 115, 109, // \0ASM - magic
+/////             1, 0, 0, 0       //    01 - version
+/////         ], features),
+/////         Ok("(module)\n".to_owned()),
+/////     );
+///// }
+///// ```
+/////
+//pub fn wasm2wat_with_features<S: AsRef<[u8]>>(
+//    wasm: S,
+//    features: Features,
+//) -> Result<String, Error> {
+//    let result_buf = Wasm2Wat::new().features(features).convert(wasm)?;
 //    let text = String::from_utf8(result_buf.as_ref().to_vec())
-//            .map_err(|_| Error(ErrorKind::NonUtf8Result))?;
+//        .map_err(|_| Error(ErrorKind::NonUtf8Result))?;
 //    Ok(text)
 //}
 //
@@ -882,16 +1166,14 @@ impl From<NulError> for Error {
 //    }
 //
 //    fn module_count(&self) -> usize {
-//        unsafe {
-//            ffi::wabt_write_script_result_get_module_count(self.raw_script_result)
-//        }
+//        unsafe { ffi::wabt_write_script_result_get_module_count(self.raw_script_result) }
 //    }
 //
 //    fn module_filename(&self, index: usize) -> &CStr {
 //        assert!(index < self.module_count());
 //        unsafe {
-//            let s = ffi::wabt_write_script_result_get_module_filename(
-//                self.raw_script_result, index);
+//            let s =
+//                ffi::wabt_write_script_result_get_module_filename(self.raw_script_result, index);
 //            CStr::from_ptr(s)
 //        }
 //    }
@@ -902,27 +1184,34 @@ impl From<NulError> for Error {
 //            let log_output_buffer;
 //            let mut module_output_buffers = HashMap::new();
 //            unsafe {
-//                json_output_buffer =
-//                    ffi::wabt_write_script_result_release_json_output_buffer(
-//                        self.raw_script_result);
+//                json_output_buffer = ffi::wabt_write_script_result_release_json_output_buffer(
+//                    self.raw_script_result,
+//                );
 //                log_output_buffer =
-//                    ffi::wabt_write_script_result_release_log_output_buffer(
-//                        self.raw_script_result);
+//                    ffi::wabt_write_script_result_release_log_output_buffer(self.raw_script_result);
 //            }
 //            for i in 0..self.module_count() {
 //                let module_output_buffer = unsafe {
 //                    ffi::wabt_write_script_result_release_module_output_buffer(
-//                        self.raw_script_result, i)
+//                        self.raw_script_result,
+//                        i,
+//                    )
 //                };
 //                let name = self.module_filename(i);
 //                module_output_buffers.insert(
 //                    name.to_owned(),
-//                    WabtBuf { raw_buffer: module_output_buffer },
+//                    WabtBuf {
+//                        raw_buffer: module_output_buffer,
+//                    },
 //                );
 //            }
 //            Ok(WabtWriteScriptResultRelease {
-//                json_output_buffer: WabtBuf { raw_buffer: json_output_buffer },
-//                _log_output_buffer: WabtBuf { raw_buffer: log_output_buffer },
+//                json_output_buffer: WabtBuf {
+//                    raw_buffer: json_output_buffer,
+//                },
+//                _log_output_buffer: WabtBuf {
+//                    raw_buffer: log_output_buffer,
+//                },
 //                module_output_buffers,
 //            })
 //        } else {
@@ -940,8 +1229,25 @@ impl From<NulError> for Error {
 //}
 //
 //#[test]
+//fn features() {
+//    let example_wat = r#"
+//(module
+//  (func $simd (result v128)
+//    (v128.const i8x16 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16)
+//    return)
+//)"#;
+//
+//    assert!(wat2wasm(example_wat).is_err());
+//
+//    let mut features = Features::new();
+//    features.enable_simd();
+//    assert!(wat2wasm_with_features(example_wat, features).is_ok());
+//}
+//
+//#[test]
 //fn module() {
-//    let binary_module = wat2wasm(r#"
+//    let binary_module = wat2wasm(
+//        r#"
 //(module
 //  (import "foo" "bar" (func (param f32)))
 //  (memory (data "hi"))
@@ -953,7 +1259,9 @@ impl From<NulError> for Error {
 //    i32.const 42
 //    drop)
 //  (export "e" (func 1)))
-//"#).unwrap();
+//"#,
+//    )
+//    .unwrap();
 //
 //    let mut module = Module::read_binary(&binary_module, &ReadBinaryOptions::default()).unwrap();
 //    module.resolve_names().unwrap();
@@ -971,16 +1279,22 @@ impl From<NulError> for Error {
 //        wat2wasm(
 //            r#"
 //            (module
-//            )"#,
-//        ).unwrap(),
+//            )"#
+//        )
+//        .unwrap(),
 //        &[0, 97, 115, 109, 1, 0, 0, 0]
 //    );
 //
-//    assert_eq!(wat2wasm("(modu"), Err(Error(ErrorKind::Parse(
-//r#"test.wast:1:2: error: unexpected token "modu", expected a module field or a module.
+//    assert_eq!(
+//        wat2wasm("(modu"),
+//        Err(Error(ErrorKind::Parse(
+//            r#"test.wast:1:2: error: unexpected token "modu", expected a module field or a module.
 //(modu
 // ^^^^
-//"#.to_string()))));
+//"#
+//            .to_string()
+//        )))
+//    );
 //}
 //
 //#[test]
@@ -988,7 +1302,7 @@ impl From<NulError> for Error {
 //    assert_eq!(
 //        wasm2wat(&[
 //            0, 97, 115, 109, // \0ASM - magic
-//            1, 0, 0, 0       //    01 - version
+//            1, 0, 0, 0 //    01 - version
 //        ]),
 //        Ok("(module)\n".to_owned()),
 //    );

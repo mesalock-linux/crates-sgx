@@ -15,7 +15,7 @@ categories = ["no-std", "network-programming", "api-bindings"]
 exclude = ["/sgx/*"]
 
 [target.'cfg(not(target_env = "sgx"))'.dependencies]
-sgx_libc   = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git" }
+sgx_libc   = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git" }
 
 #[target.'cfg(windows)'.dependencies]
 #winapi = { version = "0.3", features = ["minwindef", "ws2def"] }

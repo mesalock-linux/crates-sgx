@@ -94,7 +94,7 @@ impl<'de> Deserialize<'de> for Value {
             {
                 let mut vec = Vec::new();
 
-                while let Some(elem) = try!(visitor.next_element()) {
+                while let Some(elem) = visitor.next_element()? {
                     vec.push(elem);
                 }
 
@@ -119,8 +119,8 @@ impl<'de> Deserialize<'de> for Value {
                     Some(KeyClass::Map(first_key)) => {
                         let mut values = Map::new();
 
-                        values.insert(first_key, try!(visitor.next_value()));
-                        while let Some((key, value)) = try!(visitor.next_entry()) {
+                        values.insert(first_key, visitor.next_value()?);
+                        while let Some((key, value)) = visitor.next_entry()? {
                             values.insert(key, value);
                         }
 
@@ -174,7 +174,7 @@ where
 {
     let len = array.len();
     let mut deserializer = SeqDeserializer::new(array);
-    let seq = try!(visitor.visit_seq(&mut deserializer));
+    let seq = visitor.visit_seq(&mut deserializer)?;
     let remaining = deserializer.iter.len();
     if remaining == 0 {
         Ok(seq)
@@ -192,7 +192,7 @@ where
 {
     let len = object.len();
     let mut deserializer = MapDeserializer::new(object);
-    let map = try!(visitor.visit_map(&mut deserializer));
+    let map = visitor.visit_map(&mut deserializer)?;
     let remaining = deserializer.iter.len();
     if remaining == 0 {
         Ok(map)
@@ -574,7 +574,7 @@ impl<'de> serde::Deserializer<'de> for SeqDeserializer {
         if len == 0 {
             visitor.visit_unit()
         } else {
-            let ret = try!(visitor.visit_seq(&mut self));
+            let ret = visitor.visit_seq(&mut self)?;
             let remaining = self.iter.len();
             if remaining == 0 {
                 Ok(ret)
@@ -716,7 +716,7 @@ where
 {
     let len = array.len();
     let mut deserializer = SeqRefDeserializer::new(array);
-    let seq = try!(visitor.visit_seq(&mut deserializer));
+    let seq = visitor.visit_seq(&mut deserializer)?;
     let remaining = deserializer.iter.len();
     if remaining == 0 {
         Ok(seq)
@@ -734,7 +734,7 @@ where
 {
     let len = object.len();
     let mut deserializer = MapRefDeserializer::new(object);
-    let map = try!(visitor.visit_map(&mut deserializer));
+    let map = visitor.visit_map(&mut deserializer)?;
     let remaining = deserializer.iter.len();
     if remaining == 0 {
         Ok(map)
@@ -1110,7 +1110,7 @@ impl<'de> serde::Deserializer<'de> for SeqRefDeserializer<'de> {
         if len == 0 {
             visitor.visit_unit()
         } else {
-            let ret = try!(visitor.visit_seq(&mut self));
+            let ret = visitor.visit_seq(&mut self)?;
             let remaining = self.iter.len();
             if remaining == 0 {
                 Ok(ret)

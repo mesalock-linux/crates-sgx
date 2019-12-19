@@ -54,7 +54,7 @@ impl<'a, R: 'a + Read> ImageDecoder<'a> for JPEGDecoder<R> {
     type Reader = JpegReader<R>;
 
     fn dimensions(&self) -> (u64, u64) {
-        (self.metadata.width as u64, self.metadata.height as u64)
+        (u64::from(self.metadata.width), u64::from(self.metadata.height))
     }
 
     fn colortype(&self) -> ColorType {
@@ -123,7 +123,7 @@ impl From<jpeg_decoder::Error> for ImageError {
             Format(desc) => ImageError::FormatError(desc),
             Unsupported(desc) => ImageError::UnsupportedError(format!("{:?}", desc)),
             Io(err) => ImageError::IoError(err),
-            Internal(err) => ImageError::FormatError(err.description().to_owned()),
+            Internal(err) => ImageError::FormatError(err.to_string()),
         }
     }
 }

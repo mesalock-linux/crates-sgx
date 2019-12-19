@@ -39,12 +39,12 @@ impl<T> Matrix<T>
             let h_holder: Matrix<T>;
             {
                 let lower_slice = MatrixSlice::from_matrix(&self, [k, k], m - k, 1);
-                h_holder = try!(Matrix::make_householder(&lower_slice.iter()
+                h_holder = Matrix::make_householder(&lower_slice.iter()
                         .cloned()
                         .collect::<Vec<_>>())
                     .map_err(|_| {
                         Error::new(ErrorKind::DecompFailure, "Cannot compute bidiagonal form.")
-                    }));
+                    })?;
             }
 
             {
@@ -67,9 +67,9 @@ impl<T> Matrix<T>
                                                      n - k - 1);
                 }
 
-                let row_h_holder = try!(Matrix::make_householder(row).map_err(|_| {
+                let row_h_holder = Matrix::make_householder(row).map_err(|_| {
                     Error::new(ErrorKind::DecompFailure, "Cannot compute bidiagonal form.")
-                }));
+                })?;
 
                 {
                     // Apply householder on the right to kill right of super diag.

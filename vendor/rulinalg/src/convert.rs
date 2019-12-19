@@ -87,7 +87,7 @@ impl<T: ToPrimitive> Matrix<T> {
             .map(|x| U::from(x).ok_or_else(make_error))
             .collect::<Result<Vec<_>, Error>>();
 
-        Ok(Matrix::<U>::new(m, n, try!(converted_data)))
+        Ok(Matrix::<U>::new(m, n, converted_data?))
     }
 }
 

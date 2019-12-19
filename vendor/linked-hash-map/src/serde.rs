@@ -21,10 +21,10 @@ impl<K, V, S> Serialize for LinkedHashMap<K, V, S>
     fn serialize<T>(&self, serializer:T) -> Result<T::Ok, T::Error>
         where T: Serializer,
     {
-        let mut map_serializer = try!(serializer.serialize_map(Some(self.len())));
+        let mut map_serializer = serializer.serialize_map(Some(self.len()))?;
         for (k, v) in self {
-            try!(map_serializer.serialize_key(k));
-            try!(map_serializer.serialize_value(v));
+            map_serializer.serialize_key(k)?;
+            map_serializer.serialize_value(v)?;
         }
         map_serializer.end()
     }

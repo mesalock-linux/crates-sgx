@@ -1277,9 +1277,9 @@ pub trait Serializer: Sized {
         <I as IntoIterator>::Item: Serialize,
     {
         let iter = iter.into_iter();
-        let mut serializer = try!(self.serialize_seq(iter.len_hint()));
+        let mut serializer = self.serialize_seq(iter.len_hint())?;
         for item in iter {
-            try!(serializer.serialize_element(&item));
+            serializer.serialize_element(&item)?;
         }
         serializer.end()
     }
@@ -1317,9 +1317,9 @@ pub trait Serializer: Sized {
         I: IntoIterator<Item = (K, V)>,
     {
         let iter = iter.into_iter();
-        let mut serializer = try!(self.serialize_map(iter.len_hint()));
+        let mut serializer = self.serialize_map(iter.len_hint())?;
         for (key, value) in iter {
-            try!(serializer.serialize_entry(&key, &value));
+            serializer.serialize_entry(&key, &value)?;
         }
         serializer.end()
     }
@@ -1821,7 +1821,7 @@ pub trait SerializeMap {
         K: Serialize,
         V: Serialize,
     {
-        try!(self.serialize_key(key));
+        self.serialize_key(key)?;
         self.serialize_value(value)
     }
 

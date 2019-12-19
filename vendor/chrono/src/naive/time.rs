@@ -492,7 +492,7 @@ impl NaiveTime {
     /// ~~~~
     pub fn parse_from_str(s: &str, fmt: &str) -> ParseResult<NaiveTime> {
         let mut parsed = Parsed::new();
-        try!(parse(&mut parsed, s, StrftimeItems::new(fmt)));
+        parse(&mut parsed, s, StrftimeItems::new(fmt))?;
         parsed.to_naive_time()
     }
 
@@ -1230,7 +1230,7 @@ impl fmt::Debug for NaiveTime {
             (sec, self.frac)
         };
 
-        try!(write!(f, "{:02}:{:02}:{:02}", hour, min, sec));
+        write!(f, "{:02}:{:02}:{:02}", hour, min, sec)?;
         if nano == 0 {
             Ok(())
         } else if nano % 1_000_000 == 0 {
@@ -1308,7 +1308,7 @@ impl str::FromStr for NaiveTime {
         ];
 
         let mut parsed = Parsed::new();
-        try!(parse(&mut parsed, s, ITEMS.iter().cloned()));
+        parse(&mut parsed, s, ITEMS.iter().cloned())?;
         parsed.to_naive_time()
     }
 }

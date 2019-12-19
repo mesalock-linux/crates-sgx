@@ -25,14 +25,14 @@ impl<T> Matrix<T> where T: Decodable {
         -> Result<Matrix<T>, Error> {
 
         // headers read 1st row regardless of has_headers property
-        let header: Vec<String> = try!(reader.headers());
+        let header: Vec<String> = reader.headers()?;
 
         let mut nrows = 0;
         let ncols = header.len();
 
         let mut records: Vec<T> = vec![];
         for record in reader.decode() {
-            let values: Vec<T> = try!(record);
+            let values: Vec<T> = record?;
             records.extend(values);
             nrows += 1;
         }
@@ -59,7 +59,7 @@ impl<T> Matrix<T> where T: Encodable {
         -> Result<(), Error> {
 
         for row in self.row_iter() {
-            try!(writer.encode(row.raw_slice()));
+            writer.encode(row.raw_slice())?;
         }
         Ok(())
     }

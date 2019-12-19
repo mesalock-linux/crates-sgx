@@ -1,6 +1,6 @@
 [package]
 name = "wabt"
-version = "0.6.0"
+version = "0.9.2"
 authors = ["Sergey Pepyakin <s.pepyakin@gmail.com>"]
 license = "Apache-2.0"
 readme = "README.md"
@@ -9,14 +9,13 @@ homepage = "https://github.com/pepyakin/wabt-rs"
 description = "Bindings to the wabt library"
 categories = ["api-bindings"]
 keywords = ["tools", "webassembly", "wasm"]
-exclude = ["/sgx/*"]
 
 [dependencies]
-#wabt-sys = { path = "wabt-sys", version = "0.4.0" }
-serde_json = { git = "https://github.com/mesalock-linux/serde-json-sgx" }
+#wabt-sys = { path = "wabt-sys", version = "0.7" }
+#serde_json = { git = "https://github.com/mesalock-linux/serde-json-sgx" }
 serde_derive = { git = "https://github.com/mesalock-linux/serde-sgx" }
 serde = { git = "https://github.com/mesalock-linux/serde-sgx" }
-sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [features]
 default = ["mesalock_sgx"]

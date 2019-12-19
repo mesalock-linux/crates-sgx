@@ -13,12 +13,12 @@ exclude = ["/sgx/*"]
 
 [dependencies]
 serde = { git = "https://github.com/mesalock-linux/serde-sgx" }
-sgx_tstd = { rev = "v1.0.9", git = "https://github.com/baidu/rust-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
-serde_cbor = "0.9"
-serde_derive = "1.0"
-serde_json = "1.0"
+#serde_cbor = "0.9"
+#serde_derive = "1.0"
+#serde_json = "1.0"
 
 [features]
 unstable-debug = []

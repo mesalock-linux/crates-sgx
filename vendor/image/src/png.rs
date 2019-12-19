@@ -57,7 +57,7 @@ impl<R: Read> Read for PNGReader<R> {
         let mut bytes = readed;
         self.index += readed;
     
-        while self.index + 1 >= self.buffer.len() {
+        while self.index >= self.buffer.len() {
             match self.reader.next_row()? {
                 Some(row) => {
                     // Faster to copy directly to external buffer
@@ -114,7 +114,7 @@ impl<'a, R: 'a + Read> ImageDecoder<'a> for PNGDecoder<R> {
 
     fn dimensions(&self) -> (u64, u64) {
         let (w, h) = self.reader.info().size();
-        (w as u64, h as u64)
+        (u64::from(w), u64::from(h))
     }
 
     fn colortype(&self) -> ColorType {
@@ -153,7 +153,18 @@ impl<W: Write> PNGEncoder<W> {
     /// that has dimensions ```width``` and ```height```
     /// and ```ColorType``` ```c```
     pub fn encode(self, data: &[u8], width: u32, height: u32, color: ColorType) -> io::Result<()> {
-        let (ct, bits) = color.into();
+        let (ct, bits) = match color {
+            ColorType::Gray(bits) => Some((png::ColorType::Grayscale, bits)),
+            ColorType::RGB(bits) => Some((png::ColorType::RGB, bits)),
+            ColorType::Palette(bits) => Some((png::ColorType::Indexed, bits)),
+            ColorType::GrayA(bits) => Some((png::ColorType::GrayscaleAlpha, bits)),
+            ColorType::RGBA(bits) => Some((png::ColorType::RGBA, bits)),
+            _ => None,
+        }
+        .and_then(|(ct, bits)| Some((ct, png::BitDepth::from_u8(bits)?)))
+        // FIXME: After #1066 lands, return the ImageError directly.
+        .ok_or(io::Error::new(io::ErrorKind::InvalidInput, ImageError::UnsupportedColor(color)))?;
+
         let mut encoder = png::Encoder::new(self.w, width, height);
         encoder.set_color(ct);
         encoder.set_depth(bits);
@@ -206,5 +217,35 @@ impl From<png::DecodingError> for ImageError {
             }
             LimitsExceeded => ImageError::InsufficientMemory,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use image::ImageDecoder;
+    use std::io::Read;
+    use super::*;
+
+    #[test]
+    fn ensure_no_decoder_off_by_one() {
+        let dec = PNGDecoder::new(std::fs::File::open("tests/images/png/bugfixes/debug_triangle_corners_widescreen.png").unwrap())
+            .expect("Unable to read PNG file (does it exist?)");
+
+        assert_eq![(2000, 1000), dec.dimensions()];
+
+        assert_eq![
+            ColorType::RGB(8),
+            dec.colortype(),
+            "Image MUST have the RGB(8) format"
+        ];
+
+        let correct_bytes = dec
+            .into_reader()
+            .expect("Unable to read file")
+            .bytes()
+            .map(|x| x.expect("Unable to read byte"))
+            .collect::<Vec<u8>>();
+
+        assert_eq![6_000_000, correct_bytes.len()];
     }
 }

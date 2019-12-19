@@ -219,7 +219,7 @@ impl<T: Send> ThreadLocal<T> {
         let id = thread_id::get();
         match self.get_fast(id) {
             Some(x) => Ok(x),
-            None => Ok(self.insert(id, Box::new(try!(create())), true)),
+            None => Ok(self.insert(id, Box::new(create()?), true)),
         }
     }
 

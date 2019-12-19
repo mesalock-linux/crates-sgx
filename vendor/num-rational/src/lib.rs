@@ -1089,17 +1089,17 @@ impl<T: FromStr + Clone + Integer> FromStr for Ratio<T> {
     fn from_str(s: &str) -> Result<Ratio<T>, ParseRatioError> {
         let mut split = s.splitn(2, '/');
 
-        let n = try!(split.next().ok_or(ParseRatioError {
+        let n = split.next().ok_or(ParseRatioError {
             kind: RatioErrorKind::ParseError
-        }));
-        let num = try!(FromStr::from_str(n).map_err(|_| ParseRatioError {
+        })?;
+        let num = FromStr::from_str(n).map_err(|_| ParseRatioError {
             kind: RatioErrorKind::ParseError
-        }));
+        })?;
 
         let d = split.next().unwrap_or("1");
-        let den = try!(FromStr::from_str(d).map_err(|_| ParseRatioError {
+        let den = FromStr::from_str(d).map_err(|_| ParseRatioError {
             kind: RatioErrorKind::ParseError
-        }));
+        })?;
 
         if Zero::is_zero(&den) {
             Err(ParseRatioError {
@@ -1141,7 +1141,7 @@ where
     {
         use serde::de::Error;
         use serde::de::Unexpected;
-        let (numer, denom): (T, T) = try!(serde::Deserialize::deserialize(deserializer));
+        let (numer, denom): (T, T) = serde::Deserialize::deserialize(deserializer)?;
         if denom.is_zero() {
             Err(Error::invalid_value(
                 Unexpected::Signed(0),

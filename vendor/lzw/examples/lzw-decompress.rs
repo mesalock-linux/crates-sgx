@@ -15,12 +15,12 @@ fn main() {
         let mut stdin = stdin.lock();
         loop {
             let len = {
-                let buf = try!(stdin.fill_buf());
+                let buf = stdin.fill_buf()?;
                 if buf.len() == 0 {
                     break
                 }
-                let (len, bytes) = try!(decoder.decode_bytes(buf));
-                try!(stdout.write_all(bytes));
+                let (len, bytes) = decoder.decode_bytes(buf)?;
+                stdout.write_all(bytes)?;
                 len
             };
             stdin.consume(len);

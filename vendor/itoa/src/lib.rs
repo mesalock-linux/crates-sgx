@@ -79,7 +79,7 @@ use core::{fmt, mem, ptr, slice, str};
 pub fn write<W: io::Write, V: Integer>(mut wr: W, value: V) -> io::Result<usize> {
     let mut buf = Buffer::new();
     let s = buf.format(value);
-    try!(wr.write_all(s.as_bytes()));
+    wr.write_all(s.as_bytes())?;
     Ok(s.len())
 }
 
@@ -124,7 +124,7 @@ impl Buffer {
     #[inline]
     pub fn new() -> Buffer {
         Buffer {
-            bytes: unsafe { mem::uninitialized() },
+            bytes: unsafe { mem::MaybeUninit::zeroed().assume_init() },
         }
     }
 

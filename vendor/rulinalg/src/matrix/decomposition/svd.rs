@@ -122,12 +122,12 @@ impl<T: Any + Float + Signed> Matrix<T> {
     /// This function may fail in some cases. The current decomposition whilst being
     /// efficient is fairly basic. Hopefully the algorithm can be made not to fail in the near future.
     pub fn svd(self) -> Result<(Matrix<T>, Matrix<T>, Matrix<T>), Error> {
-        let (b, u, v) = try!(self.svd_unordered());
+        let (b, u, v) = self.svd_unordered()?;
         Ok(sort_svd(b, u, v))
     }
 
     fn svd_unordered(self) -> Result<(Matrix<T>, Matrix<T>, Matrix<T>), Error> {
-        let (b, u, v) = try!(self.svd_golub_reinsch());
+        let (b, u, v) = self.svd_golub_reinsch()?;
 
         // The Golub-Reinsch implementation sometimes spits out negative singular values,
         // so we need to correct these.
@@ -147,8 +147,8 @@ impl<T: Any + Float + Signed> Matrix<T> {
         let n = self.cols;
 
         // Get the bidiagonal decomposition
-        let (mut b, mut u, mut v) = try!(self.bidiagonal_decomp()
-            .map_err(|_| Error::new(ErrorKind::DecompFailure, "Could not compute SVD.")));
+        let (mut b, mut u, mut v) = self.bidiagonal_decomp()
+            .map_err(|_| Error::new(ErrorKind::DecompFailure, "Could not compute SVD."))?;
 
         loop {
             // Values to count the size of lower diagonal block
@@ -212,8 +212,8 @@ impl<T: Any + Float + Signed> Matrix<T> {
 
             // Apply Golub-Kahan svd step
             unsafe {
-                try!(Matrix::<T>::golub_kahan_svd_step(&mut b, &mut u, &mut v, p, q)
-                    .map_err(|_| Error::new(ErrorKind::DecompFailure, "Could not compute SVD.")));
+                Matrix::<T>::golub_kahan_svd_step(&mut b, &mut u, &mut v, p, q)
+                    .map_err(|_| Error::new(ErrorKind::DecompFailure, "Could not compute SVD."))?;
             }
         }
 
@@ -252,7 +252,7 @@ impl<T: Any + Float + Signed> Matrix<T> {
             }
         }
 
-        let c_eigs = try!(c.clone().eigenvalues());
+        let c_eigs = c.clone().eigenvalues()?;
 
         // Choose eigenvalue closes to c[1,1].
         let lambda: T;
