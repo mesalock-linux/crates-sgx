@@ -3,6 +3,7 @@
 // We only use AVX when we can detect at runtime whether it's available, which
 // requires std.
 //#[cfg(feature = "use_std")]
+//#[cfg(not(feature = "libc"))]
 mod avx;
 mod sse2;
 
@@ -75,6 +76,7 @@ macro_rules! ifunc {
 //}
 
 #[inline(always)]
+#[cfg(not(feature = "libc"))]
 pub fn memchr(n1: u8, haystack: &[u8]) -> Option<usize> {
     ifunc!(fn(u8, &[u8]) -> Option<usize>, memchr, haystack, n1)
 }
@@ -90,6 +92,7 @@ pub fn memchr3(n1: u8, n2: u8, n3: u8, haystack: &[u8]) -> Option<usize> {
 }
 
 #[inline(always)]
+#[cfg(not(feature = "libc"))]
 pub fn memrchr(n1: u8, haystack: &[u8]) -> Option<usize> {
     ifunc!(fn(u8, &[u8]) -> Option<usize>, memrchr, haystack, n1)
 }

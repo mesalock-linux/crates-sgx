@@ -23,6 +23,7 @@ bench = false
 default = ["use_std", "mesalock_sgx"]
 use_std = []
 mesalock_sgx = ["sgx_tstd", "sgx_libc", "sgx_types"]
+libc = ["sgx_libc"]
 
 [target.'cfg(not(target_env = "sgx"))'.dependencies]
 sgx_libc = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true}

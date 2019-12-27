@@ -5,13 +5,13 @@
 
 extern crate sgx_libc as libc;
 
-use self::libc::{c_int, c_void, size_t};
+use self::libc::size_t;
 
 pub fn memchr(needle: u8, haystack: &[u8]) -> Option<usize> {
     let p = unsafe {
         libc::memchr(
-            haystack.as_ptr() as *const c_void,
-            needle as c_int,
+            haystack.as_ptr(),
+            needle,
             haystack.len() as size_t,
         )
     };
@@ -31,8 +31,8 @@ pub fn memrchr(needle: u8, haystack: &[u8]) -> Option<usize> {
     }
     let p = unsafe {
         libc::memrchr(
-            haystack.as_ptr() as *const c_void,
-            needle as c_int,
+            haystack.as_ptr(),
+            needle,
             haystack.len() as size_t,
         )
     };

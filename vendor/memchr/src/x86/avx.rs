@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use core::arch::x86_64::*;
 use core::cmp;
 use core::mem::size_of;

@@ -49,7 +49,8 @@ use core::iter::Rev;
 pub use iter::{Memchr, Memchr2, Memchr3};
 
 // N.B. If you're looking for the cfg knobs for libc, see build.rs.
-#[cfg(memchr_libc)]
+//#[cfg(memchr_libc)]
+#[cfg(feature = "libc")]
 mod c;
 #[allow(dead_code)]
 mod fallback;
@@ -138,14 +139,14 @@ pub fn memrchr3_iter(
 #[inline]
 pub fn memchr(needle: u8, haystack: &[u8]) -> Option<usize> {
     #[cfg(any(all(target_arch = "x86_64", memchr_runtime_simd),
-              feature = "mesalock_sgx"))]
+              all(not(feature = "libc"), feature = "mesalock_sgx")))]
     #[inline(always)]
     fn imp(n1: u8, haystack: &[u8]) -> Option<usize> {
         x86::memchr(n1, haystack)
     }
 
     #[cfg(all(
-        memchr_libc,
+        all(feature = "libc", target_os = "linux", feature = "mesalock_sgx"),
         not(all(target_arch = "x86_64", memchr_runtime_simd))
     ))]
     #[inline(always)]
@@ -246,14 +247,14 @@ pub fn memchr3(
 #[inline]
 pub fn memrchr(needle: u8, haystack: &[u8]) -> Option<usize> {
     #[cfg(any(all(target_arch = "x86_64", memchr_runtime_simd),
-              feature = "mesalock_sgx"))]
+              all(not(feature = "libc"), feature = "mesalock_sgx")))]
     #[inline(always)]
     fn imp(n1: u8, haystack: &[u8]) -> Option<usize> {
         x86::memrchr(n1, haystack)
     }
 
     #[cfg(all(
-        all(memchr_libc, target_os = "linux"),
+        all(feature = "libc", target_os = "linux", feature = "mesalock_sgx"),
         not(all(target_arch = "x86_64", memchr_runtime_simd))
     ))]
     #[inline(always)]
