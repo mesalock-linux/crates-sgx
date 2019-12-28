@@ -16,6 +16,11 @@ git = "https://github.com/mesalock-linux/aho-corasick-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/anyhow-sgx"]
+git = "https://github.com/mesalock-linux/anyhow-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/array_tool-sgx"]
 git = "https://github.com/mesalock-linux/array_tool-sgx"
 branch = "master"
@@ -363,6 +368,11 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/termcolor-sgx"]
 git = "https://github.com/mesalock-linux/termcolor-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/thiserror-sgx"]
+git = "https://github.com/mesalock-linux/thiserror-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 

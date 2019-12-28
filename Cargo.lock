@@ -16,6 +16,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.26"
+source = "git+https://github.com/mesalock-linux/anyhow-sgx#025710d872aac945050e740f726a67de0365c93d"
+dependencies = [
+ "sgx_tstd 1.1.0 (git+https://github.com/apache/teaclave-sgx-sdk?rev=v1.1.0)",
+]
+
+[[package]]
 name = "array_tool"
 version = "1.0.3"
 source = "git+https://github.com/mesalock-linux/array_tool-sgx#0e581431d3d709dc04d85f33b015c72f71298f20"
@@ -165,6 +173,7 @@ version = "0.1.0"
 dependencies = [
  "adler32 1.0.4 (git+https://github.com/mesalock-linux/adler32-rs-sgx)",
  "aho-corasick 0.7.6 (git+https://github.com/mesalock-linux/aho-corasick-sgx)",
+ "anyhow 1.0.26 (git+https://github.com/mesalock-linux/anyhow-sgx)",
  "array_tool 1.0.3 (git+https://github.com/mesalock-linux/array_tool-sgx)",
  "assert_matches 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "base64 0.10.1 (git+https://github.com/mesalock-linux/rust-base64-sgx)",
@@ -252,6 +261,7 @@ dependencies = [
  "sha2 0.8.0 (git+https://github.com/mesalock-linux/hashes-sgx)",
  "snap 0.2.5 (git+https://github.com/mesalock-linux/rust-snappy-sgx)",
  "syn 0.15.44 (registry+https://github.com/rust-lang/crates.io-index)",
+ "thiserror 1.0.9 (git+https://github.com/mesalock-linux/thiserror-sgx)",
  "tiff 0.4.0 (git+https://github.com/mesalock-linux/image-tiff-sgx)",
  "toml 0.5.3 (git+https://github.com/mesalock-linux/toml-rs-sgx)",
  "untrusted 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1363,6 +1373,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "thiserror"
+version = "1.0.9"
+source = "git+https://github.com/mesalock-linux/thiserror-sgx#5869b9b1032390ceb73d77ff64f7b7bdd9dacf29"
+dependencies = [
+ "sgx_tstd 1.1.0 (git+https://github.com/apache/teaclave-sgx-sdk?rev=v1.1.0)",
+ "thiserror-impl 1.0.9 (git+https://github.com/mesalock-linux/thiserror-sgx)",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "1.0.9"
+source = "git+https://github.com/mesalock-linux/thiserror-sgx#5869b9b1032390ceb73d77ff64f7b7bdd9dacf29"
+dependencies = [
+ "proc-macro2 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 1.0.11 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "thread_local"
 version = "1.0.0"
 source = "git+https://github.com/mesalock-linux/thread_local-rs-sgx#b95e13d4f7808f35efc5f84dda380e299c0ee1f3"
@@ -1526,6 +1555,7 @@ dependencies = [
 [metadata]
 "checksum adler32 1.0.4 (git+https://github.com/mesalock-linux/adler32-rs-sgx)" = "<none>"
 "checksum aho-corasick 0.7.6 (git+https://github.com/mesalock-linux/aho-corasick-sgx)" = "<none>"
+"checksum anyhow 1.0.26 (git+https://github.com/mesalock-linux/anyhow-sgx)" = "<none>"
 "checksum array_tool 1.0.3 (git+https://github.com/mesalock-linux/array_tool-sgx)" = "<none>"
 "checksum assert_matches 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7deb0a829ca7bcfaf5da70b073a8d128619259a7be8216a355e23f00763059e5"
 "checksum autocfg 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)" = "1d49d90015b3c36167a20fe2810c5cd875ad504b39cff3d4eae7977e6b7c1cb2"
@@ -1669,6 +1699,8 @@ dependencies = [
 "checksum syn 1.0.11 (registry+https://github.com/rust-lang/crates.io-index)" = "dff0acdb207ae2fe6d5976617f887eb1e35a2ba52c13c7234c790960cdad9238"
 "checksum synom 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)" = "a393066ed9010ebaed60b9eafa373d4b1baac186dd7e008555b0f702b51945b6"
 "checksum termcolor 1.0.5 (git+https://github.com/mesalock-linux/termcolor-sgx)" = "<none>"
+"checksum thiserror 1.0.9 (git+https://github.com/mesalock-linux/thiserror-sgx)" = "<none>"
+"checksum thiserror-impl 1.0.9 (git+https://github.com/mesalock-linux/thiserror-sgx)" = "<none>"
 "checksum thread_local 1.0.0 (git+https://github.com/mesalock-linux/thread_local-rs-sgx)" = "<none>"
 "checksum tiff 0.4.0 (git+https://github.com/mesalock-linux/image-tiff-sgx)" = "<none>"
 "checksum toml 0.5.3 (git+https://github.com/mesalock-linux/toml-rs-sgx)" = "<none>"

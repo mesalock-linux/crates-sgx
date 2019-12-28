@@ -1,0 +1,27 @@
+[package]
+name = "anyhow"
+version = "1.0.26" # remember to update html_root_url
+authors = ["David Tolnay <dtolnay@gmail.com>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+description = "Flexible concrete Error type built on std::error::Error"
+repository = "https://github.com/dtolnay/anyhow"
+documentation = "https://docs.rs/anyhow"
+readme = "README.md"
+
+[badges]
+travis-ci = { repository = "dtolnay/anyhow" }
+
+[features]
+default = ["std", "mesalock_sgx"]
+std = ["mesalock_sgx"]
+mesalock_sgx = ["std", "sgx_tstd", "sgx_tstd/backtrace"]
+
+[dependencies]
+sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+
+[dev-dependencies]
+#futures = "0.3"
+#rustversion = "1.0"
+#thiserror = "1.0"
+#trybuild = { version = "1.0.19", features = ["diff"] }

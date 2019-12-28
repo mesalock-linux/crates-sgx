@@ -1,5 +1,6 @@
 adler32: Zlib
 aho-corasick: Unlicense/MIT
+anyhow: MIT OR Apache-2.0
 array_tool: MIT OR Apache-2.0
 assert_matches: MIT/Apache-2.0
 autocfg: Apache-2.0/MIT
@@ -143,6 +144,8 @@ syn-0.15.44: MIT OR Apache-2.0
 syn: MIT OR Apache-2.0
 synom: MIT/Apache-2.0
 termcolor: Unlicense OR MIT
+thiserror-impl: MIT OR Apache-2.0
+thiserror: MIT OR Apache-2.0
 thread_local: Apache-2.0/MIT
 tiff: MIT
 toml: MIT/Apache-2.0

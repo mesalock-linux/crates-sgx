@@ -1,5 +1,6 @@
 adler32            1.0.4
 aho-corasick       0.7.6
+anyhow             1.0.26
 array_tool         1.0.3
 assert_matches     1.3.0
 autocfg            0.1.7
@@ -118,6 +119,8 @@ syn                0.15.44
 syn                1.0.11
 synom              0.11.3
 termcolor          1.0.5
+thiserror          1.0.9
+thiserror-impl     1.0.9
 thread_local       1.0.0
 tiff               0.4.0
 toml               0.5.3

@@ -36,6 +36,7 @@ sgx_urts                       = { git = "https://github.com/apache/teaclave-sgx
 # SGX crates
 adler32      = { git = "https://github.com/mesalock-linux/adler32-rs-sgx" }
 aho-corasick = { git = "https://github.com/mesalock-linux/aho-corasick-sgx" }
+anyhow       = { git = "https://github.com/mesalock-linux/anyhow-sgx" }
 array_tool   = { git = "https://github.com/mesalock-linux/array_tool-sgx" }
 base64       = { git = "https://github.com/mesalock-linux/rust-base64-sgx" }
 bincode      = { git = "https://github.com/mesalock-linux/bincode-sgx" }
@@ -91,6 +92,7 @@ sha-1        = { git = "https://github.com/mesalock-linux/hashes-sgx" }
 sha1         = { git = "https://github.com/mesalock-linux/rust-sha1-sgx" }
 sha2         = { git = "https://github.com/mesalock-linux/hashes-sgx" }
 snap	     = { git = "https://github.com/mesalock-linux/rust-snappy-sgx" }
+thiserror    = { git = "https://github.com/mesalock-linux/thiserror-sgx" }
 tiff         = { git = "https://github.com/mesalock-linux/image-tiff-sgx" }
 toml         = { git = "https://github.com/mesalock-linux/toml-rs-sgx" }
 uuid         = { git = "https://github.com/mesalock-linux/uuid-sgx" }
