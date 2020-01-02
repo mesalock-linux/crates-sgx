@@ -77,7 +77,7 @@ parity-wasm        0.41.0
 png                0.15.0
 ppv-lite86         0.2.6
 proc-macro2        0.4.30
-proc-macro2        1.0.6
+proc-macro2        1.0.7
 profiler_builtins  0.1.0
 prost              0.5.0
 prost-build        0.5.0
@@ -116,7 +116,7 @@ spin               0.5.2
 stream-cipher      0.3.2
 syn                0.11.11
 syn                0.15.44
-syn                1.0.11
+syn                1.0.12
 synom              0.11.3
 termcolor          1.0.5
 thiserror          1.0.9

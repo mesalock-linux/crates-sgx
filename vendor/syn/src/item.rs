@@ -7,6 +7,8 @@ use proc_macro2::TokenStream;
 use crate::tt::TokenStreamHelper;
 #[cfg(feature = "extra-traits")]
 use std::hash::{Hash, Hasher};
+#[cfg(feature = "parsing")]
+use std::mem;
 
 ast_enum_of_structs! {
     /// Things that can appear directly inside of a module or scope.
@@ -430,6 +432,32 @@ impl Hash for Item {
                 state.write_u8(16);
                 TokenStreamHelper(item).hash(state);
             }
+            Item::__Nonexhaustive => unreachable!(),
+        }
+    }
+}
+
+impl Item {
+    #[cfg(feature = "parsing")]
+    pub(crate) fn replace_attrs(&mut self, new: Vec<Attribute>) -> Vec<Attribute> {
+        match self {
+            Item::ExternCrate(ItemExternCrate { attrs, .. })
+            | Item::Use(ItemUse { attrs, .. })
+            | Item::Static(ItemStatic { attrs, .. })
+            | Item::Const(ItemConst { attrs, .. })
+            | Item::Fn(ItemFn { attrs, .. })
+            | Item::Mod(ItemMod { attrs, .. })
+            | Item::ForeignMod(ItemForeignMod { attrs, .. })
+            | Item::Type(ItemType { attrs, .. })
+            | Item::Struct(ItemStruct { attrs, .. })
+            | Item::Enum(ItemEnum { attrs, .. })
+            | Item::Union(ItemUnion { attrs, .. })
+            | Item::Trait(ItemTrait { attrs, .. })
+            | Item::TraitAlias(ItemTraitAlias { attrs, .. })
+            | Item::Impl(ItemImpl { attrs, .. })
+            | Item::Macro(ItemMacro { attrs, .. })
+            | Item::Macro2(ItemMacro2 { attrs, .. }) => mem::replace(attrs, new),
+            Item::Verbatim(_) => Vec::new(),
             Item::__Nonexhaustive => unreachable!(),
         }
     }
@@ -1128,6 +1156,7 @@ pub mod parsing {
     use crate::ext::IdentExt;
     use crate::parse::discouraged::Speculative;
     use crate::parse::{Parse, ParseStream, Result};
+    use crate::token::Brace;
     use proc_macro2::{Delimiter, Group, Punct, Spacing, TokenTree};
     use std::iter::{self, FromIterator};
 
@@ -1234,31 +1263,8 @@ pub mod parsing {
                 Err(lookahead.error())
             }?;
 
-            {
-                let item_attrs = match &mut item {
-                    Item::ExternCrate(item) => &mut item.attrs,
-                    Item::Use(item) => &mut item.attrs,
-                    Item::Static(item) => &mut item.attrs,
-                    Item::Const(item) => &mut item.attrs,
-                    Item::Fn(item) => &mut item.attrs,
-                    Item::Mod(item) => &mut item.attrs,
-                    Item::ForeignMod(item) => &mut item.attrs,
-                    Item::Type(item) => &mut item.attrs,
-                    Item::Struct(item) => &mut item.attrs,
-                    Item::Enum(item) => &mut item.attrs,
-                    Item::Union(item) => &mut item.attrs,
-                    Item::Trait(item) => &mut item.attrs,
-                    Item::TraitAlias(item) => &mut item.attrs,
-                    Item::Impl(item) => &mut item.attrs,
-                    Item::Macro(item) => &mut item.attrs,
-                    Item::Macro2(item) => &mut item.attrs,
-                    Item::Verbatim(_) => return Ok(item),
-                    Item::__Nonexhaustive => unreachable!(),
-                };
-                attrs.extend(item_attrs.drain(..));
-                *item_attrs = attrs;
-            }
-
+            attrs.extend(item.replace_attrs(Vec::new()));
+            item.replace_attrs(attrs);
             Ok(item)
         }
     }
@@ -1477,7 +1483,7 @@ pub mod parsing {
 
             let content;
             let paren_token = parenthesized!(content in input);
-            let inputs = content.parse_terminated(FnArg::parse)?;
+            let inputs = parse_fn_args(&content)?;
             let variadic = inputs.last().as_ref().and_then(get_variadic);
 
             fn get_variadic(input: &&FnArg) -> Option<Variadic> {
@@ -1560,6 +1566,38 @@ pub mod parsing {
                 self_token: input.parse()?,
             })
         }
+    }
+
+    fn parse_fn_args(input: ParseStream) -> Result<Punctuated<FnArg, Token![,]>> {
+        let mut args = Punctuated::new();
+        let mut has_receiver = false;
+        loop {
+            if input.is_empty() {
+                break;
+            }
+            let arg: FnArg = input.parse()?;
+            if let FnArg::Receiver(receiver) = &arg {
+                if has_receiver {
+                    return Err(Error::new(
+                        receiver.self_token.span,
+                        "unexpected second method receiver",
+                    ));
+                } else if !args.is_empty() {
+                    return Err(Error::new(
+                        receiver.self_token.span,
+                        "unexpected method receiver",
+                    ));
+                }
+                has_receiver = true;
+            }
+            args.push_value(arg);
+            if input.is_empty() {
+                break;
+            }
+            let comma: Token![,] = input.parse()?;
+            args.push_punct(comma);
+        }
+        Ok(args)
     }
 
     fn fn_arg_typed(input: ParseStream) -> Result<PatType> {
@@ -2190,7 +2228,7 @@ pub mod parsing {
 
             let content;
             let paren_token = parenthesized!(content in input);
-            let inputs = content.parse_terminated(FnArg::parse)?;
+            let inputs = parse_fn_args(&content)?;
 
             let output: ReturnType = input.parse()?;
             let where_clause: Option<WhereClause> = input.parse()?;
@@ -2312,21 +2350,14 @@ pub mod parsing {
                 Generics::default()
             };
 
-            let trait_ = {
-                // TODO: optimize using advance_to
+            let trait_ = (|| -> Option<_> {
                 let ahead = input.fork();
-                if ahead.parse::<Option<Token![!]>>().is_ok()
-                    && ahead.parse::<Path>().is_ok()
-                    && ahead.parse::<Token![for]>().is_ok()
-                {
-                    let polarity: Option<Token![!]> = input.parse()?;
-                    let path: Path = input.parse()?;
-                    let for_token: Token![for] = input.parse()?;
-                    Some((polarity, path, for_token))
-                } else {
-                    None
-                }
-            };
+                let polarity: Option<Token![!]> = ahead.parse().ok()?;
+                let path: Path = ahead.parse().ok()?;
+                let for_token: Token![for] = ahead.parse().ok()?;
+                input.advance_to(&ahead);
+                Some((polarity, path, for_token))
+            })();
             let self_ty: Type = input.parse()?;
             let where_clause: Option<WhereClause> = input.parse()?;
 
@@ -2445,7 +2476,7 @@ pub mod parsing {
 
     impl Parse for ImplItemMethod {
         fn parse(input: ParseStream) -> Result<Self> {
-            let outer_attrs = input.call(Attribute::parse_outer)?;
+            let mut attrs = input.call(Attribute::parse_outer)?;
             let vis: Visibility = input.parse()?;
             let defaultness: Option<Token![default]> = input.parse()?;
             let constness: Option<Token![const]> = input.parse()?;
@@ -2458,18 +2489,35 @@ pub mod parsing {
 
             let content;
             let paren_token = parenthesized!(content in input);
-            let inputs = content.parse_terminated(FnArg::parse)?;
+            let inputs = parse_fn_args(&content)?;
 
             let output: ReturnType = input.parse()?;
             let where_clause: Option<WhereClause> = input.parse()?;
 
-            let content;
-            let brace_token = braced!(content in input);
-            let inner_attrs = content.call(Attribute::parse_inner)?;
-            let stmts = content.call(Block::parse_within)?;
+            let block = if let Some(semi) = input.parse::<Option<Token![;]>>()? {
+                // Accept methods without a body in an impl block because
+                // rustc's *parser* does not reject them (the compilation error
+                // is emitted later than parsing) and it can be useful for macro
+                // DSLs.
+                let mut punct = Punct::new(';', Spacing::Alone);
+                punct.set_span(semi.span);
+                let tokens = TokenStream::from_iter(vec![TokenTree::Punct(punct)]);
+                Block {
+                    brace_token: Brace::default(),
+                    stmts: vec![Stmt::Item(Item::Verbatim(tokens))],
+                }
+            } else {
+                let content;
+                let brace_token = braced!(content in input);
+                attrs.extend(content.call(Attribute::parse_inner)?);
+                Block {
+                    brace_token,
+                    stmts: content.call(Block::parse_within)?,
+                }
+            };
 
             Ok(ImplItemMethod {
-                attrs: private::attrs(outer_attrs, inner_attrs),
+                attrs,
                 vis,
                 defaultness,
                 sig: Signature {
@@ -2488,7 +2536,7 @@ pub mod parsing {
                         ..generics
                     },
                 },
-                block: Block { brace_token, stmts },
+                block,
             })
         }
     }
@@ -2922,6 +2970,14 @@ mod printing {
             self.vis.to_tokens(tokens);
             self.defaultness.to_tokens(tokens);
             self.sig.to_tokens(tokens);
+            if self.block.stmts.len() == 1 {
+                if let Stmt::Item(Item::Verbatim(verbatim)) = &self.block.stmts[0] {
+                    if verbatim.to_string() == ";" {
+                        verbatim.to_tokens(tokens);
+                        return;
+                    }
+                }
+            }
             self.block.brace_token.surround(tokens, |tokens| {
                 tokens.append_all(self.attrs.inner());
                 tokens.append_all(&self.block.stmts);
