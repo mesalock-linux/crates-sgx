@@ -64,6 +64,7 @@ md5                0.7.0
 memchr             2.2.1
 memory_units       0.3.0
 miniz_oxide        0.3.5
+mio                0.6.19
 net2               0.2.33
 num                0.2.0
 num-bigint         0.2.3
@@ -111,6 +112,7 @@ serde_json         1.0.40
 sha-1              0.8.1
 sha1               0.6.0
 sha2               0.8.0
+slab               0.4.2
 snap               0.2.5
 spin               0.5.2
 stream-cipher      0.3.2

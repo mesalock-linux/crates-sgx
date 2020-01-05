@@ -64,6 +64,7 @@ md5: Apache-2.0/MIT
 memchr: Unlicense/MIT
 memory_units: MPL-2.0
 miniz_oxide: MIT
+mio: MIT
 net2: MIT/Apache-2.0
 num-bigint: MIT/Apache-2.0
 num-complex: MIT/Apache-2.0
@@ -136,6 +137,7 @@ sgx_urts: see license file at sgx_urts/LICENSE
 sha1: BSD-3-Clause
 sha-1: MIT OR Apache-2.0
 sha2: MIT OR Apache-2.0
+slab: MIT
 snap: BSD-3-Clause
 spin: MIT
 stream-cipher: MIT OR Apache-2.0

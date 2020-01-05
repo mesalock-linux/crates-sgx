@@ -201,8 +201,13 @@ git = "https://github.com/mesalock-linux/miniz_oxide"
 branch = "master"
 replace-with = "vendored-sources"
 
-[source."https://github.com/mesalock-linux/net2-rs"]
-git = "https://github.com/mesalock-linux/net2-rs"
+[source."https://github.com/mesalock-linux/mio-sgx"]
+git = "https://github.com/mesalock-linux/mio-sgx"
+tag = "sgx_1.1.0"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/net2-rs-sgx"]
+git = "https://github.com/mesalock-linux/net2-rs-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
@@ -368,6 +373,11 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/sgx-fake-profiler-builtins"]
 git = "https://github.com/mesalock-linux/sgx-fake-profiler-builtins"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/slab-sgx"]
+git = "https://github.com/mesalock-linux/slab-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
