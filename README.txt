@@ -116,12 +116,13 @@ spin               0.5.2
 stream-cipher      0.3.2
 syn                0.11.11
 syn                0.15.44
-syn                1.0.12
+syn                1.0.13
 synom              0.11.3
 termcolor          1.0.5
 thiserror          1.0.9
 thiserror-impl     1.0.9
 thread_local       1.0.0
+threadpool         1.8.0
 tiff               0.4.0
 toml               0.5.3
 typenum            1.11.2

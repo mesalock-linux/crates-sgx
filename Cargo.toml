@@ -93,6 +93,7 @@ sha1         = { git = "https://github.com/mesalock-linux/rust-sha1-sgx" }
 sha2         = { git = "https://github.com/mesalock-linux/hashes-sgx" }
 snap	     = { git = "https://github.com/mesalock-linux/rust-snappy-sgx" }
 thiserror    = { git = "https://github.com/mesalock-linux/thiserror-sgx" }
+threadpool   = { git = "https://github.com/mesalock-linux/rust-threadpool-sgx" }
 tiff         = { git = "https://github.com/mesalock-linux/image-tiff-sgx" }
 toml         = { git = "https://github.com/mesalock-linux/toml-rs-sgx" }
 uuid         = { git = "https://github.com/mesalock-linux/uuid-sgx" }

@@ -147,6 +147,7 @@ termcolor: Unlicense OR MIT
 thiserror-impl: MIT OR Apache-2.0
 thiserror: MIT OR Apache-2.0
 thread_local: Apache-2.0/MIT
+threadpool: MIT/Apache-2.0
 tiff: MIT
 toml: MIT/Apache-2.0
 typenum: MIT/Apache-2.0
