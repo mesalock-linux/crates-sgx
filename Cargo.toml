@@ -73,9 +73,6 @@ num-bigint       = { git = "https://github.com/mesalock-linux/num-bigint-sgx" }
 num-traits       = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
 parity-wasm      = { git = "https://github.com/mesalock-linux/parity-wasm-sgx" }
 png              = { git = "https://github.com/mesalock-linux/image-png-sgx" }
-prost            = { git = "https://github.com/mesalock-linux/prost-sgx" }
-prost-build      = { git = "https://github.com/mesalock-linux/prost-build-sgx-fake" }
-prost-types      = { git = "https://github.com/mesalock-linux/prost-sgx" }
 quick-error      = { git = "https://github.com/mesalock-linux/quick-error-sgx" }
 rand             = { git = "https://github.com/mesalock-linux/rand-sgx", tag = "v0.6.5_sgx1.1.0" }
 rdrand           = { git = "https://github.com/mesalock-linux/rust_rdrand-sgx" }
