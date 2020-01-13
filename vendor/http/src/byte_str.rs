@@ -11,12 +11,16 @@ pub(crate) struct ByteStr {
 impl ByteStr {
     #[inline]
     pub fn new() -> ByteStr {
-        ByteStr { bytes: Bytes::new() }
+        ByteStr {
+            bytes: Bytes::new(),
+        }
     }
 
     #[inline]
     pub fn from_static(val: &'static str) -> ByteStr {
-        ByteStr { bytes: Bytes::from_static(val.as_bytes()) }
+        ByteStr {
+            bytes: Bytes::from_static(val.as_bytes()),
+        }
     }
 
     #[inline]
@@ -24,7 +28,10 @@ impl ByteStr {
         if cfg!(debug_assertions) {
             match str::from_utf8(&bytes) {
                 Ok(_) => (),
-                Err(err) => panic!("ByteStr::from_utf8_unchecked() with invalid bytes; error = {}, bytes = {:?}", err, bytes),
+                Err(err) => panic!(
+                    "ByteStr::from_utf8_unchecked() with invalid bytes; error = {}, bytes = {:?}",
+                    err, bytes
+                ),
             }
         }
         ByteStr { bytes: bytes }
@@ -44,14 +51,18 @@ impl ops::Deref for ByteStr {
 impl From<String> for ByteStr {
     #[inline]
     fn from(src: String) -> ByteStr {
-        ByteStr { bytes: Bytes::from(src) }
+        ByteStr {
+            bytes: Bytes::from(src),
+        }
     }
 }
 
 impl<'a> From<&'a str> for ByteStr {
     #[inline]
     fn from(src: &'a str) -> ByteStr {
-        ByteStr { bytes: Bytes::from(src) }
+        ByteStr {
+            bytes: Bytes::copy_from_slice(src.as_bytes()),
+        }
     }
 }
 

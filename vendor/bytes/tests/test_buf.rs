@@ -1,9 +1,7 @@
-extern crate bytes;
-extern crate byteorder;
-extern crate iovec;
+#![deny(warnings, rust_2018_idioms)]
 
 use bytes::Buf;
-use iovec::IoVec;
+use std::io::IoSlice;
 
 #[test]
 fn test_fresh_cursor_vec() {
@@ -48,11 +46,56 @@ fn test_get_u16_buffer_underflow() {
 fn test_bufs_vec() {
     let buf = &b"hello world"[..];
 
-    let b1: &[u8] = &mut [0];
-    let b2: &[u8] = &mut [0];
+    let b1: &[u8] = &mut [];
+    let b2: &[u8] = &mut [];
 
-    let mut dst: [IoVec; 2] =
-        [b1.into(), b2.into()];
+    let mut dst = [IoSlice::new(b1), IoSlice::new(b2)];
 
-    assert_eq!(1, buf.bytes_vec(&mut dst[..]));
+    assert_eq!(1, buf.bytes_vectored(&mut dst[..]));
+}
+
+#[test]
+fn test_vec_deque() {
+    use std::collections::VecDeque;
+
+    let mut buffer: VecDeque<u8> = VecDeque::new();
+    buffer.extend(b"hello world");
+    assert_eq!(11, buffer.remaining());
+    assert_eq!(b"hello world", buffer.bytes());
+    buffer.advance(6);
+    assert_eq!(b"world", buffer.bytes());
+    buffer.extend(b" piece");
+    let mut out = [0; 11];
+    buffer.copy_to_slice(&mut out);
+    assert_eq!(b"world piece", &out[..]);
+}
+
+#[test]
+fn test_deref_buf_forwards() {
+    struct Special;
+
+    impl Buf for Special {
+        fn remaining(&self) -> usize {
+            unreachable!("remaining");
+        }
+
+        fn bytes(&self) -> &[u8] {
+            unreachable!("bytes");
+        }
+
+        fn advance(&mut self, _: usize) {
+            unreachable!("advance");
+        }
+
+        fn get_u8(&mut self) -> u8 {
+            // specialized!
+            b'x'
+        }
+    }
+
+    // these should all use the specialized method
+    assert_eq!(Special.get_u8(), b'x');
+    assert_eq!((&mut Special as &mut dyn Buf).get_u8(), b'x');
+    assert_eq!((Box::new(Special) as Box<dyn Buf>).get_u8(), b'x');
+    assert_eq!(Box::new(Special).get_u8(), b'x');
 }

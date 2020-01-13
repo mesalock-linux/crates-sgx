@@ -4,8 +4,6 @@ anyhow: MIT OR Apache-2.0
 array_tool: MIT OR Apache-2.0
 assert_matches: MIT/Apache-2.0
 autocfg: Apache-2.0/MIT
-backtrace: MIT/Apache-2.0
-backtrace-sys: MIT/Apache-2.0
 base64: MIT/Apache-2.0
 bincode: MIT
 bitflags: MIT/Apache-2.0
@@ -28,7 +26,6 @@ digest: MIT OR Apache-2.0
 either: MIT/Apache-2.0
 env_logger: MIT/Apache-2.0
 erased-serde: MIT OR Apache-2.0
-failure: MIT OR Apache-2.0
 fake-simd: MIT/Apache-2.0
 fnv: Apache-2.0 / MIT
 gbdt: Apache-2.0
@@ -99,7 +96,6 @@ regex: MIT OR Apache-2.0
 regex-syntax: MIT/Apache-2.0
 ring: see license file at ring/LICENSE
 rulinalg: MIT
-rustc-demangle: MIT/Apache-2.0
 rustls: Apache-2.0/ISC/MIT
 rusty-machine: MIT
 ryu: Apache-2.0 OR BSL-1.0

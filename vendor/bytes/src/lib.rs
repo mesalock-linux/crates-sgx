@@ -1,3 +1,8 @@
+#![deny(warnings, missing_docs, missing_debug_implementations, rust_2018_idioms)]
+#![doc(html_root_url = "https://docs.rs/bytes/0.5.3")]
+#![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
+#![no_std]
+
 //! Provides abstractions for working with bytes.
 //!
 //! The `bytes` crate provides an efficient byte buffer structure
@@ -9,7 +14,7 @@
 //!
 //! # `Bytes`
 //!
-//! `Bytes` is an efficient container for storing and operating on continguous
+//! `Bytes` is an efficient container for storing and operating on contiguous
 //! slices of memory. It is intended for use primarily in networking code, but
 //! could have applications elsewhere as well.
 //!
@@ -68,35 +73,51 @@
 //! perform a syscall, which has the potential of failing. Operations on `Buf`
 //! and `BufMut` are infallible.
 
-#![deny(warnings, missing_docs, missing_debug_implementations)]
-#![doc(html_root_url = "https://docs.rs/bytes/0.5.0")]
 
-#![cfg_attr(all(feature = "mesalock_sgx",
-                not(target_env = "sgx")), no_std)]
-#![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
+extern crate alloc;
+
+#[cfg(all(feature = "mesalock_sgx", target_env = "sgx"))]
+extern crate std;
 
 #[cfg(all(feature = "mesalock_sgx", not(target_env = "sgx")))]
 #[macro_use]
 extern crate sgx_tstd as std;
 
-extern crate byteorder;
-extern crate iovec;
-
 pub mod buf;
-pub use buf::{
+pub use crate::buf::{
     Buf,
     BufMut,
-    IntoBuf,
 };
 
+mod bytes_mut;
 mod bytes;
 mod debug;
-pub use bytes::{Bytes, BytesMut};
+mod hex;
+mod loom;
+pub use crate::bytes_mut::BytesMut;
+pub use crate::bytes::Bytes;
 
 // Optional Serde support
 #[cfg(feature = "serde")]
 mod serde;
 
-// Optional `Either` support
-#[cfg(feature = "either")]
-mod either;
+#[inline(never)]
+#[cold]
+fn abort() -> ! {
+    //#[cfg(feature = "std")]
+    //{
+    //    std::process::abort();
+    //}
+
+    //#[cfg(not(feature = "std"))]
+    //{
+        struct Abort;
+        impl Drop for Abort {
+            fn drop(&mut self) {
+                panic!();
+            }
+        }
+        let _a = Abort;
+        panic!("abort in bytes");
+    //}
+}

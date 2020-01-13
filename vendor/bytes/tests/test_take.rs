@@ -1,6 +1,6 @@
-extern crate bytes;
+#![deny(warnings, rust_2018_idioms)]
 
-use bytes::Buf;
+use bytes::buf::{Buf, BufExt};
 
 #[test]
 fn long_take() {

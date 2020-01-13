@@ -4,8 +4,6 @@ anyhow             1.0.26
 array_tool         1.0.3
 assert_matches     1.3.0
 autocfg            0.1.7
-backtrace          0.3.40
-backtrace-sys      0.1.32
 base64             0.10.1
 bincode            1.1.4
 bit-vec            0.6.1
@@ -14,9 +12,9 @@ block-buffer       0.7.3
 block-padding      0.1.4
 byte-tools         0.3.1
 byteorder          1.3.2
-bytes              0.5.0
+bytes              0.5.3
 c2-chacha          0.2.3
-cc                 1.0.48
+cc                 1.0.50
 cfg-if             0.1.10
 chrono             0.4.7
 color_quant        1.0.1
@@ -28,7 +26,6 @@ digest             0.8.1
 either             1.5.3
 env_logger         0.7.1
 erased-serde       0.3.9
-failure            0.1.6
 fake-simd          0.1.2
 fnv                1.0.6
 gbdt               0.1.0
@@ -41,7 +38,7 @@ half               1.3.1
 hashbrown          0.3.1
 heapsize           0.4.2
 hex                0.4.0
-http               0.1.18
+http               0.2.0
 http_req           0.5.3
 httparse           1.3.4
 humantime          1.3.0
@@ -80,10 +77,10 @@ ppv-lite86         0.2.6
 proc-macro2        0.4.30
 proc-macro2        1.0.7
 profiler_builtins  0.1.0
-prost              0.5.0
+prost              0.6.0
 prost-build        0.5.0
-prost-derive       0.5.0
-prost-types        0.5.0
+prost-derive       0.6.0
+prost-types        0.6.0
 quick-error        1.2.2
 quote              0.3.15
 quote              0.6.13
@@ -99,7 +96,6 @@ regex              1.3.1
 regex-syntax       0.6.12
 ring               0.16.9
 rulinalg           0.4.2
-rustc-demangle     0.1.16
 rustls             0.16.0
 rusty-machine      0.5.4
 ryu                1.0.2

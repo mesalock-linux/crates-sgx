@@ -1,7 +1,6 @@
 [package]
 name = "prost"
-# NB: When modifying, also modify html_root_url in lib.rs
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Dan Burkert <dan@danburkert.com>"]
 license = "Apache-2.0"
 repository = "https://github.com/danburkert/prost"
@@ -18,20 +17,9 @@ exclude = [
   "/sgx/*",
 ]
 
-[badges]
-travis-ci = { repository = "danburkert/prost" }
-appveyor = { repository = "danburkert/prost" }
-
-#[workspace]
-#members = [
-#  "conformance",
-#  "prost-build",
-#  "prost-derive",
-#  "prost-types",
-#  "protobuf",
-#  "tests",
-#  "tests-2015",
-#]
+[lib]
+# https://bheisler.github.io/criterion.rs/book/faq.html#cargo-bench-gives-unrecognized-option-errors-for-valid-command-line-options
+bench = false
 
 [features]
 default = ["prost-derive", "mesalock_sgx"]
@@ -40,20 +28,19 @@ mesalock_sgx = ["sgx_tstd"]
 
 [dependencies]
 bytes = { git = "https://github.com/mesalock-linux/bytes-sgx" }
-prost-derive = { version = "0.5.0", path = "prost-derive", optional = true }
+prost-derive = { version = "0.6.0", path = "prost-derive", optional = true }
 sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
-#criterion = "0.2"
-#env_logger = { version = "0.6", default-features = false }
-#failure = "0.1"
+#criterion = "0.3"
+#env_logger = { version = "0.7", default-features = false }
 #log = "0.4"
-#protobuf = { version = "0", path = "protobuf" }
-#quickcheck = "0.8"
+#quickcheck = "0.9"
+#rand = "0.7"
+
+[profile.bench]
+debug = true
 
 #[[bench]]
 #name = "varint"
-
-#[[bench]]
-#name = "benchmark"
 #harness = false

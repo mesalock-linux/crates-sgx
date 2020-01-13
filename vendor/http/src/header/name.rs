@@ -1,13 +1,13 @@
-use std::prelude::v1::*;
-use HttpTryFrom;
-use byte_str::ByteStr;
+use crate::byte_str::ByteStr;
 use bytes::{Bytes, BytesMut};
 
-use std::{fmt, mem};
+use std::prelude::v1::*;
 use std::borrow::Borrow;
+use std::error::Error;
+use std::convert::{TryFrom};
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
-use std::error::Error;
+use std::{fmt, mem};
 
 /// Represents an HTTP header field name
 ///
@@ -57,14 +57,9 @@ struct MaybeLower<'a> {
 }
 
 /// A possible error when converting a `HeaderName` from another type.
-#[derive(Debug)]
 pub struct InvalidHeaderName {
     _priv: (),
 }
-
-/// A possible error when converting a `HeaderName` from another type.
-#[derive(Debug)]
-pub struct InvalidHeaderNameBytes(InvalidHeaderName) ;
 
 macro_rules! standard_headers {
     (
@@ -124,14 +119,14 @@ macro_rules! standard_headers {
                 // Test lower case
                 let name_bytes = name.as_bytes();
                 let bytes: Bytes =
-                    HeaderName::from_bytes(name_bytes).unwrap().into();
+                    HeaderName::from_bytes(name_bytes).unwrap().inner.into();
                 assert_eq!(bytes, name_bytes);
                 assert_eq!(HeaderName::from_bytes(name_bytes).unwrap(), std);
 
                 // Test upper case
                 let upper = name.to_uppercase().to_string();
                 let bytes: Bytes =
-                    HeaderName::from_bytes(upper.as_bytes()).unwrap().into();
+                    HeaderName::from_bytes(upper.as_bytes()).unwrap().inner.into();
                 assert_eq!(bytes, name.as_bytes());
                 assert_eq!(HeaderName::from_bytes(upper.as_bytes()).unwrap(),
                            std);
@@ -1014,6 +1009,7 @@ const HEADER_CHARS: [u8; 256] = [
         0,     0,     0,     0,     0,     0                              // 25x
 ];
 
+/// Valid header name characters for HTTP/2.0 and HTTP/3.0
 const HEADER_CHARS_H2: [u8; 256] = [
     //  0      1      2      3      4      5      6      7      8      9
         0,     0,     0,     0,     0,     0,     0,     0,     0,     0, //   x
@@ -1064,9 +1060,11 @@ macro_rules! eq {
 /// This version is best under optimized mode, however in a wasm debug compile,
 /// the `eq` macro expands to 1 + 1 + 1 + 1... and wasm explodes when this chain gets too long
 /// See https://github.com/DenisKolodin/yew/issues/478
-fn parse_hdr<'a>(data: &'a [u8], b: &'a mut [u8; 64], table: &[u8; 256])
-    -> Result<HdrName<'a>, InvalidHeaderName>
-{
+fn parse_hdr<'a>(
+    data: &'a [u8],
+    b: &'a mut [u8; 64],
+    table: &[u8; 256],
+) -> Result<HdrName<'a>, InvalidHeaderName> {
     use self::StandardHeader::*;
 
     let len = data.len();
@@ -1124,9 +1122,7 @@ fn parse_hdr<'a>(data: &'a [u8], b: &'a mut [u8; 64], table: &[u8; 256])
             super::MAX_HEADER_NAME_LEN);
 
     match len {
-        0 => {
-            Err(InvalidHeaderName::new())
-        }
+        0 => Err(InvalidHeaderName::new()),
         2 => {
             to_lower!(b, data, 2);
 
@@ -1183,18 +1179,18 @@ fn parse_hdr<'a>(data: &'a [u8], b: &'a mut [u8; 64], table: &[u8; 256])
             to_lower!(b, data, 6);
 
             if eq!(b == b'a' b'c' b'c' b'e' b'p' b't') {
-                return Ok(Accept.into())
+                return Ok(Accept.into());
             } else if eq!(b == b'c' b'o' b'o' b'k' b'i' b'e') {
-                return Ok(Cookie.into())
+                return Ok(Cookie.into());
             } else if eq!(b == b'e' b'x' b'p' b'e' b'c' b't') {
-                return Ok(Expect.into())
+                return Ok(Expect.into());
             } else if eq!(b == b'o' b'r' b'i' b'g' b'i' b'n') {
-                return Ok(Origin.into())
+                return Ok(Origin.into());
             } else if eq!(b == b'p' b'r' b'a' b'g' b'm' b'a') {
-                return Ok(Pragma.into())
+                return Ok(Pragma.into());
             } else if b[0] == b's' {
                 if eq!(b[1] == b'e' b'r' b'v' b'e' b'r') {
-                    return Ok(Server.into())
+                    return Ok(Server.into());
                 }
             }
 
@@ -1226,12 +1222,12 @@ fn parse_hdr<'a>(data: &'a [u8], b: &'a mut [u8; 64], table: &[u8; 256])
 
             if eq!(b == b'i' b'f' b'-') {
                 if eq!(b[3] == b'm' b'a' b't' b'c' b'h') {
-                    return Ok(IfMatch.into())
+                    return Ok(IfMatch.into());
                 } else if eq!(b[3] == b'r' b'a' b'n' b'g' b'e') {
-                    return Ok(IfRange.into())
+                    return Ok(IfRange.into());
                 }
             } else if eq!(b == b'l' b'o' b'c' b'a' b't' b'i' b'o' b'n') {
-                return Ok(Location.into())
+                return Ok(Location.into());
             }
 
             validate(b, len)
@@ -1283,20 +1279,21 @@ fn parse_hdr<'a>(data: &'a [u8], b: &'a mut [u8; 64], table: &[u8; 256])
 
             if b[0] == b'a' {
                 if eq!(b[1] == b'c' b'c' b'e' b'p' b't' b'-' b'r' b'a' b'n' b'g' b'e' b's') {
-                    return Ok(AcceptRanges.into())
+                    return Ok(AcceptRanges.into());
                 } else if eq!(b[1] == b'u' b't' b'h' b'o' b'r' b'i' b'z' b'a' b't' b'i' b'o' b'n') {
-                    return Ok(Authorization.into())
+                    return Ok(Authorization.into());
                 }
             } else if b[0] == b'c' {
                 if eq!(b[1] == b'a' b'c' b'h' b'e' b'-' b'c' b'o' b'n' b't' b'r' b'o' b'l') {
-                    return Ok(CacheControl.into())
-                } else if eq!(b[1] == b'o' b'n' b't' b'e' b'n' b't' b'-' b'r' b'a' b'n' b'g' b'e' ) {
-                    return Ok(ContentRange.into())
+                    return Ok(CacheControl.into());
+                } else if eq!(b[1] == b'o' b'n' b't' b'e' b'n' b't' b'-' b'r' b'a' b'n' b'g' b'e' )
+                {
+                    return Ok(ContentRange.into());
                 }
             } else if eq!(b == b'i' b'f' b'-' b'n' b'o' b'n' b'e' b'-' b'm' b'a' b't' b'c' b'h') {
-                return Ok(IfNoneMatch.into())
+                return Ok(IfNoneMatch.into());
             } else if eq!(b == b'l' b'a' b's' b't' b'-' b'm' b'o' b'd' b'i' b'f' b'i' b'e' b'd') {
-                return Ok(LastModified.into())
+                return Ok(LastModified.into());
             }
 
             validate(b, len)
@@ -1306,7 +1303,8 @@ fn parse_hdr<'a>(data: &'a [u8], b: &'a mut [u8; 64], table: &[u8; 256])
 
             if eq!(b == b'a' b'c' b'c' b'e' b'p' b't' b'-' b'c' b'h' b'a' b'r' b's' b'e' b't') {
                 Ok(AcceptCharset.into())
-            } else if eq!(b == b'c' b'o' b'n' b't' b'e' b'n' b't' b'-' b'l' b'e' b'n' b'g' b't' b'h') {
+            } else if eq!(b == b'c' b'o' b'n' b't' b'e' b'n' b't' b'-' b'l' b'e' b'n' b'g' b't' b'h')
+            {
                 Ok(ContentLength.into())
             } else {
                 validate(b, len)
@@ -1660,11 +1658,12 @@ impl HeaderName {
     /// This function normalizes the input.
     #[allow(deprecated)]
     pub fn from_bytes(src: &[u8]) -> Result<HeaderName, InvalidHeaderName> {
+        #[allow(deprecated)]
         let mut buf = unsafe { mem::uninitialized() };
         match parse_hdr(src, &mut buf, &HEADER_CHARS)?.inner {
             Repr::Standard(std) => Ok(std.into()),
             Repr::Custom(MaybeLower { buf, lower: true }) => {
-                let buf = Bytes::from(buf);
+                let buf = Bytes::copy_from_slice(buf);
                 let val = unsafe { ByteStr::from_utf8_unchecked(buf) };
                 Ok(Custom(val).into())
             }
@@ -1679,7 +1678,7 @@ impl HeaderName {
                         return Err(InvalidHeaderName::new());
                     }
 
-                    dst.put(b);
+                    dst.put_u8(b);
                 }
 
                 let val = unsafe { ByteStr::from_utf8_unchecked(dst.freeze()) };
@@ -1692,8 +1691,8 @@ impl HeaderName {
     /// Converts a slice of bytes to an HTTP header name.
     ///
     /// This function expects the input to only contain lowercase characters.
-    /// This is useful when decoding HTTP/2.0 headers. The HTTP/2.0
-    /// specification requires that all headers be represented in lower case.
+    /// This is useful when decoding HTTP/2.0 or HTTP/3.0 headers. Both
+    /// require that all headers be represented in lower case.
     ///
     /// # Examples
     ///
@@ -1709,11 +1708,12 @@ impl HeaderName {
     /// ```
     #[allow(deprecated)]
     pub fn from_lowercase(src: &[u8]) -> Result<HeaderName, InvalidHeaderName> {
+        #[allow(deprecated)]
         let mut buf = unsafe { mem::uninitialized() };
         match parse_hdr(src, &mut buf, &HEADER_CHARS_H2)?.inner {
             Repr::Standard(std) => Ok(std.into()),
             Repr::Custom(MaybeLower { buf, lower: true }) => {
-                let buf = Bytes::from(buf);
+                let buf = Bytes::copy_from_slice(buf);
                 let val = unsafe { ByteStr::from_utf8_unchecked(buf) };
                 Ok(Custom(val).into())
             }
@@ -1724,7 +1724,7 @@ impl HeaderName {
                     }
                 }
 
-                let buf = Bytes::from(buf);
+                let buf = Bytes::copy_from_slice(buf);
                 let val = unsafe { ByteStr::from_utf8_unchecked(buf) };
                 Ok(Custom(val).into())
             }
@@ -1769,6 +1769,7 @@ impl HeaderName {
     #[allow(deprecated)]
     pub fn from_static(src: &'static str) -> HeaderName {
         let bytes = src.as_bytes();
+        #[allow(deprecated)]
         let mut buf = unsafe { mem::uninitialized() };
         match parse_hdr(bytes, &mut buf, &HEADER_CHARS_H2) {
             Ok(hdr_name) => match hdr_name.inner {
@@ -1805,16 +1806,17 @@ impl HeaderName {
             Repr::Custom(ref v) => &*v.0,
         }
     }
+
+    pub(super) fn into_bytes(self) -> Bytes {
+        self.inner.into()
+    }
 }
 
 impl FromStr for HeaderName {
     type Err = InvalidHeaderName;
 
     fn from_str(s: &str) -> Result<HeaderName, InvalidHeaderName> {
-        HeaderName::from_bytes(s.as_bytes())
-            .map_err(|_| InvalidHeaderName {
-                _priv: (),
-            })
+        HeaderName::from_bytes(s.as_bytes()).map_err(|_| InvalidHeaderName { _priv: () })
     }
 }
 
@@ -1837,13 +1839,13 @@ impl Borrow<str> for HeaderName {
 }
 
 impl fmt::Debug for HeaderName {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Debug::fmt(self.as_str(), fmt)
     }
 }
 
 impl fmt::Display for HeaderName {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self.as_str(), fmt)
     }
 }
@@ -1862,12 +1864,13 @@ impl<'a> From<&'a HeaderName> for HeaderName {
 
 #[doc(hidden)]
 impl<T> From<Repr<T>> for Bytes
-where T: Into<Bytes> {
+where
+    T: Into<Bytes>,
+{
     fn from(repr: Repr<T>) -> Bytes {
         match repr {
-            Repr::Standard(header) =>
-                Bytes::from_static(header.as_str().as_bytes()),
-            Repr::Custom(header) => header.into()
+            Repr::Standard(header) => Bytes::from_static(header.as_str().as_bytes()),
+            Repr::Custom(header) => header.into(),
         }
     }
 }
@@ -1879,23 +1882,7 @@ impl From<Custom> for Bytes {
     }
 }
 
-impl From<HeaderName> for Bytes {
-    #[inline]
-    fn from(name: HeaderName) -> Bytes {
-        name.inner.into()
-    }
-}
-
-impl<'a> HttpTryFrom<&'a HeaderName> for HeaderName {
-    type Error = ::error::Never;
-
-    #[inline]
-    fn try_from(t: &'a HeaderName) -> Result<Self, Self::Error> {
-        Ok(t.clone())
-    }
-}
-
-impl<'a> HttpTryFrom<&'a str> for HeaderName {
+impl<'a> TryFrom<&'a str> for HeaderName {
     type Error = InvalidHeaderName;
     #[inline]
     fn try_from(s: &'a str) -> Result<Self, Self::Error> {
@@ -1903,7 +1890,7 @@ impl<'a> HttpTryFrom<&'a str> for HeaderName {
     }
 }
 
-impl<'a> HttpTryFrom<&'a String> for HeaderName {
+impl<'a> TryFrom<&'a String> for HeaderName {
     type Error = InvalidHeaderName;
     #[inline]
     fn try_from(s: &'a String) -> Result<Self, Self::Error> {
@@ -1911,19 +1898,11 @@ impl<'a> HttpTryFrom<&'a String> for HeaderName {
     }
 }
 
-impl<'a> HttpTryFrom<&'a [u8]> for HeaderName {
+impl<'a> TryFrom<&'a [u8]> for HeaderName {
     type Error = InvalidHeaderName;
     #[inline]
     fn try_from(s: &'a [u8]) -> Result<Self, Self::Error> {
         Self::from_bytes(s)
-    }
-}
-
-impl HttpTryFrom<Bytes> for HeaderName {
-    type Error = InvalidHeaderNameBytes;
-    #[inline]
-    fn try_from(bytes: Bytes) -> Result<Self, Self::Error> {
-        Self::from_bytes(bytes.as_ref()).map_err(InvalidHeaderNameBytes)
     }
 }
 
@@ -1939,7 +1918,9 @@ impl From<StandardHeader> for HeaderName {
 #[doc(hidden)]
 impl From<Custom> for HeaderName {
     fn from(src: Custom) -> HeaderName {
-        HeaderName { inner: Repr::Custom(src) }
+        HeaderName {
+            inner: Repr::Custom(src),
+        }
     }
 }
 
@@ -1949,7 +1930,6 @@ impl<'a> PartialEq<&'a HeaderName> for HeaderName {
         *self == **other
     }
 }
-
 
 impl<'a> PartialEq<HeaderName> for &'a HeaderName {
     #[inline]
@@ -1976,7 +1956,6 @@ impl PartialEq<str> for HeaderName {
         eq_ignore_ascii_case(self.as_ref(), other.as_bytes())
     }
 }
-
 
 impl PartialEq<HeaderName> for str {
     /// Performs a case-insensitive comparison of the string against the header
@@ -2006,7 +1985,6 @@ impl<'a> PartialEq<&'a str> for HeaderName {
     }
 }
 
-
 impl<'a> PartialEq<HeaderName> for &'a str {
     /// Performs a case-insensitive comparison of the string against the header
     /// name
@@ -2016,9 +1994,16 @@ impl<'a> PartialEq<HeaderName> for &'a str {
     }
 }
 
-#[allow(deprecated)]
-impl fmt::Display for InvalidHeaderName {
+impl fmt::Debug for InvalidHeaderName {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("InvalidHeaderName")
+            // skip _priv noise
+            .finish()
+    }
+}
+
+impl fmt::Display for InvalidHeaderName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.description().fmt(f)
     }
 }
@@ -2026,19 +2011,6 @@ impl fmt::Display for InvalidHeaderName {
 impl Error for InvalidHeaderName {
     fn description(&self) -> &str {
         "invalid HTTP header name"
-    }
-}
-
-impl fmt::Display for InvalidHeaderNameBytes {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.0.fmt(f)
-    }
-}
-
-#[allow(deprecated)]
-impl Error for InvalidHeaderNameBytes {
-    fn description(&self) -> &str {
-        self.0.description()
     }
 }
 
@@ -2056,8 +2028,9 @@ impl<'a> HdrName<'a> {
 
     #[allow(deprecated)]
     pub fn from_bytes<F, U>(hdr: &[u8], f: F) -> Result<U, InvalidHeaderName>
-        where F: FnOnce(HdrName) -> U,
+        where F: FnOnce(HdrName<'_>) -> U,
     {
+        #[allow(deprecated)]
         let mut buf = unsafe { mem::uninitialized() };
         let hdr = parse_hdr(hdr, &mut buf, &HEADER_CHARS)?;
         Ok(f(hdr))
@@ -2065,11 +2038,13 @@ impl<'a> HdrName<'a> {
 
     #[allow(deprecated)]
     pub fn from_static<F, U>(hdr: &'static str, f: F) -> U
-        where F: FnOnce(HdrName) -> U,
+    where
+        F: FnOnce(HdrName<'_>) -> U,
     {
+        #[allow(deprecated)]
         let mut buf = unsafe { mem::uninitialized() };
-        let hdr = parse_hdr(hdr.as_bytes(), &mut buf, &HEADER_CHARS)
-            .expect("static str is invalid name");
+        let hdr =
+            parse_hdr(hdr.as_bytes(), &mut buf, &HEADER_CHARS).expect("static str is invalid name");
         f(hdr)
     }
 }
@@ -2078,25 +2053,23 @@ impl<'a> HdrName<'a> {
 impl<'a> From<HdrName<'a>> for HeaderName {
     fn from(src: HdrName<'a>) -> HeaderName {
         match src.inner {
-            Repr::Standard(s) => {
-                HeaderName {
-                    inner: Repr::Standard(s),
-                }
-            }
+            Repr::Standard(s) => HeaderName {
+                inner: Repr::Standard(s),
+            },
             Repr::Custom(maybe_lower) => {
                 if maybe_lower.lower {
-                    let buf = Bytes::from(&maybe_lower.buf[..]);
+                    let buf = Bytes::copy_from_slice(&maybe_lower.buf[..]);
                     let byte_str = unsafe { ByteStr::from_utf8_unchecked(buf) };
 
                     HeaderName {
                         inner: Repr::Custom(Custom(byte_str)),
                     }
                 } else {
-                    use bytes::{BufMut};
+                    use bytes::BufMut;
                     let mut dst = BytesMut::with_capacity(maybe_lower.buf.len());
 
                     for b in maybe_lower.buf.iter() {
-                        dst.put(HEADER_CHARS[*b as usize]);
+                        dst.put_u8(HEADER_CHARS[*b as usize]);
                     }
 
                     let buf = unsafe { ByteStr::from_utf8_unchecked(dst.freeze()) };
@@ -2115,24 +2088,20 @@ impl<'a> PartialEq<HdrName<'a>> for HeaderName {
     #[inline]
     fn eq(&self, other: &HdrName<'a>) -> bool {
         match self.inner {
-            Repr::Standard(a) => {
-                match other.inner {
-                    Repr::Standard(b) => a == b,
-                    _ => false,
-                }
-            }
-            Repr::Custom(Custom(ref a)) => {
-                match other.inner {
-                    Repr::Custom(ref b) => {
-                        if b.lower {
-                            a.as_bytes() == b.buf
-                        } else {
-                            eq_ignore_ascii_case(a.as_bytes(), b.buf)
-                        }
+            Repr::Standard(a) => match other.inner {
+                Repr::Standard(b) => a == b,
+                _ => false,
+            },
+            Repr::Custom(Custom(ref a)) => match other.inner {
+                Repr::Custom(ref b) => {
+                    if b.lower {
+                        a.as_bytes() == b.buf
+                    } else {
+                        eq_ignore_ascii_case(a.as_bytes(), b.buf)
                     }
-                    _ => false,
                 }
-            }
+                _ => false,
+            },
         }
     }
 }
