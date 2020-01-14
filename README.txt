@@ -80,6 +80,8 @@ ppv-lite86             0.2.6
 proc-macro2            0.4.30
 proc-macro2            1.0.7
 profiler_builtins      0.1.0
+prost                  0.6.0
+prost-derive           0.6.0
 quick-error            1.2.2
 quote                  0.3.15
 quote                  0.6.13

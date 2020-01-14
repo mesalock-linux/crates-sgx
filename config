@@ -251,6 +251,11 @@ git = "https://github.com/mesalock-linux/parity-wasm-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/prost-sgx"]
+git = "https://github.com/mesalock-linux/prost-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/quick-error-sgx"]
 git = "https://github.com/mesalock-linux/quick-error-sgx"
 branch = "master"

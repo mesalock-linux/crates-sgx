@@ -80,6 +80,8 @@ ppv-lite86: MIT/Apache-2.0
 proc-macro2-0.4.30: MIT/Apache-2.0
 proc-macro2: MIT OR Apache-2.0
 profiler_builtins: License not found
+prost: Apache-2.0
+prost-derive: Apache-2.0
 quick-error: MIT/Apache-2.0
 quote-0.3.15: MIT/Apache-2.0
 quote-0.6.13: MIT OR Apache-2.0
