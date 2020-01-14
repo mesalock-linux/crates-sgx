@@ -72,6 +72,7 @@ net2             = { git = "https://github.com/mesalock-linux/net2-rs-sgx" }
 num-bigint       = { git = "https://github.com/mesalock-linux/num-bigint-sgx" }
 num-traits       = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
 parity-wasm      = { git = "https://github.com/mesalock-linux/parity-wasm-sgx" }
+percent-encoding = { git = "https://github.com/mesalock-linux/rust-url-sgx" }
 png              = { git = "https://github.com/mesalock-linux/image-png-sgx" }
 quick-error      = { git = "https://github.com/mesalock-linux/quick-error-sgx" }
 rand             = { git = "https://github.com/mesalock-linux/rand-sgx", tag = "v0.6.5_sgx1.1.0" }
@@ -94,6 +95,7 @@ thiserror        = { git = "https://github.com/mesalock-linux/thiserror-sgx" }
 threadpool       = { git = "https://github.com/mesalock-linux/rust-threadpool-sgx" }
 tiff             = { git = "https://github.com/mesalock-linux/image-tiff-sgx" }
 toml             = { git = "https://github.com/mesalock-linux/toml-rs-sgx" }
+url              = { git = "https://github.com/mesalock-linux/rust-url-sgx" }
 uuid             = { git = "https://github.com/mesalock-linux/uuid-sgx" }
 wabt             = { git = "https://github.com/mesalock-linux/wabt-rs-sgx", branch = "v0.9-core" }
 wasmi            = { git = "https://github.com/mesalock-linux/wasmi-sgx" }

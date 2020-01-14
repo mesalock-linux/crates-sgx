@@ -18,7 +18,7 @@ dependencies = [
 [[package]]
 name = "anyhow"
 version = "1.0.26"
-source = "git+https://github.com/mesalock-linux/anyhow-sgx#2afefa91ac93725dbef5e0d677c26b8f009d7e24"
+source = "git+https://github.com/mesalock-linux/anyhow-sgx#8e99caf8d6eb3b7bb097470c7c1160cddb536424"
 dependencies = [
  "sgx_tstd 1.1.0 (git+https://github.com/apache/teaclave-sgx-sdk?rev=v1.1.0)",
 ]
@@ -193,6 +193,7 @@ dependencies = [
  "num-bigint 0.2.3 (git+https://github.com/mesalock-linux/num-bigint-sgx)",
  "num-traits 0.2.10 (git+https://github.com/mesalock-linux/num-traits-sgx)",
  "parity-wasm 0.41.0 (git+https://github.com/mesalock-linux/parity-wasm-sgx)",
+ "percent-encoding 2.1.0 (git+https://github.com/mesalock-linux/rust-url-sgx)",
  "png 0.15.0 (git+https://github.com/mesalock-linux/image-png-sgx)",
  "profiler_builtins 0.1.0 (git+https://github.com/mesalock-linux/sgx-fake-profiler-builtins)",
  "quick-error 1.2.2 (git+https://github.com/mesalock-linux/quick-error-sgx)",
@@ -242,6 +243,7 @@ dependencies = [
  "tiff 0.4.0 (git+https://github.com/mesalock-linux/image-tiff-sgx)",
  "toml 0.5.3 (git+https://github.com/mesalock-linux/toml-rs-sgx)",
  "untrusted 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "url 2.1.1 (git+https://github.com/mesalock-linux/rust-url-sgx)",
  "uuid 0.7.4 (git+https://github.com/mesalock-linux/uuid-sgx)",
  "wabt 0.9.2 (git+https://github.com/mesalock-linux/wabt-rs-sgx?branch=v0.9-core)",
  "wasmi 0.6.0 (git+https://github.com/mesalock-linux/wasmi-sgx)",
@@ -457,6 +459,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "idna"
+version = "0.2.0"
+source = "git+https://github.com/mesalock-linux/rust-url-sgx#0d1952fc5ce5bfe456803be1b0e92bba78e39182"
+dependencies = [
+ "matches 0.1.8 (git+https://github.com/mesalock-linux/rust-std-candidates-sgx)",
+ "sgx_tstd 1.1.0 (git+https://github.com/apache/teaclave-sgx-sdk?rev=v1.1.0)",
+ "unicode-bidi 0.3.4 (git+https://github.com/mesalock-linux/unicode-bidi-sgx)",
+ "unicode-normalization 0.1.11 (git+https://github.com/mesalock-linux/unicode-normalization-sgx)",
+]
+
+[[package]]
 name = "image"
 version = "0.22.3"
 source = "git+https://github.com/mesalock-linux/image-sgx#e0cdd202b0dc250fb40077d6d4ff586adae1a72e"
@@ -580,6 +593,11 @@ source = "git+https://github.com/mesalock-linux/lzw-sgx#ba78044a3d8572c4aefc712e
 dependencies = [
  "sgx_tstd 1.1.0 (git+https://github.com/apache/teaclave-sgx-sdk?rev=v1.1.0)",
 ]
+
+[[package]]
+name = "matches"
+version = "0.1.8"
+source = "git+https://github.com/mesalock-linux/rust-std-candidates-sgx#5747bcf37f3e18687758838da0339ff0f2c83924"
 
 [[package]]
 name = "matrixmultiply"
@@ -733,6 +751,11 @@ dependencies = [
  "byteorder 1.3.2 (git+https://github.com/mesalock-linux/byteorder-sgx)",
  "sgx_tstd 1.1.0 (git+https://github.com/apache/teaclave-sgx-sdk?rev=v1.1.0)",
 ]
+
+[[package]]
+name = "percent-encoding"
+version = "2.1.0"
+source = "git+https://github.com/mesalock-linux/rust-url-sgx#0d1952fc5ce5bfe456803be1b0e92bba78e39182"
 
 [[package]]
 name = "png"
@@ -1253,6 +1276,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "smallvec"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "snap"
 version = "0.2.5"
 source = "git+https://github.com/mesalock-linux/rust-snappy-sgx#69229a60da558e8edd75bd124dac39faf2d15d5f"
@@ -1415,6 +1443,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "unicode-bidi"
+version = "0.3.4"
+source = "git+https://github.com/mesalock-linux/unicode-bidi-sgx#e7c89fe93367065d53c93f51fa9289296176f63f"
+dependencies = [
+ "matches 0.1.8 (git+https://github.com/mesalock-linux/rust-std-candidates-sgx)",
+ "sgx_tstd 1.1.0 (git+https://github.com/apache/teaclave-sgx-sdk?rev=v1.1.0)",
+]
+
+[[package]]
+name = "unicode-normalization"
+version = "0.1.11"
+source = "git+https://github.com/mesalock-linux/unicode-normalization-sgx#e4c109acfb0137d4b3897fcf1339874437617799"
+dependencies = [
+ "smallvec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "unicode-xid"
 version = "0.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1433,6 +1478,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "untrusted"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "url"
+version = "2.1.1"
+source = "git+https://github.com/mesalock-linux/rust-url-sgx#0d1952fc5ce5bfe456803be1b0e92bba78e39182"
+dependencies = [
+ "idna 0.2.0 (git+https://github.com/mesalock-linux/rust-url-sgx)",
+ "matches 0.1.8 (git+https://github.com/mesalock-linux/rust-std-candidates-sgx)",
+ "percent-encoding 2.1.0 (git+https://github.com/mesalock-linux/rust-url-sgx)",
+ "sgx_tstd 1.1.0 (git+https://github.com/apache/teaclave-sgx-sdk?rev=v1.1.0)",
+]
 
 [[package]]
 name = "uuid"
@@ -1554,6 +1610,7 @@ dependencies = [
 "checksum http_req 0.5.3 (git+https://github.com/mesalock-linux/http_req-sgx)" = "<none>"
 "checksum httparse 1.3.4 (registry+https://github.com/rust-lang/crates.io-index)" = "cd179ae861f0c2e53da70d892f5f3029f9594be0c41dc5269cd371691b1dc2f9"
 "checksum humantime 1.3.0 (git+https://github.com/mesalock-linux/humantime-sgx)" = "<none>"
+"checksum idna 0.2.0 (git+https://github.com/mesalock-linux/rust-url-sgx)" = "<none>"
 "checksum image 0.22.3 (git+https://github.com/mesalock-linux/image-sgx)" = "<none>"
 "checksum inflate 0.4.5 (git+https://github.com/mesalock-linux/inflate-sgx)" = "<none>"
 "checksum integer-encoding 1.0.7 (git+https://github.com/mesalock-linux/integer-encoding-rs-sgx)" = "<none>"
@@ -1568,6 +1625,7 @@ dependencies = [
 "checksum linked-hash-map 0.5.2 (git+https://github.com/mesalock-linux/linked-hash-map-sgx)" = "<none>"
 "checksum log 0.4.8 (git+https://github.com/mesalock-linux/log-sgx)" = "<none>"
 "checksum lzw 0.10.0 (git+https://github.com/mesalock-linux/lzw-sgx)" = "<none>"
+"checksum matches 0.1.8 (git+https://github.com/mesalock-linux/rust-std-candidates-sgx)" = "<none>"
 "checksum matrixmultiply 0.2.3 (git+https://github.com/mesalock-linux/matrixmultiply-sgx)" = "<none>"
 "checksum md5 0.7.0 (git+https://github.com/mesalock-linux/md5-sgx)" = "<none>"
 "checksum memchr 2.2.1 (git+https://github.com/mesalock-linux/rust-memchr-sgx)" = "<none>"
@@ -1584,6 +1642,7 @@ dependencies = [
 "checksum num-traits 0.2.10 (git+https://github.com/mesalock-linux/num-traits-sgx)" = "<none>"
 "checksum opaque-debug 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "2839e79665f131bdb5782e51f2c6c9599c133c6098982a54c794358bf432529c"
 "checksum parity-wasm 0.41.0 (git+https://github.com/mesalock-linux/parity-wasm-sgx)" = "<none>"
+"checksum percent-encoding 2.1.0 (git+https://github.com/mesalock-linux/rust-url-sgx)" = "<none>"
 "checksum png 0.15.0 (git+https://github.com/mesalock-linux/image-png-sgx)" = "<none>"
 "checksum ppv-lite86 0.2.6 (git+https://github.com/mesalock-linux/cryptocorrosion-sgx)" = "<none>"
 "checksum proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)" = "cf3d2011ab5c909338f7887f4fc896d35932e29146c12c8d01da6b22a80ba759"
@@ -1642,6 +1701,7 @@ dependencies = [
 "checksum sha1 0.6.0 (git+https://github.com/mesalock-linux/rust-sha1-sgx)" = "<none>"
 "checksum sha2 0.8.0 (git+https://github.com/mesalock-linux/hashes-sgx)" = "<none>"
 "checksum slab 0.4.2 (git+https://github.com/mesalock-linux/slab-sgx)" = "<none>"
+"checksum smallvec 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "44e59e0c9fa00817912ae6e4e6e3c4fe04455e75699d06eedc7d85917ed8e8f4"
 "checksum snap 0.2.5 (git+https://github.com/mesalock-linux/rust-snappy-sgx)" = "<none>"
 "checksum spin 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 "checksum stream-cipher 0.3.2 (git+https://github.com/mesalock-linux/rustcrypto-traits-sgx)" = "<none>"
@@ -1660,10 +1720,13 @@ dependencies = [
 "checksum typetag 0.1.4 (git+https://github.com/mesalock-linux/typetag-sgx)" = "<none>"
 "checksum typetag-impl 0.1.4 (git+https://github.com/mesalock-linux/typetag-sgx)" = "<none>"
 "checksum unicase 2.6.0 (git+https://github.com/mesalock-linux/unicase-sgx)" = "<none>"
+"checksum unicode-bidi 0.3.4 (git+https://github.com/mesalock-linux/unicode-bidi-sgx)" = "<none>"
+"checksum unicode-normalization 0.1.11 (git+https://github.com/mesalock-linux/unicode-normalization-sgx)" = "<none>"
 "checksum unicode-xid 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "8c1f860d7d29cf02cb2f3f359fd35991af3d30bac52c57d265a3c461074cb4dc"
 "checksum unicode-xid 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "fc72304796d0818e357ead4e000d19c9c174ab23dc11093ac919054d20a6a7fc"
 "checksum unicode-xid 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "826e7639553986605ec5979c7dd957c7895e93eabed50ab2ffa7f6128a75097c"
 "checksum untrusted 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "60369ef7a31de49bcb3f6ca728d4ba7300d9a1658f94c727d4cab8c8d9f4aece"
+"checksum url 2.1.1 (git+https://github.com/mesalock-linux/rust-url-sgx)" = "<none>"
 "checksum uuid 0.7.4 (git+https://github.com/mesalock-linux/uuid-sgx)" = "<none>"
 "checksum version_check 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)" = "078775d0255232fb988e6fccf26ddc9d1ac274299aaedcedce21c6f72cc533ce"
 "checksum wabt 0.9.2 (git+https://github.com/mesalock-linux/wabt-rs-sgx?branch=v0.9-core)" = "<none>"

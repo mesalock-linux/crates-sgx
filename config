@@ -311,8 +311,18 @@ git = "https://github.com/mesalock-linux/rust-snappy-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/rust-std-candidates-sgx"]
+git = "https://github.com/mesalock-linux/rust-std-candidates-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/rust-threadpool-sgx"]
 git = "https://github.com/mesalock-linux/rust-threadpool-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/rust-url-sgx"]
+git = "https://github.com/mesalock-linux/rust-url-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
@@ -398,6 +408,16 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/unicase-sgx"]
 git = "https://github.com/mesalock-linux/unicase-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/unicode-bidi-sgx"]
+git = "https://github.com/mesalock-linux/unicode-bidi-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
+[source."https://github.com/mesalock-linux/unicode-normalization-sgx"]
+git = "https://github.com/mesalock-linux/unicode-normalization-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
