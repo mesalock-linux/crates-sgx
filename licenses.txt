@@ -52,6 +52,7 @@ iovec: MIT/Apache-2.0
 itertools: MIT/Apache-2.0
 itoa: MIT OR Apache-2.0
 jpeg-decoder: MIT / Apache-2.0
+jsonwebtoken: MIT
 lazy_static: MIT/Apache-2.0
 libc: MIT OR Apache-2.0
 linked-hash-map: MIT/Apache-2.0

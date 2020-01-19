@@ -1,0 +1,25 @@
+[package]
+name = "jsonwebtoken"
+version = "6.0.1"
+authors = ["Vincent Prouillet <prouillet.vincent@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+description = "Create and parse JWT in a strongly typed way."
+homepage = "https://github.com/Keats/rust-jwt"
+repository = "https://github.com/Keats/rust-jwt"
+keywords = ["jwt", "web", "api", "token", "json"]
+ exclude = ["/sgx/*"]
+
+[features]
+default = ["mesalock_sgx"]
+mesalock_sgx = ["sgx_tstd", "sgx_tstd/backtrace"]
+
+[dependencies]
+sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+serde_json =  { git = "https://github.com/mesalock-linux/serde-json-sgx" }
+serde_derive = { git = "https://github.com/mesalock-linux/serde-sgx" }
+serde = { git = "https://github.com/mesalock-linux/serde-sgx" }
+ring = { git = "https://github.com/mesalock-linux/ring-sgx", tag = "v0.16.5" }
+base64 = { git = "https://github.com/mesalock-linux/rust-base64-sgx" }
+chrono = { git = "https://github.com/mesalock-linux/chrono-sgx" }
+untrusted = "0.7"

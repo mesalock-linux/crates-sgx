@@ -171,6 +171,11 @@ git = "https://github.com/mesalock-linux/jpeg-decoder-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/jsonwebtoken-sgx"]
+git = "https://github.com/mesalock-linux/jsonwebtoken-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/linked-hash-map-sgx"]
 git = "https://github.com/mesalock-linux/linked-hash-map-sgx"
 branch = "master"

@@ -52,6 +52,7 @@ iovec                  0.2.0
 itertools              0.8.2
 itoa                   0.4.4
 jpeg-decoder           0.1.15
+jsonwebtoken           6.0.1
 lazy_static            1.4.0
 libc                   0.2.66
 linked-hash-map        0.5.2
