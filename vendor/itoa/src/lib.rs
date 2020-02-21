@@ -48,7 +48,7 @@
 //! }
 //! ```
 
-#![doc(html_root_url = "https://docs.rs/itoa/0.4.4")]
+#![doc(html_root_url = "https://docs.rs/itoa/0.4.5")]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(feature = "cargo-clippy", allow(renamed_and_removed_lints))]
 #![cfg_attr(
@@ -79,8 +79,10 @@ use core::{fmt, mem, ptr, slice, str};
 pub fn write<W: io::Write, V: Integer>(mut wr: W, value: V) -> io::Result<usize> {
     let mut buf = Buffer::new();
     let s = buf.format(value);
-    wr.write_all(s.as_bytes())?;
-    Ok(s.len())
+    match wr.write_all(s.as_bytes()) {
+        Ok(()) => Ok(s.len()),
+        Err(e) => Err(e),
+    }
 }
 
 /// Write integer to an `fmt::Write`.
@@ -122,6 +124,7 @@ impl Buffer {
     /// This is a cheap operation; you don't need to worry about reusing buffers
     /// for efficiency.
     #[inline]
+    #[allow(deprecated)]
     pub fn new() -> Buffer {
         Buffer {
             bytes: unsafe { mem::MaybeUninit::zeroed().assume_init() },

@@ -10,10 +10,73 @@ Versions with only mechanical changes will be omitted from the following list.
 
 ## next
 
+### Improvements
+
+* Support a space or `T` in `FromStr` for `DateTime<Tz>`, meaning that e.g.
+  `dt.to_string().parse::<DateTime<Utc>>()` now correctly works on round-trip.
+  (@quodlibetor in #378)
+* Support "negative UTC" in `parse_from_rfc2822` (@quodlibetor #368 reported in
+  #102)
+* Support comparisons of DateTimes with different timezones (@dlalic in #375)
+
+### Internal improvements
+
+* Use Criterion for benchmarks (@quodlibetor)
+
+## 0.4.10
+
+### Compatibility notes
+
+* Putting some functionality behind an `alloc` feature to improve no-std
+  support (in #341) means that if you were relying on chrono with
+  `no-default-features` *and* using any of the functions that require alloc
+  support (i.e. any of the string-generating functions like `to_rfc3339`) you
+  will need to add the `alloc` feature in your Cargo.toml.
+
+### Improvements
+
+* `DateTime::parse_from_str` is more than 2x faster in some cases. (@michalsrb
+  #358)
+* Significant improvements to no-std and alloc support (This should also make
+  many format/serialization operations induce zero unnecessary allocations)
+  (@CryZe #341)
+
+### Features
+
+* Functions that were accepting `Iterator` of `Item`s (for example
+  `format_with_items`) now accept `Iterator` of `Borrow<Item>`, so one can
+  use values or references. (@michalsrb #358)
+* Add built-in support for structs with nested `Option<Datetime>` etc fields
+  (@manifest #302)
+
+### Internal/doc improvements
+
+* Use markdown footnotes on the `strftime` docs page (@qudlibetor #359)
+* Migrate from `try!` -> `?` (question mark) because it is now emitting
+  deprecation warnings and has been stable since rustc 1.13.0
+* Deny dead code
+
+## 0.4.9
+
+### Fixes
+
+* Make Datetime arithmatic adjust their offsets after discovering their new
+  timestamps (@quodlibetor #337)
+* Put wasm-bindgen related code and dependencies behind a `wasmbind` feature
+  gate. (@quodlibetor #335)
+
+## 0.4.8
+
 ### Fixes
 
 * Add '0' to single-digit days in rfc2822 date format (@wyhaya #323)
 * Correctly pad DelayedFormat (@SamokhinIlya #320)
+
+### Features
+
+* Support `wasm-unknown-unknown` via wasm-bindgen (in addition to
+  emscripten/`wasm-unknown-emscripten`). (finished by @evq in #331, initial
+  work by @jjpe #287)
 
 ## 0.4.7
 
@@ -36,6 +99,12 @@ Versions with only mechanical changes will be omitted from the following list.
 
 * Doc improvements -- improve README CI verification, external links
 * winapi upgrade to 0.3
+
+## Unreleased
+
+### Features
+
+* Added `NaiveDate::from_weekday_of_month{,_opt}` for getting eg. the 2nd Friday of March 2017.
 
 ## 0.4.5
 
@@ -386,7 +455,7 @@ and replaced by 0.2.25 very shortly. Duh.)
   They are glibc extensions which seem to be reasonably widespread (e.g. Ruby).
 
 - Added `%:z` specifier and corresponding formatting items
-  which is essentially same to `%z` but with a colon.
+  which is essentially the same as `%z` but with a colon.
 
 - Added a new specifier `%.f` which precision adapts from the input.
   This was added as a response to the UX problems in the original nanosecond specifier `%f`.

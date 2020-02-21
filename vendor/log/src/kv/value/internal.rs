@@ -20,7 +20,7 @@ pub(super) enum Inner<'v> {
 
     #[cfg(feature = "kv_unstable_sval")]
     /// A structured value from `sval`.
-    Sval(&'v sval_support::Value),
+    Sval(&'v dyn sval_support::Value),
 }
 
 impl<'v> Inner<'v> {
@@ -61,7 +61,7 @@ pub(super) trait Visitor {
     fn none(&mut self) -> Result<(), Error>;
 
     #[cfg(feature = "kv_unstable_sval")]
-    fn sval(&mut self, v: &sval_support::Value) -> Result<(), Error>;
+    fn sval(&mut self, v: &dyn sval_support::Value) -> Result<(), Error>;
 }
 
 #[derive(Clone, Copy)]
@@ -154,7 +154,7 @@ mod fmt_support {
         }
 
         #[cfg(feature = "kv_unstable_sval")]
-        fn sval(&mut self, v: &sval_support::Value) -> Result<(), Error> {
+        fn sval(&mut self, v: &dyn sval_support::Value) -> Result<(), Error> {
             sval_support::fmt(self.0, v)
         }
     }
@@ -188,7 +188,7 @@ pub(super) mod sval_support {
 
     pub(in kv::value) use self::sval::Value;
 
-    pub(super) fn fmt(f: &mut fmt::Formatter, v: &sval::Value) -> Result<(), Error> {
+    pub(super) fn fmt(f: &mut fmt::Formatter, v: &dyn sval::Value) -> Result<(), Error> {
         sval::fmt::debug(f, v)?;
         Ok(())
     }
@@ -206,7 +206,7 @@ pub(super) mod sval_support {
     struct SvalVisitor<'a, 'b: 'a>(&'a mut sval::value::Stream<'b>);
 
     impl<'a, 'b: 'a> Visitor for SvalVisitor<'a, 'b> {
-        fn debug(&mut self, v: &fmt::Debug) -> Result<(), Error> {
+        fn debug(&mut self, v: &dyn fmt::Debug) -> Result<(), Error> {
             self.0
                 .fmt(format_args!("{:?}", v))
                 .map_err(Error::from_sval)
@@ -240,7 +240,7 @@ pub(super) mod sval_support {
             self.0.none().map_err(Error::from_sval)
         }
 
-        fn sval(&mut self, v: &sval::Value) -> Result<(), Error> {
+        fn sval(&mut self, v: &dyn sval::Value) -> Result<(), Error> {
             self.0.any(v).map_err(Error::from_sval)
         }
     }

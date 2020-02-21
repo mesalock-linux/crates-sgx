@@ -1,6 +1,5 @@
 //! Deserialization.
 
-use byteorder::{BigEndian, ByteOrder};
 use core::f32;
 use core::marker::PhantomData;
 use core::result;
@@ -21,6 +20,8 @@ use crate::read::Offset;
 #[cfg(any(feature = "std", feature = "alloc"))]
 pub use crate::read::SliceRead;
 pub use crate::read::{MutSliceRead, Read, SliceReadFixed};
+#[cfg(feature = "tags")]
+use crate::tags::set_tag;
 /// Decodes a value from CBOR data in a slice.
 ///
 /// # Examples
@@ -265,20 +266,23 @@ where
 
     fn parse_u16(&mut self) -> Result<u16> {
         let mut buf = [0; 2];
-        self.read.read_into(&mut buf)?;
-        Ok(BigEndian::read_u16(&buf))
+        self.read
+            .read_into(&mut buf)
+            .map(|()| u16::from_be_bytes(buf))
     }
 
     fn parse_u32(&mut self) -> Result<u32> {
         let mut buf = [0; 4];
-        self.read.read_into(&mut buf)?;
-        Ok(BigEndian::read_u32(&buf))
+        self.read
+            .read_into(&mut buf)
+            .map(|()| u32::from_be_bytes(buf))
     }
 
     fn parse_u64(&mut self) -> Result<u64> {
         let mut buf = [0; 8];
-        self.read.read_into(&mut buf)?;
-        Ok(BigEndian::read_u64(&buf))
+        self.read
+            .read_into(&mut buf)
+            .map(|()| u64::from_be_bytes(buf))
     }
 
     fn parse_bytes<V>(&mut self, len: usize, visitor: V) -> Result<V::Value>
@@ -395,6 +399,27 @@ where
                 visitor.visit_str(s)
             }
         }
+    }
+
+    #[cfg(feature = "tags")]
+    fn handle_tagged_value<V>(&mut self, tag: u64, visitor: V) -> Result<V::Value>
+    where
+        V: de::Visitor<'de>,
+    {
+        self.recursion_checked(|d| {
+            set_tag(Some(tag));
+            let r = visitor.visit_newtype_struct(d);
+            set_tag(None);
+            r
+        })
+    }
+
+    #[cfg(not(feature = "tags"))]
+    fn handle_tagged_value<V>(&mut self, _tag: u64, visitor: V) -> Result<V::Value>
+    where
+        V: de::Visitor<'de>,
+    {
+        self.recursion_checked(|de| de.parse_value(visitor))
     }
 
     fn recursion_checked<F, T>(&mut self, f: F) -> Result<T>
@@ -544,15 +569,11 @@ where
     }
 
     fn parse_f32(&mut self) -> Result<f32> {
-        let mut buf = [0; 4];
-        self.read.read_into(&mut buf)?;
-        Ok(BigEndian::read_f32(&buf))
+        self.parse_u32().map(|i| f32::from_bits(i))
     }
 
     fn parse_f64(&mut self) -> Result<f64> {
-        let mut buf = [0; 8];
-        self.read.read_into(&mut buf)?;
-        Ok(BigEndian::read_f64(&buf))
+        self.parse_u64().map(|i| f64::from_bits(i))
     }
 
     // Don't warn about the `unreachable!` in case
@@ -704,22 +725,25 @@ where
             0xbf => self.parse_indefinite_map(visitor),
 
             // Major type 6: optional semantic tagging of other major types
-            0xc0..=0xd7 => self.recursion_checked(|de| de.parse_value(visitor)),
+            0xc0..=0xd7 => {
+                let tag = u64::from(byte) - 0xc0;
+                self.handle_tagged_value(tag, visitor)
+            }
             0xd8 => {
-                self.parse_u8()?;
-                self.recursion_checked(|de| de.parse_value(visitor))
+                let tag = self.parse_u8()?;
+                self.handle_tagged_value(tag.into(), visitor)
             }
             0xd9 => {
-                self.parse_u16()?;
-                self.recursion_checked(|de| de.parse_value(visitor))
+                let tag = self.parse_u16()?;
+                self.handle_tagged_value(tag.into(), visitor)
             }
             0xda => {
-                self.parse_u32()?;
-                self.recursion_checked(|de| de.parse_value(visitor))
+                let tag = self.parse_u32()?;
+                self.handle_tagged_value(tag.into(), visitor)
             }
             0xdb => {
-                self.parse_u64()?;
-                self.recursion_checked(|de| de.parse_value(visitor))
+                let tag = self.parse_u64()?;
+                self.handle_tagged_value(tag, visitor)
             }
             0xdc..=0xdf => Err(self.error(ErrorCode::UnassignedCode)),
 

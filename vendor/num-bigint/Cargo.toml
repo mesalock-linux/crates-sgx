@@ -8,7 +8,7 @@ categories = [ "algorithms", "data-structures", "science" ]
 license = "MIT/Apache-2.0"
 name = "num-bigint"
 repository = "https://github.com/rust-num/num-bigint"
-version = "0.2.3"
+version = "0.2.5"
 readme = "README.md"
 build = "build.rs"
 exclude = ["/sgx/*"]
@@ -36,12 +36,12 @@ name = "shootout-pidigits"
 sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dependencies.num-integer]
-version = "0.1.39"
+#version = "0.1.42"
 #default-features = false
 git = "https://github.com/mesalock-linux/num-integer-sgx"
 
 [dependencies.num-traits]
-version = "0.2.7"
+#version = "0.2.11"
 #default-features = false
 git = "https://github.com/mesalock-linux/num-traits-sgx"
 
@@ -61,16 +61,18 @@ git = "https://github.com/mesalock-linux/serde-sgx"
 
 [dependencies.quickcheck]
 optional = true
-version = "0.8"
-default-features = false
+#version = "0.8"
+#default-features = false
+git = "https://github.com/mesalock-linux/quickcheck-sgx"
 
 [dependencies.quickcheck_macros]
 optional = true
-version = "0.8"
-default-features = false
+#version = "0.8"
+#default-features = false
+git = "https://github.com/mesalock-linux/quickcheck-sgx"
 
-[dev-dependencies.serde_test]
-version = "1.0"
+#[dev-dependencies.serde_test]
+#version = "1.0"
 
 [features]
 default = ["std", "mesalock_sgx", "i128"]
@@ -78,5 +80,5 @@ i128 = ["num-integer/i128", "num-traits/i128"]
 std = ["num-integer/std", "num-integer/mesalock_sgx", "num-traits/std", "num-traits/mesalock_sgx"]
 mesalock_sgx = ["sgx_tstd"]
 
-#[build-dependencies]
-#autocfg = "0.1.2"
+[build-dependencies]
+autocfg = "1"

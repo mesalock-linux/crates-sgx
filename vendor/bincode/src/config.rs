@@ -96,6 +96,7 @@ enum EndianOption {
 ///
 /// When a byte limit is set, bincode will return `Err` on any deserialization that goes over the limit, or any
 /// serialization that goes over the limit.
+#[derive(Clone)]
 pub struct Config {
     limit: LimitOption,
     endian: EndianOption,
@@ -291,6 +292,18 @@ impl Config {
         config_map!(self, opts => ::internal::deserialize_from(reader, opts))
     }
 
+    /// Deserializes an object directly from a `Read`er with state `seed` using this configuration
+    ///
+    /// If this returns an `Error`, `reader` may be in an invalid state.
+    #[inline(always)]
+    pub fn deserialize_from_seed<'a, R: Read, T: serde::de::DeserializeSeed<'a>>(
+        &self,
+        seed: T,
+        reader: R,
+    ) -> Result<T::Value> {
+        config_map!(self, opts => ::internal::deserialize_from_seed(seed, reader, opts))
+    }
+
     /// Deserializes an object from a custom `BincodeRead`er using the default configuration.
     /// It is highly recommended to use `deserialize_from` unless you need to implement
     /// `BincodeRead` for performance reasons.
@@ -302,6 +315,24 @@ impl Config {
         reader: R,
     ) -> Result<T> {
         config_map!(self, opts => ::internal::deserialize_from_custom(reader, opts))
+    }
+
+    /// Deserializes an object from a custom `BincodeRead`er with state `seed` using the default
+    /// configuration. It is highly recommended to use `deserialize_from` unless you need to
+    /// implement `BincodeRead` for performance reasons.
+    ///
+    /// If this returns an `Error`, `reader` may be in an invalid state.
+    #[inline(always)]
+    pub fn deserialize_from_custom_seed<
+        'a,
+        R: BincodeRead<'a>,
+        T: serde::de::DeserializeSeed<'a>,
+    >(
+        &self,
+        seed: T,
+        reader: R,
+    ) -> Result<T::Value> {
+        config_map!(self, opts => ::internal::deserialize_from_custom_seed(seed, reader, opts))
     }
 
     /// Executes the acceptor with a serde::Deserializer instance.

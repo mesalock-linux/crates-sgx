@@ -1,6 +1,6 @@
 [package]
 name = "deflate"
-version = "0.8.0"
+version = "0.8.2"
 edition = "2018"
 license = "MIT/Apache-2.0"
 authors = ["oyvindln <oyvindln@users.noreply.github.com>"]
@@ -16,6 +16,7 @@ categories = ["compression"]
 
 exclude = [
   "tests/*",
+  "fuzz/*",
   "/sgx/*",
 ]
 
@@ -26,7 +27,7 @@ gzip-header = { version = "0.3", git = "https://github.com/mesalock-linux/gzip-h
 sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
-miniz_oxide = "0.3.2"
+#miniz_oxide = "0.3.2"
 
 [features]
 benchmarks = []

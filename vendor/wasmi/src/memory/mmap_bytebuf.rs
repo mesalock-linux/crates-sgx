@@ -26,12 +26,12 @@ impl Mmap {
     /// - `len` should not exceed `isize::max_value()`
     /// - `len` should be greater than 0.
     /// - `mmap` returns an error (almost certainly means out of memory).
-    fn new(len: usize) -> Result<Self, &'static str> {
+    fn new(len: usize) -> Result<Self, String> {
         if len > isize::max_value() as usize {
-            return Err("`len` should not exceed `isize::max_value()`");
+            return Err("`len` should not exceed `isize::max_value()`".into());
         }
         if len == 0 {
-            return Err("`len` should be greater than 0");
+            return Err("`len` should be greater than 0".into());
         }
 
         let ptr_or_err = unsafe {
@@ -61,9 +61,19 @@ impl Mmap {
         match ptr_or_err {
             // With the current parameters, the error can only be returned in case of insufficient
             // memory.
-            libc::MAP_FAILED => Err("mmap returned an error"),
+            //
+            // If we have `errno` linked in augement the error message with the one that was
+            // provided by errno.
+            #[cfg(feature = "errno")]
+            libc::MAP_FAILED => {
+                let errno = errno::errno();
+                Err(format!("mmap returned an error ({}): {}", errno.0, errno))
+            }
+            #[cfg(not(feature = "errno"))]
+            libc::MAP_FAILED => Err("mmap returned an error".into()),
             _ => {
-                let ptr = NonNull::new(ptr_or_err as *mut u8).ok_or("mmap returned 0")?;
+                let ptr = NonNull::new(ptr_or_err as *mut u8)
+                    .ok_or_else(|| "mmap returned 0".to_string())?;
                 Ok(Self { ptr, len })
             }
         }
@@ -116,7 +126,7 @@ pub struct ByteBuf {
 }
 
 impl ByteBuf {
-    pub fn new(len: usize) -> Result<Self, &'static str> {
+    pub fn new(len: usize) -> Result<Self, String> {
         let mmap = if len == 0 {
             None
         } else {
@@ -125,7 +135,7 @@ impl ByteBuf {
         Ok(Self { mmap })
     }
 
-    pub fn realloc(&mut self, new_len: usize) -> Result<(), &'static str> {
+    pub fn realloc(&mut self, new_len: usize) -> Result<(), String> {
         let new_mmap = if new_len == 0 {
             None
         } else {
@@ -158,7 +168,7 @@ impl ByteBuf {
             .unwrap_or(&mut [])
     }
 
-    pub fn erase(&mut self) -> Result<(), &'static str> {
+    pub fn erase(&mut self) -> Result<(), String> {
         let len = self.len();
         if len > 0 {
             // The order is important.

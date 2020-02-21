@@ -55,7 +55,6 @@ gzip-header      = { git = "https://github.com/mesalock-linux/gzip-header-sgx" }
 heapsize         = { git = "https://github.com/mesalock-linux/heapsize-sgx" }
 hex              = { git = "https://github.com/mesalock-linux/rust-hex-sgx" }
 http             = { git = "https://github.com/mesalock-linux/http-sgx" }
-http_req         = { git = "https://github.com/mesalock-linux/http_req-sgx" }
 image            = { git = "https://github.com/mesalock-linux/image-sgx" }
 inflate          = { git = "https://github.com/mesalock-linux/inflate-sgx" }
 integer-encoding = { git = "https://github.com/mesalock-linux/integer-encoding-rs-sgx" }
@@ -82,7 +81,7 @@ rdrand           = { git = "https://github.com/mesalock-linux/rust_rdrand-sgx" }
 regex            = { git = "https://github.com/mesalock-linux/regex-sgx" }
 ring             = { git = "https://github.com/mesalock-linux/ring-sgx", tag = "v0.16.5" }
 rulinalg         = { git = "https://github.com/mesalock-linux/rulinalg-sgx" }
-rustls           = { git = "https://github.com/mesalock-linux/rustls", branch = "mesalock_sgx" }
+rustls           = { git = "https://github.com/mesalock-linux/rustls", branch = "mesalock_sgx-client-cert-verifier-patch" }
 rusty-machine    = { git = "https://github.com/mesalock-linux/rusty-machine-sgx" }
 sct              = { git = "https://github.com/mesalock-linux/sct.rs", branch = "mesalock_sgx" }
 serde            = { git = "https://github.com/mesalock-linux/serde-sgx" }

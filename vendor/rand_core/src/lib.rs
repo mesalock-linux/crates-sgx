@@ -27,13 +27,16 @@
 //!
 //! [`rand`]: https://docs.rs/rand
 
-#![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk.png",
-       html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-       html_root_url = "https://rust-random.github.io/rand/")]
-
+#![doc(
+    html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk.png",
+    html_favicon_url = "https://www.rust-lang.org/favicon.ico",
+    html_root_url = "https://rust-random.github.io/rand/"
+)]
 #![deny(missing_docs)]
 #![deny(missing_debug_implementations)]
 #![doc(test(attr(allow(unused_variables), deny(warnings))))]
+#![allow(clippy::unreadable_literal)]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 #![cfg_attr(all(feature="alloc", not(feature="std")), feature(alloc))]
 #![cfg_attr(any(not(feature = "std"),
@@ -53,22 +56,22 @@ use std::prelude::v1::*;
           target_env = "sgx"))]
 extern crate core;
 
-use core::default::Default;
 use core::convert::AsMut;
+use core::default::Default;
 use core::ptr::copy_nonoverlapping;
 
-#[cfg(all(feature="alloc", not(feature="std")))] extern crate alloc;
-#[cfg(all(feature="alloc", not(feature="std")))] use alloc::boxed::Box;
+#[cfg(all(feature = "alloc", not(feature = "std")))] extern crate alloc;
+#[cfg(all(feature = "alloc", not(feature = "std")))] use alloc::boxed::Box;
 
 pub use error::Error;
-#[cfg(feature="getrandom")] pub use os::OsRng;
+#[cfg(feature = "getrandom")] pub use os::OsRng;
 
 
-mod error;
 pub mod block;
+mod error;
 pub mod impls;
 pub mod le;
-#[cfg(feature="getrandom")] mod os;
+#[cfg(feature = "getrandom")] mod os;
 
 
 /// The core of a random number generator.
@@ -154,24 +157,22 @@ pub trait RngCore {
     ///
     /// RNGs must implement at least one method from this trait directly. In
     /// the case this method is not implemented directly, it can be implemented
-    /// using `self.next_u64() as u32` or via
-    /// [`fill_bytes`](impls::next_u32_via_fill).
+    /// using `self.next_u64() as u32` or via [`impls::next_u32_via_fill`].
     fn next_u32(&mut self) -> u32;
 
     /// Return the next random `u64`.
     ///
     /// RNGs must implement at least one method from this trait directly. In
     /// the case this method is not implemented directly, it can be implemented
-    /// via [`next_u32`](impls::next_u64_via_u32) or via
-    /// [`fill_bytes`](impls::next_u64_via_fill).
+    /// via [`impls::next_u64_via_u32`] or via [`impls::next_u64_via_fill`].
     fn next_u64(&mut self) -> u64;
 
     /// Fill `dest` with random data.
     ///
     /// RNGs must implement at least one method from this trait directly. In
     /// the case this method is not implemented directly, it can be implemented
-    /// via [`next_u*`](impls::fill_bytes_via_next) or
-    /// via [`try_fill_bytes`](RngCore::try_fill_bytes); if this generator can
+    /// via [`impls::fill_bytes_via_next`] or
+    /// via [`RngCore::try_fill_bytes`]; if this generator can
     /// fail the implementation must choose how best to handle errors here
     /// (e.g. panic with a descriptive message or log a warning and retry a few
     /// times).
@@ -189,12 +190,10 @@ pub trait RngCore {
     /// by external (true) RNGs (e.g. `OsRng`) which can fail. It may be used
     /// directly to generate keys and to seed (infallible) PRNGs.
     ///
-    /// Other than error handling, this method is identical to [`fill_bytes`];
+    /// Other than error handling, this method is identical to [`RngCore::fill_bytes`];
     /// thus this may be implemented using `Ok(self.fill_bytes(dest))` or
     /// `fill_bytes` may be implemented with
     /// `self.try_fill_bytes(dest).unwrap()` or more specific error handling.
-    ///
-    /// [`fill_bytes`]: RngCore::fill_bytes
     fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error>;
 }
 
@@ -366,7 +365,6 @@ pub trait SeedableRng: Sized {
     /// (in prior versions this was not required).
     ///
     /// [`rand`]: https://docs.rs/rand
-    /// [`rand_os`]: https://docs.rs/rand_os
     fn from_rng<R: RngCore>(mut rng: R) -> Result<Self, Error> {
         let mut seed = Self::Seed::default();
         rng.try_fill_bytes(seed.as_mut())?;
@@ -387,7 +385,7 @@ pub trait SeedableRng: Sized {
     /// If [`getrandom`] is unable to provide secure entropy this method will panic.
     ///
     /// [`getrandom`]: https://docs.rs/getrandom
-    #[cfg(feature="getrandom")]
+    #[cfg(feature = "getrandom")]
     fn from_entropy() -> Self {
         let mut seed = Self::Seed::default();
         if let Err(err) = getrandom::getrandom(seed.as_mut()) {
@@ -425,7 +423,7 @@ impl<'a, R: RngCore + ?Sized> RngCore for &'a mut R {
 // Implement `RngCore` for boxed references to an `RngCore`.
 // Force inlining all functions, so that it is up to the `RngCore`
 // implementation and the optimizer to decide on inlining.
-#[cfg(feature="alloc")]
+#[cfg(feature = "alloc")]
 impl<R: RngCore + ?Sized> RngCore for Box<R> {
     #[inline(always)]
     fn next_u32(&mut self) -> u32 {
@@ -448,7 +446,7 @@ impl<R: RngCore + ?Sized> RngCore for Box<R> {
     }
 }
 
-#[cfg(feature="std")]
+#[cfg(feature = "std")]
 impl std::io::Read for dyn RngCore {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize, std::io::Error> {
         self.try_fill_bytes(buf)?;
@@ -460,7 +458,7 @@ impl std::io::Read for dyn RngCore {
 impl<'a, R: CryptoRng + ?Sized> CryptoRng for &'a mut R {}
 
 // Implement `CryptoRng` for boxed references to an `CryptoRng`.
-#[cfg(feature="alloc")]
+#[cfg(feature = "alloc")]
 impl<R: CryptoRng + ?Sized> CryptoRng for Box<R> {}
 
 #[cfg(test)]
@@ -472,6 +470,7 @@ mod test {
         struct SeedableNum(u64);
         impl SeedableRng for SeedableNum {
             type Seed = [u8; 8];
+
             fn from_seed(seed: Self::Seed) -> Self {
                 let mut x = [0u64; 1];
                 le::read_u64_into(&seed, &mut x);
@@ -495,7 +494,9 @@ mod test {
             assert!(weight >= 20 && weight <= 44);
 
             for (i2, r2) in results.iter().enumerate() {
-                if i1 == i2 { continue; }
+                if i1 == i2 {
+                    continue;
+                }
                 let diff_weight = (r1 ^ r2).count_ones();
                 assert!(diff_weight >= 20);
             }

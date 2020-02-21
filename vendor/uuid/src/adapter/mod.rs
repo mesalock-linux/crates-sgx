@@ -9,14 +9,10 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! Adapters for various formats for [`Uuid`]s
-//!
-//! [`Uuid`]: ../struct.Uuid.html
+//! Adapters for various formats for UUIDs
 
 use crate::prelude::*;
-use core::str;
-
-mod core_support;
+use std::{fmt, str};
 
 #[cfg(feature = "serde")]
 pub mod compact;
@@ -70,43 +66,39 @@ pub struct Urn(Uuid);
 pub struct UrnRef<'a>(&'a Uuid);
 
 impl Uuid {
-    /// Creates a [`Hyphenated`] instance from a [`Uuid`].
+    /// Get a [`Hyphenated`] formatter.
     ///
-    /// [`Uuid`]: ../struct.Uuid.html
     /// [`Hyphenated`]: adapter/struct.Hyphenated.html
     #[inline]
     pub const fn to_hyphenated(self) -> Hyphenated {
         Hyphenated::from_uuid(self)
     }
 
-    /// Creates a [`HyphenatedRef`] instance from a [`Uuid`] reference.
+    /// Get a borrowed [`HyphenatedRef`] formatter.
     ///
-    /// [`Uuid`]: ../struct.Uuid.html
     /// [`HyphenatedRef`]: adapter/struct.HyphenatedRef.html
     #[inline]
     pub const fn to_hyphenated_ref(&self) -> HyphenatedRef<'_> {
         HyphenatedRef::from_uuid_ref(self)
     }
 
-    /// Creates a [`Simple`] instance from a [`Uuid`].
+    /// Get a [`Simple`] formatter.
     ///
-    /// [`Uuid`]: ../struct.Uuid.html
     /// [`Simple`]: adapter/struct.Simple.html
     #[inline]
     pub const fn to_simple(self) -> Simple {
         Simple::from_uuid(self)
     }
 
-    /// Creates a [`SimpleRef`] instance from a [`Uuid`] reference.
+    /// Get a borrowed [`SimpleRef`] formatter.
     ///
-    /// [`Uuid`]: ../struct.Uuid.html
     /// [`SimpleRef`]: adapter/struct.SimpleRef.html
     #[inline]
     pub const fn to_simple_ref(&self) -> SimpleRef<'_> {
         SimpleRef::from_uuid_ref(self)
     }
 
-    /// Creates a [`Urn`] instance from a [`Uuid`].
+    /// Get a [`Urn`] formatter.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`Urn`]: adapter/struct.Urn.html
@@ -115,7 +107,7 @@ impl Uuid {
         Urn::from_uuid(self)
     }
 
-    /// Creates a [`UrnRef`] instance from a [`Uuid`] reference.
+    /// Get a borrowed [`UrnRef`] formatter.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UrnRef`]: adapter/struct.UrnRef.html
@@ -842,6 +834,61 @@ impl<'a> UrnRef<'a> {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, self.0, true, true)
     }
+}
+
+macro_rules! impl_adapter_traits {
+    ($($T:ident<$($a:lifetime),*>),+) => {$(
+        impl<$($a),*> fmt::Display for $T<$($a),*> {
+            #[inline]
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                fmt::LowerHex::fmt(self, f)
+            }
+        }
+
+        impl<$($a),*> fmt::LowerHex for $T<$($a),*> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                // TODO: Self doesn't work https://github.com/rust-lang/rust/issues/52808
+                f.write_str(self.encode_lower(&mut [0; $T::LENGTH]))
+            }
+        }
+
+        impl<$($a),*> fmt::UpperHex for $T<$($a),*> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                // TODO: Self doesn't work https://github.com/rust-lang/rust/issues/52808
+                f.write_str(self.encode_upper(&mut [0; $T::LENGTH]))
+            }
+        }
+
+        impl_adapter_from!($T<$($a),*>);
+    )+}
+}
+
+macro_rules! impl_adapter_from {
+    ($T:ident<>) => {
+        impl From<Uuid> for $T {
+            #[inline]
+            fn from(f: Uuid) -> Self {
+                $T::from_uuid(f)
+            }
+        }
+    };
+    ($T:ident<$a:lifetime>) => {
+        impl<$a> From<&$a Uuid> for $T<$a> {
+            #[inline]
+            fn from(f: &$a Uuid) -> Self {
+                $T::from_uuid_ref(f)
+            }
+        }
+    };
+}
+
+impl_adapter_traits! {
+    Hyphenated<>,
+    HyphenatedRef<'a>,
+    Simple<>,
+    SimpleRef<'a>,
+    Urn<>,
+    UrnRef<'a>
 }
 
 #[cfg(test)]

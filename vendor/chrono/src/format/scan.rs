@@ -30,23 +30,35 @@ fn equals(s: &str, pattern: &str) -> bool {
 /// The absence of digits at all is an unconditional error.
 /// More than `max` digits are consumed up to the first `max` digits.
 /// Any number that does not fit in `i64` is an error.
+#[inline]
 pub fn number(s: &str, min: usize, max: usize) -> ParseResult<(&str, i64)> {
     assert!(min <= max);
 
-    // limit `s` to given number of digits
-    let mut window = s.as_bytes();
-    if window.len() > max { window = &window[..max]; }
-
-    // scan digits
-    let upto = window.iter().position(|&c| c < b'0' || b'9' < c)
-        .unwrap_or_else(|| window.len());
-    if upto < min {
-        return Err(if window.is_empty() {TOO_SHORT} else {INVALID});
+    // We are only interested in ascii numbers, so we can work with the `str` as bytes. We stop on
+    // the first non-numeric byte, which may be another ascii character or beginning of multi-byte
+    // UTF-8 character.
+    let bytes = s.as_bytes();
+    if bytes.len() < min {
+        return Err(TOO_SHORT);
     }
 
-    // we can overflow here, which is the only possible cause of error from `parse`.
-    let v: i64 = s[..upto].parse().map_err(|_| OUT_OF_RANGE)?;
-    Ok((&s[upto..], v))
+    let mut n = 0i64;
+    for (i, c) in bytes.iter().take(max).cloned().enumerate() { // cloned() = copied()
+        if c < b'0' || b'9' < c {
+            if i < min {
+                return Err(INVALID);
+            } else {
+                return Ok((&s[i..], n));
+            }
+        }
+
+        n = match n.checked_mul(10).and_then(|n| n.checked_add((c - b'0') as i64)) {
+            Some(n) => n,
+            None => return Err(OUT_OF_RANGE),
+        };
+    }
+
+    Ok((&s[::core::cmp::min(max, bytes.len())..], n))
 }
 
 /// Tries to consume at least one digits as a fractional second.
@@ -214,7 +226,7 @@ fn timezone_offset_internal<F>(mut s: &str, mut consume_colon: F, allow_missing_
 
     // hours (00--99)
     let hours = match digits(s)? {
-        (h1 @ b'0'..=b'9', h2 @ b'0'..=b'9') => i32::from((h1 - b'0') * 10 + (h2 - b'0')),
+        (h1 @ b'0'...b'9', h2 @ b'0'...b'9') => i32::from((h1 - b'0') * 10 + (h2 - b'0')),
         _ => return Err(INVALID),
     };
     s = &s[2..];
@@ -245,18 +257,30 @@ fn timezone_offset_internal<F>(mut s: &str, mut consume_colon: F, allow_missing_
     Ok((s, if negative {-seconds} else {seconds}))
 }
 
-/// Same to `timezone_offset` but also allows for `z`/`Z` which is same to `+00:00`.
+/// Same as `timezone_offset` but also allows for `z`/`Z` which is the same as `+00:00`.
 pub fn timezone_offset_zulu<F>(s: &str, colon: F)
 -> ParseResult<(&str, i32)>
     where F: FnMut(&str) -> ParseResult<&str>
 {
-    match s.as_bytes().first() {
+    let bytes = s.as_bytes();
+    match bytes.first() {
         Some(&b'z') | Some(&b'Z') => Ok((&s[1..], 0)),
+        Some(&b'u') | Some(&b'U') => {
+            if bytes.len() >= 3 {
+                let (b, c) = (bytes[1], bytes[2]);
+                match (b | 32, c | 32) {
+                    (b't', b'c') => Ok((&s[3..], 0)),
+                    _ => Err(INVALID),
+                }
+            } else {
+                Err(INVALID)
+            }
+        }
         _ => timezone_offset(s, colon),
     }
 }
 
-/// Same to `timezone_offset` but also allows for `z`/`Z` which is same to
+/// Same as `timezone_offset` but also allows for `z`/`Z` which is the same as
 /// `+00:00`, and allows missing minutes entirely.
 pub fn timezone_offset_permissive<F>(s: &str, colon: F)
 -> ParseResult<(&str, i32)>
@@ -268,7 +292,7 @@ pub fn timezone_offset_permissive<F>(s: &str, colon: F)
     }
 }
 
-/// Same to `timezone_offset` but also allows for RFC 2822 legacy timezones.
+/// Same as `timezone_offset` but also allows for RFC 2822 legacy timezones.
 /// May return `None` which indicates an insufficient offset data (i.e. `-0000`).
 pub fn timezone_offset_2822(s: &str) -> ParseResult<(&str, Option<i32>)> {
     // tries to parse legacy time zone names
@@ -296,11 +320,7 @@ pub fn timezone_offset_2822(s: &str) -> ParseResult<(&str, Option<i32>)> {
         }
     } else {
         let (s_, offset) = timezone_offset(s, |s| Ok(s))?;
-        if offset == 0 && s.starts_with('-') { // -0000 is not same to +0000
-            Ok((s_, None))
-        } else {
-            Ok((s_, Some(offset)))
-        }
+        Ok((s_, Some(offset)))
     }
 }
 

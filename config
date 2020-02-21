@@ -111,11 +111,6 @@ git = "https://github.com/mesalock-linux/http-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
-[source."https://github.com/mesalock-linux/http_req-sgx"]
-git = "https://github.com/mesalock-linux/http_req-sgx"
-branch = "master"
-replace-with = "vendored-sources"
-
 [source."https://github.com/mesalock-linux/humantime-sgx"]
 git = "https://github.com/mesalock-linux/humantime-sgx"
 branch = "master"
@@ -201,8 +196,8 @@ git = "https://github.com/mesalock-linux/md5-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
-[source."https://github.com/mesalock-linux/miniz_oxide"]
-git = "https://github.com/mesalock-linux/miniz_oxide"
+[source."https://github.com/mesalock-linux/miniz_oxide-sgx"]
+git = "https://github.com/mesalock-linux/miniz_oxide-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
@@ -316,6 +311,11 @@ git = "https://github.com/mesalock-linux/rust-sha1-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/rust-smallvec-sgx"]
+git = "https://github.com/mesalock-linux/rust-smallvec-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/rust-snappy-sgx"]
 git = "https://github.com/mesalock-linux/rust-snappy-sgx"
 branch = "master"
@@ -353,7 +353,7 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/rustls"]
 git = "https://github.com/mesalock-linux/rustls"
-branch = "mesalock_sgx"
+branch = "mesalock_sgx-client-cert-verifier-patch"
 replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/rusty-machine-sgx"]
@@ -413,11 +413,6 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/typetag-sgx"]
 git = "https://github.com/mesalock-linux/typetag-sgx"
-branch = "master"
-replace-with = "vendored-sources"
-
-[source."https://github.com/mesalock-linux/unicase-sgx"]
-git = "https://github.com/mesalock-linux/unicase-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 

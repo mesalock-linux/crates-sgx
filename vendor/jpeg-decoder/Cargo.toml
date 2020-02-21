@@ -1,10 +1,10 @@
 [package]
 name = "jpeg-decoder"
-version = "0.1.15"
+version = "0.1.18"
 authors = ["Ulf Nilsson <kaksmet@gmail.com>"]
 description = "JPEG decoder"
 documentation = "https://docs.rs/jpeg-decoder"
-repository = "https://github.com/kaksmet/jpeg-decoder"
+repository = "https://github.com/image-rs/jpeg-decoder"
 readme = "README.md"
 keywords = ["jpeg", "jpg", "decoder", "image"]
 license = "MIT / Apache-2.0"
@@ -18,6 +18,11 @@ sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.g
 [dev-dependencies]
 png = "0.14"
 walkdir = "2.0"
+criterion = "0.3"
+
+[[bench]]
+name = "decoding_benchmark"
+harness = false
 
 [features]
 default = ["mesalock_sgx"]

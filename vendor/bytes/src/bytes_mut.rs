@@ -9,7 +9,6 @@ use alloc::{vec::Vec, string::String, boxed::Box, borrow::{Borrow, BorrowMut}};
 use crate::{Bytes, Buf, BufMut};
 use crate::bytes::Vtable;
 use crate::buf::IntoIter;
-use crate::debug;
 use crate::loom::sync::atomic::{self, AtomicPtr, AtomicUsize, Ordering};
 
 /// A unique reference to a contiguous slice of memory.
@@ -277,7 +276,12 @@ impl BytesMut {
     /// Panics if `at > capacity`.
     #[must_use = "consider BytesMut::truncate if you don't need the other half"]
     pub fn split_off(&mut self, at: usize) -> BytesMut {
-        assert!(at <= self.capacity());
+        assert!(
+            at <= self.capacity(),
+            "split_off out of bounds: {:?} <= {:?}",
+            at,
+            self.capacity(),
+        );
         unsafe {
             let mut other = self.shallow_clone();
             other.set_start(at);
@@ -345,7 +349,12 @@ impl BytesMut {
     /// Panics if `at > len`.
     #[must_use = "consider BytesMut::advance if you don't need the other half"]
     pub fn split_to(&mut self, at: usize) -> BytesMut {
-        assert!(at <= self.len());
+        assert!(
+            at <= self.len(),
+            "split_to out of bounds: {:?} <= {:?}",
+            at,
+            self.len(),
+        );
 
         unsafe {
             let mut other = self.shallow_clone();
@@ -459,7 +468,7 @@ impl BytesMut {
     /// assert_eq!(&b[..], b"hello world");
     /// ```
     pub unsafe fn set_len(&mut self, len: usize) {
-        debug_assert!(len <= self.cap);
+        debug_assert!(len <= self.cap, "set_len out of bounds");
         self.len = len;
     }
 
@@ -643,10 +652,11 @@ impl BytesMut {
         self.len = v.len();
         self.cap = v.capacity();
     }
-    /// Appends given bytes to this object.
+
+    /// Appends given bytes to this `BytesMut`.
     ///
-    /// If this `BytesMut` object has not enough capacity, it is resized first.
-    /// So unlike `put_slice` operation, `extend_from_slice` does not panic.
+    /// If this `BytesMut` object does not have enough capacity, it is resized
+    /// first.
     ///
     /// # Examples
     ///
@@ -678,9 +688,13 @@ impl BytesMut {
         unsafe { self.advance_mut(cnt); }
     }
 
-    /// Combine splitted BytesMut objects back as contiguous.
+    /// Absorbs a `BytesMut` that was previously split off.
     ///
-    /// If `BytesMut` objects were not contiguous originally, they will be extended.
+    /// If the two `BytesMut` objects were previously contiguous, i.e., if
+    /// `other` was created by calling `split_off` on this `BytesMut`, then
+    /// this is an `O(1)` operation that just decreases a reference
+    /// count and sets a few indices. Otherwise this method degenerates to
+    /// `self.extend_from_slice(other.as_ref())`.
     ///
     /// # Examples
     ///
@@ -690,11 +704,11 @@ impl BytesMut {
     /// let mut buf = BytesMut::with_capacity(64);
     /// buf.extend_from_slice(b"aaabbbcccddd");
     ///
-    /// let splitted = buf.split_off(6);
+    /// let split = buf.split_off(6);
     /// assert_eq!(b"aaabbb", &buf[..]);
-    /// assert_eq!(b"cccddd", &splitted[..]);
+    /// assert_eq!(b"cccddd", &split[..]);
     ///
-    /// buf.unsplit(splitted);
+    /// buf.unsplit(split);
     /// assert_eq!(b"aaabbbcccddd", &buf[..]);
     /// ```
     pub fn unsplit(&mut self, other: BytesMut) {
@@ -755,7 +769,7 @@ impl BytesMut {
             return;
         }
 
-        debug_assert!(start <= self.cap);
+        debug_assert!(start <= self.cap, "internal: set_start out of bounds");
 
         let kind = self.kind();
 
@@ -794,7 +808,7 @@ impl BytesMut {
 
     unsafe fn set_end(&mut self, end: usize) {
         debug_assert_eq!(self.kind(), KIND_ARC);
-        assert!(end <= self.cap);
+        assert!(end <= self.cap, "set_end out of bounds");
 
         self.cap = end;
         self.len = cmp::min(self.len, end);
@@ -932,7 +946,12 @@ impl Buf for BytesMut {
 
     #[inline]
     fn advance(&mut self, cnt: usize) {
-        assert!(cnt <= self.remaining(), "cannot advance past `remaining`");
+        assert!(
+            cnt <= self.remaining(),
+            "cannot advance past `remaining`: {:?} <= {:?}",
+            cnt,
+            self.remaining(),
+        );
         unsafe { self.set_start(cnt); }
     }
 
@@ -1020,6 +1039,12 @@ impl<'a> From<&'a str> for BytesMut {
     }
 }
 
+impl From<BytesMut> for Bytes {
+    fn from(src: BytesMut) -> Bytes {
+        src.freeze()
+    }
+}
+
 impl PartialEq for BytesMut {
     fn eq(&self, other: &BytesMut) -> bool {
         self.as_slice() == other.as_slice()
@@ -1045,12 +1070,6 @@ impl Default for BytesMut {
     #[inline]
     fn default() -> BytesMut {
         BytesMut::new()
-    }
-}
-
-impl fmt::Debug for BytesMut {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(&debug::BsDebug(&self.as_slice()), fmt)
     }
 }
 
@@ -1301,7 +1320,7 @@ impl PartialEq<BytesMut> for [u8] {
 
 impl PartialOrd<BytesMut> for [u8] {
     fn partial_cmp(&self, other: &BytesMut) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
+        <[u8] as PartialOrd<[u8]>>::partial_cmp(self, other)
     }
 }
 
@@ -1325,7 +1344,7 @@ impl PartialEq<BytesMut> for str {
 
 impl PartialOrd<BytesMut> for str {
     fn partial_cmp(&self, other: &BytesMut) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
+        <[u8] as PartialOrd<[u8]>>::partial_cmp(self.as_bytes(), other)
     }
 }
 
@@ -1373,7 +1392,7 @@ impl PartialEq<BytesMut> for String {
 
 impl PartialOrd<BytesMut> for String {
     fn partial_cmp(&self, other: &BytesMut) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
+        <[u8] as PartialOrd<[u8]>>::partial_cmp(self.as_bytes(), other)
     }
 }
 
@@ -1401,7 +1420,7 @@ impl PartialEq<BytesMut> for &[u8] {
 
 impl PartialOrd<BytesMut> for &[u8] {
     fn partial_cmp(&self, other: &BytesMut) -> Option<cmp::Ordering> {
-        other.partial_cmp(self)
+        <[u8] as PartialOrd<[u8]>>::partial_cmp(self, other)
     }
 }
 

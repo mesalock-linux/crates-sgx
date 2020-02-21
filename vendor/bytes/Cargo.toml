@@ -6,7 +6,7 @@ name = "bytes"
 # - Update CHANGELOG.md.
 # - Update doc URL.
 # - Create "v0.5.x" git tag.
-version = "0.5.3"
+version = "0.5.4"
 license = "MIT"
 authors = [
     "Carl Lerche <me@carllerche.com>",
@@ -34,8 +34,12 @@ std = ["mesalock_sgx"]
 mesalock_sgx = ["std", "sgx_tstd"]
 
 [dev-dependencies]
-#loom = "0.2.10"
 #serde_test = "1.0"
+
+# loom is currently not compiling on windows.
+# See: https://github.com/Xudong-Huang/generator-rs/issues/19
+[target.'cfg(not(windows))'.dev-dependencies]
+#loom = "0.2.13"
 
 [dependencies]
 serde = { version = "1.0", git = "https://github.com/mesalock-linux/serde-sgx", optional = true }

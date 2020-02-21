@@ -13,10 +13,10 @@ of the JSON data model that is small and very fast to parse.
 
 ## Usage
 
-Serde CBOR supports Rust 1.31 and up. Add this to your `Cargo.toml`:
+Serde CBOR supports Rust 1.40 and up. Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
-serde_cbor = "0.10.3"
+serde_cbor = "0.11.1"
 ```
 
 Storing and loading Rust types is easy and requires only

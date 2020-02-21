@@ -31,7 +31,7 @@ homepage = "https://github.com/uuid-rs/uuid"
 name = "uuid"
 readme = "README.md"
 repository = "https://github.com/uuid-rs/uuid"
-version = "0.7.4" # remember to update html_root_url in lib.rs
+version = "0.8.1" # remember to update html_root_url in lib.rs
 
 [package.metadata.docs.rs]
 features = [ "guid", "serde", "slog", "v1", "v3", "v4", "v5" ]
@@ -54,12 +54,6 @@ status = "actively-developed"
 
 [badges.travis-ci]
 repository = "uuid-rs/uuid"
-
-[dependencies.byteorder]
-default-features = false
-features = ["i128"]
-version = "1"
-git = "https://github.com/mesalock-linux/byteorder-sgx"
 
 [dependencies.md5]
 optional = true
@@ -105,9 +99,9 @@ version = "1.0.56"
 
 [features]
 default = ["std", "mesalock_sgx"]
-guid = ["winapi"]
-std = []
-mesalock_sgx = ["sgx_tstd"]
+#guid = ["winapi"]
+std = ["mesalock_sgx"]
+mesalock_sgx = ["std", "sgx_tstd"]
 #stdweb = [ "rand/stdweb" ]
 v1 = []
 v3 = ["md5"]
@@ -115,7 +109,7 @@ v4 = ["rand"]
 v5 = ["sha1"]
 #wasm-bindgen = ["rand/wasm-bindgen"]
 
-[target.'cfg(windows)'.dependencies.winapi]
-optional = true
-version = "0.3"
+#[target.'cfg(windows)'.dependencies.winapi]
+#optional = true
+#version = "0.3"
 

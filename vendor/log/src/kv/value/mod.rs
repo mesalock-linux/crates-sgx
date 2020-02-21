@@ -125,7 +125,7 @@ mod tests {
 
         impl Fill for TestFill {
             fn fill(&self, slot: &mut Slot) -> Result<(), Error> {
-                let dbg: &fmt::Debug = &1;
+                let dbg: &dyn fmt::Debug = &1;
 
                 slot.fill(Value::from_debug(&dbg))
             }

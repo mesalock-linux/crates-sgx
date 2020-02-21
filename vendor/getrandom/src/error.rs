@@ -40,7 +40,7 @@ impl Error {
     ///
     /// This method is identical to `std::io::Error::raw_os_error()`, except
     /// that it works in `no_std` contexts. If this method returns `None`, the
-    /// error value can still be formatted via the `Diplay` implementation.
+    /// error value can still be formatted via the `Display` implementation.
     #[inline]
     pub fn raw_os_error(self) -> Option<i32> {
         if self.0.get() < Self::INTERNAL_START {
@@ -60,16 +60,19 @@ impl Error {
     }
 }
 
-#[link(name = "sgx_tstdc")]
-extern {
-    fn strerror_r(errnum: sgx_libc::c_int, buf: * mut sgx_libc::c_char, buflen: sgx_libc::size_t) -> sgx_libc::c_int;
+mod libc {
+    #[link(name = "sgx_tstdc")]
+    extern {
+        pub fn strerror_r(errnum: sgx_libc::c_int, buf: * mut sgx_libc::c_char, buflen: sgx_libc::size_t) -> sgx_libc::c_int;
+    }
+    pub use sgx_libc::c_char;
 }
 
 cfg_if! {
     if #[cfg(unix)] {
-        fn os_err_desc(errno: i32, buf: &mut [u8]) -> Option<&str> {
-            let buf_ptr = buf.as_mut_ptr() as *mut sgx_libc::c_char;
-            if unsafe { strerror_r(errno, buf_ptr, buf.len()) } != 0 {
+        fn os_err(errno: i32, buf: &mut [u8]) -> Option<&str> {
+            let buf_ptr = buf.as_mut_ptr() as *mut libc::c_char;
+            if unsafe { libc::strerror_r(errno, buf_ptr, buf.len()) } != 0 {
                 return None;
             }
 
@@ -79,12 +82,11 @@ cfg_if! {
             core::str::from_utf8(&buf[..idx]).ok()
         }
     } else if #[cfg(target_os = "wasi")] {
-        fn os_err_desc(errno: i32, _buf: &mut [u8]) -> Option<&str> {
-            core::num::NonZeroU16::new(errno as u16)
-                .and_then(wasi::wasi_unstable::error_str)
+        fn os_err(errno: i32, _buf: &mut [u8]) -> Option<wasi::Error> {
+            wasi::Error::from_raw_error(errno as _)
         }
     } else {
-        fn os_err_desc(_errno: i32, _buf: &mut [u8]) -> Option<&str> {
+        fn os_err(_errno: i32, _buf: &mut [u8]) -> Option<&str> {
             None
         }
     }
@@ -96,8 +98,8 @@ impl fmt::Debug for Error {
         if let Some(errno) = self.raw_os_error() {
             dbg.field("os_error", &errno);
             let mut buf = [0u8; 128];
-            if let Some(desc) = os_err_desc(errno, &mut buf) {
-                dbg.field("description", &desc);
+            if let Some(err) = os_err(errno, &mut buf) {
+                dbg.field("description", &err);
             }
         } else if let Some(desc) = internal_desc(*self) {
             dbg.field("internal_code", &self.0.get());
@@ -113,8 +115,8 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(errno) = self.raw_os_error() {
             let mut buf = [0u8; 128];
-            match os_err_desc(errno, &mut buf) {
-                Some(desc) => f.write_str(desc),
+            match os_err(errno, &mut buf) {
+                Some(err) => err.fmt(f),
                 None => write!(f, "OS Error: {}", errno),
             }
         } else if let Some(desc) = internal_desc(*self) {
@@ -150,6 +152,7 @@ pub(crate) const BINDGEN_CRYPTO_UNDEF: Error = internal_error!(7);
 pub(crate) const BINDGEN_GRV_UNDEF: Error = internal_error!(8);
 pub(crate) const STDWEB_NO_RNG: Error = internal_error!(9);
 pub(crate) const STDWEB_RNG_FAILED: Error = internal_error!(10);
+pub(crate) const RAND_SECURE_FATAL: Error = internal_error!(11);
 
 fn internal_desc(error: Error) -> Option<&'static str> {
     match error {
@@ -164,6 +167,7 @@ fn internal_desc(error: Error) -> Option<&'static str> {
         BINDGEN_GRV_UNDEF => Some("wasm-bindgen: crypto.getRandomValues is undefined"),
         STDWEB_NO_RNG => Some("stdweb: no randomness source available"),
         STDWEB_RNG_FAILED => Some("stdweb: failed to get randomness"),
+        RAND_SECURE_FATAL => Some("randSecure: random number generator module is not initialized"),
         _ => None,
     }
 }

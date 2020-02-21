@@ -242,7 +242,7 @@
 //!   dynamic library libproc_macro from rustc toolchain.
 
 // Syn types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/syn/1.0.13")]
+#![doc(html_root_url = "https://docs.rs/syn/1.0.15")]
 #![deny(clippy::all, clippy::pedantic)]
 // Ignored clippy lints.
 #![allow(
@@ -265,6 +265,7 @@
     clippy::empty_enum,
     clippy::if_not_else,
     clippy::items_after_statements,
+    clippy::match_same_arms,
     clippy::missing_errors_doc,
     clippy::module_name_repetitions,
     clippy::must_use_candidate,
@@ -761,6 +762,8 @@ pub mod export;
 mod custom_keyword;
 mod custom_punctuation;
 mod sealed;
+mod span;
+mod thread;
 
 #[cfg(feature = "parsing")]
 mod lookahead;
@@ -768,12 +771,11 @@ mod lookahead;
 #[cfg(feature = "parsing")]
 pub mod parse;
 
-mod span;
+#[cfg(all(feature = "parsing", feature = "full"))]
+mod verbatim;
 
 #[cfg(all(any(feature = "full", feature = "derive"), feature = "printing"))]
 mod print;
-
-mod thread;
 
 ////////////////////////////////////////////////////////////////////////////////
 

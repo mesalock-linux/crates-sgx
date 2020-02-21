@@ -2,6 +2,21 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## Unreleased
+
+## v0.1.18 (2019-12-10)
+- Fix two bugs causing panics introduced in 0.1.17.
+
+## v0.1.17 (2019-12-08)
+- Minimum supported rust version changed to 1.34
+- Fix clippy::into_iter_on_array warning
+- Ignore extraneous bytes after SOS
+- Support IDCT Scaling
+
+## v0.1.16 (2019-08-25)
+- Minimum supported rust version changed to 1.28
+- Allow zero length DHT segments
+
 ## v0.1.15 (2018-06-10)
 - Added support for WebAssembly and asm.js (thanks @CryZe!)
 - Bugfix for images with APP14 segments longer than 12 bytes.

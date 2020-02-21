@@ -349,12 +349,12 @@ mod tests {
 
     #[test]
     fn source_is_object_safe() {
-        fn _check(_: &Source) {}
+        fn _check(_: &dyn Source) {}
     }
 
     #[test]
     fn visitor_is_object_safe() {
-        fn _check(_: &Visitor) {}
+        fn _check(_: &dyn Visitor) {}
     }
 
     #[test]
@@ -365,7 +365,7 @@ mod tests {
         }
 
         impl Source for OnePair {
-            fn visit<'kvs>(&'kvs self, visitor: &mut Visitor<'kvs>) -> Result<(), Error> {
+            fn visit<'kvs>(&'kvs self, visitor: &mut dyn Visitor<'kvs>) -> Result<(), Error> {
                 visitor.visit_pair(self.key.to_key(), self.value.to_value())
             }
         }

@@ -141,11 +141,22 @@ impl From<DecodingError> for io::Error {
 /// PNG StreamingDecoder (low-level interface)
 pub struct StreamingDecoder {
     state: Option<State>,
-    current_chunk: (Crc32, u32, Vec<u8>),
+    current_chunk: ChunkState,
     inflater: InflateStream,
     info: Option<Info>,
     current_seq_no: Option<u32>,
     have_idat: bool,
+}
+
+struct ChunkState {
+    /// Partial crc until now.
+    crc: Crc32,
+
+    /// Remanining bytes to be read.
+    remaining: u32,
+
+    /// Non-decoded bytes in the chunk.
+    raw_bytes: Vec<u8>,
 }
 
 impl StreamingDecoder {
@@ -155,7 +166,7 @@ impl StreamingDecoder {
     pub fn new() -> StreamingDecoder {
         StreamingDecoder {
             state: Some(State::Signature(0, [0; 7])),
-            current_chunk: (Crc32::new(), 0, Vec::with_capacity(CHUNCK_BUFFER_SIZE)),
+            current_chunk: ChunkState::default(),
             inflater: zlib_stream(),
             info: None,
             current_seq_no: None,
@@ -166,9 +177,9 @@ impl StreamingDecoder {
     /// Resets the StreamingDecoder
     pub fn reset(&mut self) {
         self.state = Some(State::Signature(0, [0; 7]));
-        self.current_chunk.0 = Crc32::new();
-        self.current_chunk.1 = 0;
-        self.current_chunk.2.clear();
+        self.current_chunk.crc = Crc32::new();
+        self.current_chunk.remaining = 0;
+        self.current_chunk.raw_bytes.clear();
         self.inflater = zlib_stream();
         self.info = None;
         self.current_seq_no = None;
@@ -248,16 +259,16 @@ impl StreamingDecoder {
                             (val >> 8) as u8,
                             val as u8
                         ];
-                        self.current_chunk.0.reset();
-                        self.current_chunk.0.update(&type_str);
-                        self.current_chunk.1 = length;
+                        self.current_chunk.crc.reset();
+                        self.current_chunk.crc.update(&type_str);
+                        self.current_chunk.remaining = length;
                         goto!(
                             ReadChunk(type_str, true),
                             emit Decoded::ChunkBegin(length, type_str)
                         )
                     },
                     Crc(type_str) => {
-                        let sum = self.current_chunk.0.clone().finalize();
+                        let sum = self.current_chunk.crc.clone().finalize();
                         if CHECKSUM_DISABLED || val == sum {
                             goto!(
                                 State::U32(U32Value::Length),
@@ -299,7 +310,7 @@ impl StreamingDecoder {
                     },
                     chunk::fdAT => {
                         if let Some(seq_no) = self.current_seq_no {
-                            let mut buf = &self.current_chunk.2[..];
+                            let mut buf = &self.current_chunk.raw_bytes[..];
                             let next_seq_no = buf.read_be()?;
                             if next_seq_no != seq_no + 1 {
                                 return Err(DecodingError::Format(format!(
@@ -320,7 +331,7 @@ impl StreamingDecoder {
                     },
                     // Handle other chunks
                     _ => {
-                        if self.current_chunk.1 == 0 { // complete chunk
+                        if self.current_chunk.remaining == 0 { // complete chunk
                             Ok((0, self.parse_chunk(type_str)?))
                         } else {
                             goto!(
@@ -334,11 +345,11 @@ impl StreamingDecoder {
             },
             ReadChunk(type_str, clear) => {
                 if clear {
-                    self.current_chunk.2.clear();
+                    self.current_chunk.raw_bytes.clear();
                 }
-                if self.current_chunk.1 > 0 {
-                    let (ref mut crc, ref mut remaining, ref mut c_buf) = self.current_chunk;
-                    let buf_avail = c_buf.capacity() - c_buf.len();
+                if self.current_chunk.remaining > 0 {
+                    let ChunkState { crc, remaining, raw_bytes } = &mut self.current_chunk;
+                    let buf_avail = raw_bytes.capacity() - raw_bytes.len();
                     let bytes_avail = min(buf.len(), buf_avail);
                     let n = min(*remaining, bytes_avail as u32);
                     if buf_avail == 0 {
@@ -346,7 +357,7 @@ impl StreamingDecoder {
                     } else {
                         let buf = &buf[..n as usize];
                         crc.update(buf);
-                        c_buf.extend(buf.iter().copied());
+                        raw_bytes.extend_from_slice(buf);
                         *remaining -= n;
                         if *remaining == 0 {
                             goto!(n as usize, PartialChunk(type_str
@@ -361,8 +372,9 @@ impl StreamingDecoder {
                 }
             }
             DecodeData(type_str, mut n) => {
-                let chunk_len = self.current_chunk.2.len();
-                let (c, data) = self.inflater.update(&self.current_chunk.2[n..])?;
+                let chunk_len = self.current_chunk.raw_bytes.len();
+                let chunk_data = &self.current_chunk.raw_bytes[n..];
+                let (c, data) = self.inflater.update(chunk_data)?;
                 image_data.extend_from_slice(data);
                 n += c;
                 if n == chunk_len && data.is_empty() && c == 0 {
@@ -428,7 +440,7 @@ impl StreamingDecoder {
 
     fn parse_fctl(&mut self)
     -> Result<Decoded, DecodingError> {
-        let mut buf = &self.current_chunk.2[..];
+        let mut buf = &self.current_chunk.raw_bytes[..];
         let next_seq_no = buf.read_be()?;
 
         // Asuming that fcTL is required before *every* fdAT-sequence
@@ -480,7 +492,7 @@ impl StreamingDecoder {
                 "acTL chunk appeared after first IDAT chunk".into()
             ))
         } else {
-            let mut buf = &self.current_chunk.2[..];
+            let mut buf = &self.current_chunk.raw_bytes[..];
             let actl = AnimationControl {
                 num_frames: buf.read_be()?,
                 num_plays: buf.read_be()?
@@ -492,10 +504,8 @@ impl StreamingDecoder {
 
     fn parse_plte(&mut self)
     -> Result<Decoded, DecodingError> {
-        let mut vec = Vec::new();
-        vec.extend(self.current_chunk.2.iter().copied());
         if let Some(info) = self.info.as_mut() {
-            info.palette = Some(vec)
+            info.palette = Some(self.current_chunk.raw_bytes.clone())
         }
         Ok(Decoded::Nothing)
     }
@@ -507,8 +517,7 @@ impl StreamingDecoder {
             let info = self.get_info_or_err()?;
             (info.color_type, info.bit_depth as u8)
         };
-        let mut vec = Vec::new();
-        vec.extend(self.current_chunk.2.iter().copied());
+        let vec = self.current_chunk.raw_bytes.clone();
         let len = vec.len();
         let info = match self.info {
             Some(ref mut info) => info,
@@ -565,7 +574,7 @@ impl StreamingDecoder {
                 "pHYs chunk appeared after first IDAT chunk".into()
             ))
         } else {
-            let mut buf = &self.current_chunk.2[..];
+            let mut buf = &self.current_chunk.raw_bytes[..];
             let xppu = buf.read_be()?;
             let yppu = buf.read_be()?;
             let unit = buf.read_be()?;
@@ -588,7 +597,7 @@ impl StreamingDecoder {
     fn parse_ihdr(&mut self)
     -> Result<Decoded, DecodingError> {
         // TODO: check if color/bit depths combination is valid
-        let mut buf = &self.current_chunk.2[..];
+        let mut buf = &self.current_chunk.raw_bytes[..];
         let width = buf.read_be()?;
         let height = buf.read_be()?;
         let bit_depth = buf.read_be()?;
@@ -641,6 +650,16 @@ impl StreamingDecoder {
             color_type,
             interlaced
         ))
+    }
+}
+
+impl Default for ChunkState {
+    fn default() -> Self {
+        ChunkState {
+            crc:Crc32::new(),
+            remaining: 0,
+            raw_bytes: Vec::with_capacity(CHUNCK_BUFFER_SIZE),
+        }
     }
 }
 

@@ -3,7 +3,8 @@ aho-corasick: Unlicense/MIT
 anyhow: MIT OR Apache-2.0
 array_tool: MIT OR Apache-2.0
 assert_matches: MIT/Apache-2.0
-autocfg: Apache-2.0/MIT
+autocfg-0.1.7: Apache-2.0/MIT
+autocfg: Apache-2.0 OR MIT
 base64: MIT/Apache-2.0
 bincode: MIT
 bitflags: MIT/Apache-2.0
@@ -40,7 +41,6 @@ heapsize: MIT/Apache-2.0
 hex: MIT OR Apache-2.0
 httparse: MIT/Apache-2.0
 http: MIT/Apache-2.0
-http_req: MIT
 humantime: MIT/Apache-2.0
 idna: MIT/Apache-2.0
 image: MIT
@@ -90,7 +90,6 @@ quote: MIT OR Apache-2.0
 rand_chacha: MIT OR Apache-2.0
 rand_core-0.4.2: MIT/Apache-2.0
 rand_core: MIT OR Apache-2.0
-rand_hc: MIT OR Apache-2.0
 rand: MIT OR Apache-2.0
 rawpointer: MIT/Apache-2.0
 rdrand: ISC
@@ -154,7 +153,6 @@ toml: MIT/Apache-2.0
 typenum: MIT/Apache-2.0
 typetag-impl: MIT OR Apache-2.0
 typetag: MIT OR Apache-2.0
-unicase: MIT/Apache-2.0
 unicode-bidi: MIT / Apache-2.0
 unicode-normalization: MIT/Apache-2.0
 unicode-xid-0.0.4: MIT/Apache-2.0
@@ -163,7 +161,6 @@ unicode-xid: MIT OR Apache-2.0
 untrusted: ISC
 url: MIT/Apache-2.0
 uuid: Apache-2.0 OR MIT
-version_check: MIT/Apache-2.0
 wabt: Apache-2.0
 wasmi: MIT/Apache-2.0
 wasmi-validation: MIT/Apache-2.0

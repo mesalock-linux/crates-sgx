@@ -1,13 +1,22 @@
 //! This crate provides type-erased versions of Serde's `Serialize`, `Serializer`
-//! and `Deserializer` traits that can be used as [trait
-//! objects](https://doc.rust-lang.org/book/trait-objects.html).
+//! and `Deserializer` traits that can be used as [trait objects].
+//!
+//! [trait objects]: https://doc.rust-lang.org/book/trait-objects.html
 //!
 //! The usual Serde `Serialize`, `Serializer` and `Deserializer` traits cannot
-//! be used as trait objects like `&Serialize` or boxed trait objects like
-//! `Box<Serialize>` because of Rust's ["object safety"
-//! rules](http://huonw.github.io/blog/2015/01/object-safety/). In particular,
-//! all three traits contain generic methods which cannot be made into a trait
-//! object.
+//! be used as trait objects like `&dyn Serialize` or boxed trait objects like
+//! `Box<dyn Serialize>` because of Rust's ["object safety" rules]. In
+//! particular, all three traits contain generic methods which cannot be made
+//! into a trait object.
+//!
+//! ["object safety" rules]: http://huonw.github.io/blog/2015/01/object-safety/
+//!
+//! This library should be considered a low-level building block for interacting
+//! with Serde APIs in an object-safe way. Most use cases will require higher
+//! level functionality such as provided by [`typetag`] which uses this crate
+//! internally.
+//!
+//! [`typetag`]: https://github.com/dtolnay/typetag
 //!
 //! **The traits in this crate work seamlessly with any existing Serde
 //! `Serialize` and `Deserialize` type and any existing Serde `Serializer` and
@@ -16,14 +25,9 @@
 //! ## Serialization
 //!
 //! ```rust
-//! extern crate erased_serde;
-//! extern crate serde_json;
-//! extern crate serde_cbor;
-//!
+//! use erased_serde::{Serialize, Serializer};
 //! use std::collections::BTreeMap as Map;
 //! use std::io;
-//!
-//! use erased_serde::{Serialize, Serializer};
 //!
 //! fn main() {
 //!     // Construct some serializers.
@@ -33,13 +37,13 @@
 //!     // The values in this map are boxed trait objects. Ordinarily this would not
 //!     // be possible with serde::Serializer because of object safety, but type
 //!     // erasure makes it possible with erased_serde::Serializer.
-//!     let mut formats: Map<&str, Box<Serializer>> = Map::new();
+//!     let mut formats: Map<&str, Box<dyn Serializer>> = Map::new();
 //!     formats.insert("json", Box::new(Serializer::erase(json)));
 //!     formats.insert("cbor", Box::new(Serializer::erase(cbor)));
 //!
 //!     // These are boxed trait objects as well. Same thing here - type erasure
 //!     // makes this possible.
-//!     let mut values: Map<&str, Box<Serialize>> = Map::new();
+//!     let mut values: Map<&str, Box<dyn Serialize>> = Map::new();
 //!     values.insert("vec", Box::new(vec!["a", "b"]));
 //!     values.insert("int", Box::new(65536));
 //!
@@ -57,13 +61,8 @@
 //! ## Deserialization
 //!
 //! ```rust
-//! extern crate erased_serde;
-//! extern crate serde_json;
-//! extern crate serde_cbor;
-//!
-//! use std::collections::BTreeMap as Map;
-//!
 //! use erased_serde::Deserializer;
+//! use std::collections::BTreeMap as Map;
 //!
 //! fn main() {
 //!     static JSON: &'static [u8] = br#"{"A": 65, "B": 66}"#;
@@ -75,7 +74,7 @@
 //!
 //!     // The values in this map are boxed trait objects, which is not possible
 //!     // with the normal serde::Deserializer because of object safety.
-//!     let mut formats: Map<&str, Box<Deserializer>> = Map::new();
+//!     let mut formats: Map<&str, Box<dyn Deserializer>> = Map::new();
 //!     formats.insert("json", Box::new(Deserializer::erase(json)));
 //!     formats.insert("cbor", Box::new(Deserializer::erase(cbor)));
 //!
@@ -88,7 +87,7 @@
 //! }
 //! ```
 
-#![doc(html_root_url = "https://docs.rs/erased-serde/0.3.9")]
+#![doc(html_root_url = "https://docs.rs/erased-serde/0.3.10")]
 #![cfg_attr(feature = "unstable-debug", feature(core_intrinsics))]
 #![cfg_attr(all(feature = "mesalock_sgx",
                 not(target_env = "sgx")), no_std)]
@@ -99,15 +98,6 @@
 extern crate sgx_tstd as std;
 
 #[macro_use]
-extern crate serde;
-
-#[cfg(test)]
-#[macro_use]
-extern crate serde_derive;
-#[cfg(test)]
-extern crate serde_json;
-
-#[macro_use]
 mod macros;
 
 mod any;
@@ -115,9 +105,9 @@ mod de;
 mod error;
 mod ser;
 
-pub use de::{deserialize, Deserializer};
-pub use error::{Error, Result};
-pub use ser::{serialize, Serialize, Serializer};
+pub use crate::de::{deserialize, Deserializer};
+pub use crate::error::{Error, Result};
+pub use crate::ser::{serialize, Serialize, Serializer};
 
 // Not public API.
 #[doc(hidden)]

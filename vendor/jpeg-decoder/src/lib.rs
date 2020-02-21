@@ -27,6 +27,7 @@
 //! ```
 
 #![deny(missing_docs)]
+#![forbid(unsafe_code)]
 
 #![cfg_attr(all(feature = "mesalock_sgx",
                 not(target_env = "sgx")), no_std)]

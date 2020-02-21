@@ -119,6 +119,14 @@ impl<W: Write> Writer<W> {
     }
 
     fn init(mut self) -> Result<Self> {
+        if self.info.width == 0 {
+            return Err(EncodingError::Format("Zero width not allowed".into()));
+        }
+
+        if self.info.height == 0 {
+            return Err(EncodingError::Format("Zero height not allowed".into()));
+        }
+
         self.w.write_all(&[137, 80, 78, 71, 13, 10, 26, 10])?;
         let mut data = [0; 13];
         (&mut data[..]).write_be(self.info.width)?;
@@ -143,6 +151,7 @@ impl<W: Write> Writer<W> {
 
     /// Writes the image data.
     pub fn write_image_data(&mut self, data: &[u8]) -> Result<()> {
+        const MAX_CHUNK_LEN: u32 = (1u32 << 31) - 1;
         let bpp = self.info.bytes_per_pixel();
         let in_len = self.info.raw_row_length() - 1;
         let mut prev = vec![0; in_len];
@@ -161,7 +170,11 @@ impl<W: Write> Writer<W> {
             zlib.write_all(&current)?;
             mem::swap(&mut prev, &mut current);
         }
-        self.write_chunk(chunk::IDAT, &zlib.finish()?)
+        let zlib_encoded = zlib.finish()?;
+        for chunk in zlib_encoded.chunks(MAX_CHUNK_LEN as usize) {
+            self.write_chunk(chunk::IDAT, &chunk)?;
+        }
+        Ok(())
     }
 
     /// Create an stream writer.
@@ -423,6 +436,25 @@ mod tests {
         let image = vec![0u8; correct_image_size + 1];
         let result = png_writer.write_image_data(image.as_ref());
         assert!(result.is_err());
+
+        Ok(())
+    }
+
+    #[test]
+    fn expect_error_on_empty_image() -> Result<()> {
+        use std::io::Cursor;
+
+        let output = vec![0u8; 1024];
+        let mut writer = Cursor::new(output);
+
+        let encoder = Encoder::new(&mut writer, 0, 0);
+        assert!(encoder.write_header().is_err());
+
+        let encoder = Encoder::new(&mut writer, 100, 0);
+        assert!(encoder.write_header().is_err());
+
+        let encoder = Encoder::new(&mut writer, 0, 100);
+        assert!(encoder.write_header().is_err());
 
         Ok(())
     }

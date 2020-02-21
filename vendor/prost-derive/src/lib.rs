@@ -1,4 +1,4 @@
-#![doc(html_root_url = "https://docs.rs/prost-derive/0.6.0")]
+#![doc(html_root_url = "https://docs.rs/prost-derive/0.6.1")]
 // The `quote!` macro requires deep recursion.
 #![recursion_limit = "4096"]
 
@@ -194,7 +194,7 @@ fn try_message(input: TokenStream) -> Result<TokenStream, Error> {
                 #struct_name
                 match tag {
                     #(#merge)*
-                    _ => ::prost::encoding::skip_field(wire_type, tag, buf),
+                    _ => ::prost::encoding::skip_field(wire_type, tag, buf, ctx),
                 }
             }
 
