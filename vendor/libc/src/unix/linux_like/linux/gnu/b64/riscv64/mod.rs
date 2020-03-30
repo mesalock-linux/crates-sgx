@@ -205,11 +205,22 @@ s! {
         pub l_len: ::off_t,
         pub l_pid: ::pid_t,
     }
+
+    pub struct flock64 {
+        pub l_type: ::c_short,
+        pub l_whence: ::c_short,
+        pub l_start: ::off64_t,
+        pub l_len: ::off64_t,
+        pub l_pid: ::pid_t,
+    }
 }
 
 pub const POSIX_FADV_DONTNEED: ::c_int = 4;
 pub const POSIX_FADV_NOREUSE: ::c_int = 5;
 pub const VEOF: usize = 4;
+pub const RTLD_DEEPBIND: ::c_int = 0x8;
+pub const RTLD_GLOBAL: ::c_int = 0x100;
+pub const RTLD_NOLOAD: ::c_int = 0x4;
 pub const TIOCGSOFTCAR: ::c_ulong = 21529;
 pub const TIOCSSOFTCAR: ::c_ulong = 21530;
 pub const TIOCGRS485: ::c_int = 21550;
@@ -400,6 +411,9 @@ pub const F_SETLKW: ::c_int = 7;
 pub const F_RDLCK: ::c_int = 0;
 pub const F_WRLCK: ::c_int = 1;
 pub const F_UNLCK: ::c_int = 2;
+pub const F_OFD_GETLK: ::c_int = 36;
+pub const F_OFD_SETLK: ::c_int = 37;
+pub const F_OFD_SETLKW: ::c_int = 38;
 pub const SFD_NONBLOCK: ::c_int = 2048;
 pub const TCSANOW: ::c_int = 0;
 pub const TCSADRAIN: ::c_int = 1;
@@ -460,6 +474,7 @@ pub const MAP_EXECUTABLE: ::c_int = 4096;
 pub const MAP_POPULATE: ::c_int = 32768;
 pub const MAP_NONBLOCK: ::c_int = 65536;
 pub const MAP_STACK: ::c_int = 131072;
+pub const MAP_SYNC : ::c_int = 0x080000;
 pub const EDEADLOCK: ::c_int = 35;
 pub const EUCLEAN: ::c_int = 117;
 pub const ENOTNAM: ::c_int = 118;

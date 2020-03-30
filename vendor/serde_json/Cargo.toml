@@ -21,7 +21,7 @@ serde = { git = "https://github.com/mesalock-linux/serde-sgx.git" }
 indexmap = { git = "https://github.com/mesalock-linux/indexmap-sgx.git", optional = true }
 itoa = { git = "https://github.com/mesalock-linux/itoa-sgx.git" }
 ryu = "1.0"
-sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 #automod = "0.1"

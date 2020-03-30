@@ -23,7 +23,7 @@ pub type nl_item = ::c_int;
 pub type idtype_t = ::c_uint;
 
 #[cfg_attr(feature = "extra_traits", derive(Debug))]
-pub enum fpos64_t {} // TODO: fill this out with a struct
+pub enum fpos64_t {} // FIXME: fill this out with a struct
 impl ::Copy for fpos64_t {}
 impl ::Clone for fpos64_t {
     fn clone(&self) -> fpos64_t {
@@ -501,7 +501,7 @@ pub const F_GETLEASE: ::c_int = 1025;
 pub const F_NOTIFY: ::c_int = 1026;
 pub const F_DUPFD_CLOEXEC: ::c_int = 1030;
 
-// TODO(#235): Include file sealing fcntls once we have a way to verify them.
+// FIXME(#235): Include file sealing fcntls once we have a way to verify them.
 
 pub const SIGTRAP: ::c_int = 5;
 
@@ -512,8 +512,7 @@ pub const CLOCK_REALTIME: ::clockid_t = 0;
 pub const CLOCK_MONOTONIC: ::clockid_t = 1;
 pub const CLOCK_PROCESS_CPUTIME_ID: ::clockid_t = 2;
 pub const CLOCK_THREAD_CPUTIME_ID: ::clockid_t = 3;
-// TODO(#247) Someday our Travis shall have glibc 2.21 (released in Sep
-// 2014.) See also musl/mod.rs
+// FIXME: Add these constants once uclibc gets them.
 // pub const CLOCK_SGI_CYCLE: ::clockid_t = 10;
 // pub const CLOCK_TAI: ::clockid_t = 11;
 pub const TIMER_ABSTIME: ::c_int = 1;
@@ -1046,6 +1045,7 @@ pub const POSIX_FADV_WILLNEED: ::c_int = 3;
 pub const AT_FDCWD: ::c_int = -100;
 pub const AT_SYMLINK_NOFOLLOW: ::c_int = 0x100;
 pub const AT_REMOVEDIR: ::c_int = 0x200;
+pub const AT_EACCESS: ::c_int = 0x200;
 pub const AT_SYMLINK_FOLLOW: ::c_int = 0x400;
 
 pub const LOG_CRON: ::c_int = 9 << 3;

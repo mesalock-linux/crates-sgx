@@ -3,7 +3,7 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/apache/teaclave-sgx-sdk"]
 git = "https://github.com/apache/teaclave-sgx-sdk"
-rev = "v1.1.0"
+rev = "v1.1.1"
 replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/adler32-rs-sgx"]
@@ -203,7 +203,7 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/mio-sgx"]
 git = "https://github.com/mesalock-linux/mio-sgx"
-tag = "sgx_1.1.0"
+tag = "sgx_1.1.1"
 replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/net2-rs-sgx"]
@@ -263,7 +263,7 @@ replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/rand-sgx"]
 git = "https://github.com/mesalock-linux/rand-sgx"
-tag = "v0.6.5_sgx1.1.0"
+tag = "v0.6.5_sgx1.1.1"
 replace-with = "vendored-sources"
 
 [source."https://github.com/mesalock-linux/regex-sgx"]

@@ -22,4 +22,4 @@ mesalock_sgx = ["sgx_tstd"]
 travis-ci = { repository = "dtolnay/itoa" }
 
 [target.'cfg(not(target_env = "sgx"))'.dependencies]
-sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }

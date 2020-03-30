@@ -429,6 +429,9 @@ pub const F_GETOWN: ::c_int = 9;
 pub const F_SETOWN: ::c_int = 8;
 pub const F_SETLK: ::c_int = 6;
 pub const F_SETLKW: ::c_int = 7;
+pub const F_OFD_GETLK: ::c_int = 36;
+pub const F_OFD_SETLK: ::c_int = 37;
+pub const F_OFD_SETLKW: ::c_int = 38;
 
 pub const F_RDLCK: ::c_int = 0;
 pub const F_WRLCK: ::c_int = 1;
@@ -530,6 +533,7 @@ pub const MAP_POPULATE: ::c_int = 0x08000;
 pub const MAP_NONBLOCK: ::c_int = 0x010000;
 pub const MAP_STACK: ::c_int = 0x020000;
 pub const MAP_HUGETLB: ::c_int = 0x040000;
+pub const MAP_SYNC : ::c_int = 0x080000;
 
 pub const EDEADLOCK: ::c_int = 35;
 
@@ -661,6 +665,51 @@ pub const TCSAFLUSH: ::c_int = 2;
 
 pub const TIOCLINUX: ::c_ulong = 0x541C;
 pub const TIOCGSERIAL: ::c_ulong = 0x541E;
+
+// sys/auxv.h
+pub const HWCAP_FP: ::c_ulong = 1 << 0;
+pub const HWCAP_ASIMD: ::c_ulong = 1 << 1;
+pub const HWCAP_EVTSTRM: ::c_ulong = 1 << 2;
+pub const HWCAP_AES: ::c_ulong = 1 << 3;
+pub const HWCAP_PMULL: ::c_ulong = 1 << 4;
+pub const HWCAP_SHA1: ::c_ulong = 1 << 5;
+pub const HWCAP_SHA2: ::c_ulong = 1 << 6;
+pub const HWCAP_CRC32: ::c_ulong = 1 << 7;
+pub const HWCAP_ATOMICS: ::c_ulong = 1 << 8;
+pub const HWCAP_FPHP: ::c_ulong = 1 << 9;
+pub const HWCAP_ASIMDHP: ::c_ulong = 1 << 10;
+pub const HWCAP_CPUID: ::c_ulong = 1 << 11;
+pub const HWCAP_ASIMDRDM: ::c_ulong = 1 << 12;
+pub const HWCAP_JSCVT: ::c_ulong = 1 << 13;
+pub const HWCAP_FCMA: ::c_ulong = 1 << 14;
+pub const HWCAP_LRCPC: ::c_ulong = 1 << 15;
+pub const HWCAP_DCPOP: ::c_ulong = 1 << 16;
+pub const HWCAP_SHA3: ::c_ulong = 1 << 17;
+pub const HWCAP_SM3: ::c_ulong = 1 << 18;
+pub const HWCAP_SM4: ::c_ulong = 1 << 19;
+pub const HWCAP_ASIMDDP: ::c_ulong = 1 << 20;
+pub const HWCAP_SHA512: ::c_ulong = 1 << 21;
+pub const HWCAP_SVE: ::c_ulong = 1 << 22;
+pub const HWCAP_ASIMDFHM: ::c_ulong = 1 << 23;
+pub const HWCAP_DIT: ::c_ulong = 1 << 24;
+pub const HWCAP_USCAT: ::c_ulong = 1 << 25;
+pub const HWCAP_ILRCPC: ::c_ulong = 1 << 26;
+pub const HWCAP_FLAGM: ::c_ulong = 1 << 27;
+pub const HWCAP_SSBS: ::c_ulong = 1 << 28;
+pub const HWCAP_SB: ::c_ulong = 1 << 29;
+pub const HWCAP_PACA: ::c_ulong = 1 << 30;
+pub const HWCAP_PACG: ::c_ulong = 1 << 31;
+// FIXME: enable these again once linux-api-headers are up to date enough on CI.
+// See discussion in https://github.com/rust-lang/libc/pull/1638
+//pub const HWCAP2_DCPODP: ::c_ulong = 1 << 0;
+//pub const HWCAP2_SVE2: ::c_ulong = 1 << 1;
+//pub const HWCAP2_SVEAES: ::c_ulong = 1 << 2;
+//pub const HWCAP2_SVEPMULL: ::c_ulong = 1 << 3;
+//pub const HWCAP2_SVEBITPERM: ::c_ulong = 1 << 4;
+//pub const HWCAP2_SVESHA3: ::c_ulong = 1 << 5;
+//pub const HWCAP2_SVESM4: ::c_ulong = 1 << 6;
+//pub const HWCAP2_FLAGM2: ::c_ulong = 1 << 7;
+//pub const HWCAP2_FRINT: ::c_ulong = 1 << 8;
 
 // Syscall table
 pub const SYS_io_setup: ::c_long = 0;

@@ -179,11 +179,11 @@ impl<R> $name<R> where R: BitReader {
                         &self.buf[..]
                     } else {
                         let data = if code == next_code {
-                            let cha = try!(self.table.reconstruct(prev))[0];
+                            let cha = self.table.reconstruct(prev)?[0];
                             self.table.push(prev, cha);
-                            try!(self.table.reconstruct(Some(code)))
+                            self.table.reconstruct(Some(code))?
                         } else if code < next_code {
-                            let cha = try!(self.table.reconstruct(Some(code)))[0];
+                            let cha = self.table.reconstruct(Some(code))?[0];
                             self.table.push(prev, cha);
                             self.table.buffer()
                         } else {

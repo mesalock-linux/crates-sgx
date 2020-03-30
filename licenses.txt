@@ -36,6 +36,7 @@ ghost: MIT OR Apache-2.0
 gif: MIT/Apache-2.0
 gzip-header: MIT/Apache-2.0
 half: MIT/Apache-2.0
+hashbrown-0.3.1: Apache-2.0/MIT
 hashbrown: Apache-2.0/MIT
 heapsize: MIT/Apache-2.0
 hex: MIT OR Apache-2.0
@@ -49,6 +50,7 @@ integer-encoding: see license file at integer-encoding/LICENSE
 inventory-impl: MIT OR Apache-2.0
 inventory: MIT OR Apache-2.0
 iovec: MIT/Apache-2.0
+itertools-0.8.2: MIT/Apache-2.0
 itertools: MIT/Apache-2.0
 itoa: MIT OR Apache-2.0
 jpeg-decoder: MIT / Apache-2.0
@@ -106,10 +108,14 @@ serde_cbor: MIT/Apache-2.0
 serde_derive: MIT OR Apache-2.0
 serde_json: MIT OR Apache-2.0
 serde: MIT OR Apache-2.0
+sgx_align_struct_attribute: see license file at sgx_align_struct_attribute/LICENSE
 sgx_alloc: see license file at sgx_alloc/LICENSE
+sgx_backtrace: see license file at sgx_backtrace/LICENSE
 sgx_backtrace_sys: see license file at sgx_backtrace_sys/LICENSE
 sgx_build_helper: see license file at sgx_build_helper/LICENSE
+sgx_core_futures: see license file at sgx_core_futures/LICENSE
 sgx_cov: see license file at sgx_cov/LICENSE
+sgx_crypto_helper: see license file at sgx_crypto_helper/LICENSE
 sgx_demangle: see license file at sgx_demangle/LICENSE
 sgx_libc: see license file at sgx_libc/LICENSE
 sgx_rand_derive: see license file at sgx_rand_derive/LICENSE
@@ -124,7 +130,6 @@ sgx_tkey_exchange: see license file at sgx_tkey_exchange/LICENSE
 sgx_tprotected_fs: see license file at sgx_tprotected_fs/LICENSE
 sgx_trts: see license file at sgx_trts/LICENSE
 sgx_tseal: see license file at sgx_tseal/LICENSE
-sgx_tservice: see license file at sgx_tservice/LICENSE
 sgx_tse: see license file at sgx_tse/LICENSE
 sgx_tstd: see license file at sgx_tstd/LICENSE
 sgx_tunittest: see license file at sgx_tunittest/LICENSE

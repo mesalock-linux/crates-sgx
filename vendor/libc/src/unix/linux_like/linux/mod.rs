@@ -37,7 +37,7 @@ pub type Elf32_Section = u16;
 pub type Elf64_Section = u16;
 
 #[cfg_attr(feature = "extra_traits", derive(Debug))]
-pub enum fpos64_t {} // TODO: fill this out with a struct
+pub enum fpos64_t {} // FIXME: fill this out with a struct
 impl ::Copy for fpos64_t {}
 impl ::Clone for fpos64_t {
     fn clone(&self) -> fpos64_t {
@@ -1205,6 +1205,8 @@ pub const RTLD_DEFAULT: *mut ::c_void = 0i64 as *mut ::c_void;
 pub const RTLD_NODELETE: ::c_int = 0x1000;
 pub const RTLD_NOW: ::c_int = 0x2;
 
+pub const AT_EACCESS: ::c_int = 0x200;
+
 pub const TCP_MD5SIG: ::c_int = 14;
 
 align_const! {
@@ -1295,6 +1297,17 @@ pub const IPPROTO_MPLS: ::c_int = 137;
 /// raw IP packet
 pub const IPPROTO_RAW: ::c_int = 255;
 pub const IPPROTO_MAX: ::c_int = 256;
+
+pub const IP_MSFILTER: ::c_int = 41;
+pub const MCAST_JOIN_GROUP: ::c_int = 42;
+pub const MCAST_BLOCK_SOURCE: ::c_int = 43;
+pub const MCAST_UNBLOCK_SOURCE: ::c_int = 44;
+pub const MCAST_LEAVE_GROUP: ::c_int = 45;
+pub const MCAST_JOIN_SOURCE_GROUP: ::c_int = 46;
+pub const MCAST_LEAVE_SOURCE_GROUP: ::c_int = 47;
+pub const MCAST_MSFILTER: ::c_int = 48;
+pub const IP_MULTICAST_ALL: ::c_int = 49;
+pub const IP_UNICAST_IF: ::c_int = 50;
 
 pub const AF_IB: ::c_int = 27;
 pub const AF_MPLS: ::c_int = 28;
@@ -1773,6 +1786,72 @@ pub const NFULNL_CFG_F_SEQ: ::c_int = 0x0001;
 pub const NFULNL_CFG_F_SEQ_GLOBAL: ::c_int = 0x0002;
 pub const NFULNL_CFG_F_CONNTRACK: ::c_int = 0x0004;
 
+// linux/netfilter/nfnetlink_log.h
+pub const NFQNL_MSG_PACKET: ::c_int = 0;
+pub const NFQNL_MSG_VERDICT: ::c_int = 1;
+pub const NFQNL_MSG_CONFIG: ::c_int = 2;
+pub const NFQNL_MSG_VERDICT_BATCH: ::c_int = 3;
+
+pub const NFQA_UNSPEC: ::c_int = 0;
+pub const NFQA_PACKET_HDR: ::c_int = 1;
+pub const NFQA_VERDICT_HDR: ::c_int = 2;
+pub const NFQA_MARK: ::c_int = 3;
+pub const NFQA_TIMESTAMP: ::c_int = 4;
+pub const NFQA_IFINDEX_INDEV: ::c_int = 5;
+pub const NFQA_IFINDEX_OUTDEV: ::c_int = 6;
+pub const NFQA_IFINDEX_PHYSINDEV: ::c_int = 7;
+pub const NFQA_IFINDEX_PHYSOUTDEV: ::c_int = 8;
+pub const NFQA_HWADDR: ::c_int = 9;
+pub const NFQA_PAYLOAD: ::c_int = 10;
+pub const NFQA_CT: ::c_int = 11;
+pub const NFQA_CT_INFO: ::c_int = 12;
+pub const NFQA_CAP_LEN: ::c_int = 13;
+pub const NFQA_SKB_INFO: ::c_int = 14;
+pub const NFQA_EXP: ::c_int = 15;
+pub const NFQA_UID: ::c_int = 16;
+pub const NFQA_GID: ::c_int = 17;
+pub const NFQA_SECCTX: ::c_int = 18;
+/*
+ FIXME: These are not yet available in musl sanitized kernel headers and
+ make the tests fail. Enable them once musl has them.
+
+ See https://github.com/rust-lang/libc/pull/1628 for more details.
+pub const NFQA_VLAN: ::c_int = 19;
+pub const NFQA_L2HDR: ::c_int = 20;
+
+pub const NFQA_VLAN_UNSPEC: ::c_int = 0;
+pub const NFQA_VLAN_PROTO: ::c_int = 1;
+pub const NFQA_VLAN_TCI: ::c_int = 2;
+*/
+
+pub const NFQNL_CFG_CMD_NONE: ::c_int = 0;
+pub const NFQNL_CFG_CMD_BIND: ::c_int = 1;
+pub const NFQNL_CFG_CMD_UNBIND: ::c_int = 2;
+pub const NFQNL_CFG_CMD_PF_BIND: ::c_int = 3;
+pub const NFQNL_CFG_CMD_PF_UNBIND: ::c_int = 4;
+
+pub const NFQNL_COPY_NONE: ::c_int = 0;
+pub const NFQNL_COPY_META: ::c_int = 1;
+pub const NFQNL_COPY_PACKET: ::c_int = 2;
+
+pub const NFQA_CFG_UNSPEC: ::c_int = 0;
+pub const NFQA_CFG_CMD: ::c_int = 1;
+pub const NFQA_CFG_PARAMS: ::c_int = 2;
+pub const NFQA_CFG_QUEUE_MAXLEN: ::c_int = 3;
+pub const NFQA_CFG_MASK: ::c_int = 4;
+pub const NFQA_CFG_FLAGS: ::c_int = 5;
+
+pub const NFQA_CFG_F_FAIL_OPEN: ::c_int = 0x0001;
+pub const NFQA_CFG_F_CONNTRACK: ::c_int = 0x0002;
+pub const NFQA_CFG_F_GSO: ::c_int = 0x0004;
+pub const NFQA_CFG_F_UID_GID: ::c_int = 0x0008;
+pub const NFQA_CFG_F_SECCTX: ::c_int = 0x0010;
+pub const NFQA_CFG_F_MAX: ::c_int = 0x0020;
+
+pub const NFQA_SKB_CSUMNOTREADY: ::c_int = 0x0001;
+pub const NFQA_SKB_GSO: ::c_int = 0x0002;
+pub const NFQA_SKB_CSUM_NOTVERIFIED: ::c_int = 0x0004;
+
 pub const GENL_NAMSIZ: ::c_int = 16;
 
 pub const GENL_MIN_ID: ::c_int = NLMSG_MIN_TYPE;
@@ -1899,6 +1978,9 @@ pub const NF_IP6_PRI_NAT_SRC: ::c_int = 100;
 pub const NF_IP6_PRI_SELINUX_LAST: ::c_int = 225;
 pub const NF_IP6_PRI_CONNTRACK_HELPER: ::c_int = 300;
 pub const NF_IP6_PRI_LAST: ::c_int = ::INT_MAX;
+
+// linux/netfilter_ipv6/ip6_tables.h
+pub const IP6T_SO_ORIGINAL_DST: ::c_int = 80;
 
 pub const SIOCADDRT: ::c_ulong = 0x0000890B;
 pub const SIOCDELRT: ::c_ulong = 0x0000890C;
@@ -2235,6 +2317,12 @@ pub const ALG_SET_AEAD_AUTHSIZE: ::c_int = 5;
 pub const ALG_OP_DECRYPT: ::c_int = 0;
 pub const ALG_OP_ENCRYPT: ::c_int = 1;
 
+// include/uapi/linux/mman.h
+pub const MAP_SHARED_VALIDATE: ::c_int = 0x3;
+
+// include/uapi/asm-generic/mman-common.h
+pub const MAP_FIXED_NOREPLACE: ::c_int = 0x100000;
+
 // uapi/linux/vm_sockets.h
 pub const VMADDR_CID_ANY: ::c_uint = 0xFFFFFFFF;
 pub const VMADDR_CID_HYPERVISOR: ::c_uint = 0;
@@ -2263,6 +2351,50 @@ pub const IN_IGNORED: u32 = 0x0000_8000;
 pub const IN_ONLYDIR: u32 = 0x0100_0000;
 pub const IN_DONT_FOLLOW: u32 = 0x0200_0000;
 // pub const IN_EXCL_UNLINK:   u32 = 0x0400_0000;
+
+// linux/keyctl.h
+pub const KEY_SPEC_THREAD_KEYRING: i32 = -1;
+pub const KEY_SPEC_PROCESS_KEYRING: i32 = -2;
+pub const KEY_SPEC_SESSION_KEYRING: i32 = -3;
+pub const KEY_SPEC_USER_KEYRING: i32 = -4;
+pub const KEY_SPEC_USER_SESSION_KEYRING: i32 = -5;
+pub const KEY_SPEC_GROUP_KEYRING: i32 = -6;
+pub const KEY_SPEC_REQKEY_AUTH_KEY: i32 = -7;
+pub const KEY_SPEC_REQUESTOR_KEYRING: i32 = -8;
+
+pub const KEY_REQKEY_DEFL_NO_CHANGE: i32 = -1;
+pub const KEY_REQKEY_DEFL_DEFAULT: i32 = 0;
+pub const KEY_REQKEY_DEFL_THREAD_KEYRING: i32 = 1;
+pub const KEY_REQKEY_DEFL_PROCESS_KEYRING: i32 = 2;
+pub const KEY_REQKEY_DEFL_SESSION_KEYRING: i32 = 3;
+pub const KEY_REQKEY_DEFL_USER_KEYRING: i32 = 4;
+pub const KEY_REQKEY_DEFL_USER_SESSION_KEYRING: i32 = 5;
+pub const KEY_REQKEY_DEFL_GROUP_KEYRING: i32 = 6;
+pub const KEY_REQKEY_DEFL_REQUESTOR_KEYRING: i32 = 7;
+
+pub const KEYCTL_GET_KEYRING_ID: u32 = 0;
+pub const KEYCTL_JOIN_SESSION_KEYRING: u32 = 1;
+pub const KEYCTL_UPDATE: u32 = 2;
+pub const KEYCTL_REVOKE: u32 = 3;
+pub const KEYCTL_CHOWN: u32 = 4;
+pub const KEYCTL_SETPERM: u32 = 5;
+pub const KEYCTL_DESCRIBE: u32 = 6;
+pub const KEYCTL_CLEAR: u32 = 7;
+pub const KEYCTL_LINK: u32 = 8;
+pub const KEYCTL_UNLINK: u32 = 9;
+pub const KEYCTL_SEARCH: u32 = 10;
+pub const KEYCTL_READ: u32 = 11;
+pub const KEYCTL_INSTANTIATE: u32 = 12;
+pub const KEYCTL_NEGATE: u32 = 13;
+pub const KEYCTL_SET_REQKEY_KEYRING: u32 = 14;
+pub const KEYCTL_SET_TIMEOUT: u32 = 15;
+pub const KEYCTL_ASSUME_AUTHORITY: u32 = 16;
+pub const KEYCTL_GET_SECURITY: u32 = 17;
+pub const KEYCTL_SESSION_TO_PARENT: u32 = 18;
+pub const KEYCTL_REJECT: u32 = 19;
+pub const KEYCTL_INSTANTIATE_IOV: u32 = 20;
+pub const KEYCTL_INVALIDATE: u32 = 21;
+pub const KEYCTL_GET_PERSISTENT: u32 = 22;
 
 // pub const IN_MASK_CREATE:   u32 = 0x1000_0000;
 // pub const IN_MASK_ADD:      u32 = 0x2000_0000;
@@ -2303,6 +2435,22 @@ pub const FUTEX_PRIVATE_FLAG: ::c_int = 128;
 pub const FUTEX_CLOCK_REALTIME: ::c_int = 256;
 pub const FUTEX_CMD_MASK: ::c_int =
     !(FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME);
+
+// linux/reboot.h
+pub const LINUX_REBOOT_MAGIC1: ::c_int = 0xfee1dead;
+pub const LINUX_REBOOT_MAGIC2: ::c_int = 672274793;
+pub const LINUX_REBOOT_MAGIC2A: ::c_int = 85072278;
+pub const LINUX_REBOOT_MAGIC2B: ::c_int = 369367448;
+pub const LINUX_REBOOT_MAGIC2C: ::c_int = 537993216;
+
+pub const LINUX_REBOOT_CMD_RESTART: ::c_int = 0x01234567;
+pub const LINUX_REBOOT_CMD_HALT: ::c_int = 0xCDEF0123;
+pub const LINUX_REBOOT_CMD_CAD_ON: ::c_int = 0x89ABCDEF;
+pub const LINUX_REBOOT_CMD_CAD_OFF: ::c_int = 0x00000000;
+pub const LINUX_REBOOT_CMD_POWER_OFF: ::c_int = 0x4321FEDC;
+pub const LINUX_REBOOT_CMD_RESTART2: ::c_int = 0xA1B2C3D4;
+pub const LINUX_REBOOT_CMD_SW_SUSPEND: ::c_int = 0xD000FCE2;
+pub const LINUX_REBOOT_CMD_KEXEC: ::c_int = 0x45584543;
 
 f! {
     pub fn NLA_ALIGN(len: ::c_int) -> ::c_int {
@@ -2450,7 +2598,17 @@ extern "C" {
     pub fn endspent();
     pub fn getspent() -> *mut spwd;
 
-    pub fn getspnam(__name: *const ::c_char) -> *mut spwd;
+    pub fn getspnam(name: *const ::c_char) -> *mut spwd;
+    // Only `getspnam_r` is implemented for musl, out of all of the reenterant
+    // functions from `shadow.h`.
+    // https://git.musl-libc.org/cgit/musl/tree/include/shadow.h
+    pub fn getspnam_r(
+        name: *const ::c_char,
+        spbuf: *mut spwd,
+        buf: *mut ::c_char,
+        buflen: ::size_t,
+        spbufp: *mut *mut spwd,
+    ) -> ::c_int;
 
     pub fn shm_open(
         name: *const c_char,

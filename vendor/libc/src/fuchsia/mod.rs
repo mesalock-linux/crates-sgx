@@ -109,7 +109,7 @@ impl ::Clone for DIR {
 }
 
 #[cfg_attr(feature = "extra_traits", derive(Debug))]
-pub enum fpos64_t {} // TODO: fill this out with a struct
+pub enum fpos64_t {} // FIXME: fill this out with a struct
 impl ::Copy for fpos64_t {}
 impl ::Clone for fpos64_t {
     fn clone(&self) -> fpos64_t {
@@ -1416,7 +1416,7 @@ pub const F_SEAL_SHRINK: ::c_int = 0x0002;
 pub const F_SEAL_GROW: ::c_int = 0x0004;
 pub const F_SEAL_WRITE: ::c_int = 0x0008;
 
-// TODO(#235): Include file sealing fcntls once we have a way to verify them.
+// FIXME(#235): Include file sealing fcntls once we have a way to verify them.
 
 pub const SIGTRAP: ::c_int = 5;
 
@@ -1433,10 +1433,8 @@ pub const CLOCK_MONOTONIC_COARSE: ::clockid_t = 6;
 pub const CLOCK_BOOTTIME: ::clockid_t = 7;
 pub const CLOCK_REALTIME_ALARM: ::clockid_t = 8;
 pub const CLOCK_BOOTTIME_ALARM: ::clockid_t = 9;
-// TODO(#247) Someday our Travis shall have glibc 2.21 (released in Sep
-// 2014.) See also musl/mod.rs
-// pub const CLOCK_SGI_CYCLE: ::clockid_t = 10;
-// pub const CLOCK_TAI: ::clockid_t = 11;
+pub const CLOCK_SGI_CYCLE: ::clockid_t = 10;
+pub const CLOCK_TAI: ::clockid_t = 11;
 pub const TIMER_ABSTIME: ::c_int = 1;
 
 pub const RLIMIT_CPU: ::c_int = 0;
@@ -1968,6 +1966,7 @@ pub const POSIX_FADV_WILLNEED: ::c_int = 3;
 pub const AT_FDCWD: ::c_int = -100;
 pub const AT_SYMLINK_NOFOLLOW: ::c_int = 0x100;
 pub const AT_REMOVEDIR: ::c_int = 0x200;
+pub const AT_EACCESS: ::c_int = 0x200;
 pub const AT_SYMLINK_FOLLOW: ::c_int = 0x400;
 pub const AT_NO_AUTOMOUNT: ::c_int = 0x800;
 pub const AT_EMPTY_PATH: ::c_int = 0x1000;
@@ -2773,11 +2772,6 @@ pub const TIOCINQ: ::c_int = ::FIONREAD;
 pub const RTLD_GLOBAL: ::c_int = 0x100;
 pub const RTLD_NOLOAD: ::c_int = 0x4;
 
-// TODO(#247) Temporarily musl-specific (available since musl 0.9.12 / Linux
-// kernel 3.10).  See also notbsd/mod.rs
-pub const CLOCK_SGI_CYCLE: ::clockid_t = 10;
-pub const CLOCK_TAI: ::clockid_t = 11;
-
 pub const MCL_CURRENT: ::c_int = 0x0001;
 pub const MCL_FUTURE: ::c_int = 0x0002;
 
@@ -3273,7 +3267,7 @@ impl ::Clone for FILE {
     }
 }
 #[cfg_attr(feature = "extra_traits", derive(Debug))]
-pub enum fpos_t {} // TODO: fill this out with a struct
+pub enum fpos_t {} // FIXME: fill this out with a struct
 impl ::Copy for fpos_t {}
 impl ::Clone for fpos_t {
     fn clone(&self) -> fpos_t {
@@ -3401,6 +3395,7 @@ extern "C" {
     ) -> ::size_t;
 
     pub fn memchr(cx: *const c_void, c: c_int, n: size_t) -> *mut c_void;
+    pub fn wmemchr(cx: *const wchar_t, c: wchar_t, n: size_t) -> *mut wchar_t;
     pub fn memcmp(cx: *const c_void, ct: *const c_void, n: size_t) -> c_int;
     pub fn memcpy(
         dest: *mut c_void,

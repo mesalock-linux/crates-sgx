@@ -15,7 +15,7 @@ ast_enum_of_structs! {
     /// A Rust expression.
     ///
     /// *This type is available if Syn is built with the `"derive"` or `"full"`
-    /// feature.*
+    /// feature, but most of the variants are not available unless "full" is enabled.*
     ///
     /// # Syntax tree enums
     ///
@@ -1480,10 +1480,16 @@ pub(crate) mod parsing {
             input.advance_to(&ahead);
             if input.peek(Token![&]) {
                 let and_token: Token![&] = input.parse()?;
-                let raw: Option<raw> = input.parse()?;
+                let raw: Option<raw> = if input.peek(raw)
+                    && (input.peek2(Token![mut]) || input.peek2(Token![const]))
+                {
+                    Some(input.parse()?)
+                } else {
+                    None
+                };
                 let mutability: Option<Token![mut]> = input.parse()?;
                 if raw.is_some() && mutability.is_none() {
-                    input.parse::<Option<Token![const]>>()?;
+                    input.parse::<Token![const]>()?;
                 }
                 let expr = Box::new(unary_expr(input, allow_struct)?);
                 if raw.is_some() {

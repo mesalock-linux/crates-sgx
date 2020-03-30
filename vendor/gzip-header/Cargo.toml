@@ -17,7 +17,7 @@ exclude = ["/sgx/*"]
 
 [dependencies]
 crc32fast = { git = "https://github.com/mesalock-linux/rust-crc32fast-sgx" }
-sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [features]
 default = ["mesalock_sgx"]

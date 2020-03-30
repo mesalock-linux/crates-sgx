@@ -75,7 +75,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // Serde types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/serde/1.0.104")]
+#![doc(html_root_url = "https://docs.rs/serde/1.0.105")]
 // Support using Serde without the standard library!
 #![cfg_attr(not(feature = "std"), no_std)]
 // Unstable functionality only if the user asks for it. For tracking and
@@ -106,12 +106,16 @@
         type_complexity,
         use_self,
         zero_prefixed_literal,
+        // correctly used
+        enum_glob_use,
+        wildcard_imports,
         // not practical
         needless_pass_by_value,
         similar_names,
         too_many_lines,
         // preference
         doc_markdown,
+        unseparated_literal_suffix,
         // false positive
         needless_doctest_main,
         // noisy
@@ -120,7 +124,9 @@
     )
 )]
 // Rustc lints.
+#![forbid(unsafe_code)]
 #![deny(missing_docs, unused_imports)]
+#![feature(never_type)]
 
 ////////////////////////////////////////////////////////////////////////////////
 

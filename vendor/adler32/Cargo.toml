@@ -15,7 +15,7 @@ exclude = ["/sgx/*"]
 #rand = "0.4"
 
 [dependencies]
-sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [features]
 default = ["mesalock_sgx"]

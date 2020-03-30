@@ -13,7 +13,7 @@
 [package]
 edition = "2018"
 name = "half"
-version = "1.4.1"
+version = "1.5.0"
 authors = ["Kathryn Long <squeeself@gmail.com>"]
 description = "Half-precision floating point f16 and bf16 types for Rust implementing the IEEE 754-2008 standard binary16 and bfloat16 types."
 readme = "README.md"
@@ -39,17 +39,18 @@ version = "0.3"
 version = "0.9"
 
 [dev-dependencies.quickcheck_macros]
-version = "0.8"
+version = "0.9"
 
 [dev-dependencies.rand]
 version = "0.7"
 
 [dev-dependencies.version-sync]
-version = "0.8.1"
+version = "0.8"
 
 [features]
+alloc = []
 serialize = ["serde"]
-std = []
+std = ["alloc"]
 use-intrinsics = []
 [badges.appveyor]
 repository = "starkat99/half-rs"

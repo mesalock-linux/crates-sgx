@@ -16,8 +16,8 @@ categories = ["concurrency", "os"]
 
 [dependencies]
 #num_cpus = "1.6"
-sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true, features = ["thread"] }
+sgx_tstd = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true, features = ["thread"] }
 
 [features]
 default = ["mesalock_sgx"]
-mesalock_sgx = ["sgx_tstd"]
+mesalock_sgx = ["sgx_tstd", "sgx_tstd/thread"]

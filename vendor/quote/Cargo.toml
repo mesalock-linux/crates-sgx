@@ -13,7 +13,7 @@
 [package]
 edition = "2018"
 name = "quote"
-version = "1.0.2"
+version = "1.0.3"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 include = ["Cargo.toml", "src/**/*.rs", "tests/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
 description = "Quasi-quoting macro quote!(...)"
@@ -23,17 +23,15 @@ keywords = ["syn"]
 categories = ["development-tools::procedural-macro-helpers"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dtolnay/quote"
-
-[lib]
-name = "quote"
 [dependencies.proc-macro2]
 version = "1.0"
 default-features = false
 [dev-dependencies.rustversion]
-version = "0.1"
+version = "1.0"
 
 [dev-dependencies.trybuild]
-version = "1.0"
+version = "1.0.19"
+features = ["diff"]
 
 [features]
 default = ["proc-macro"]

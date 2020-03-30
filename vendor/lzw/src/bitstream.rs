@@ -152,7 +152,7 @@ impl<W: Write> Write for $name<W> {
             self.w.write(buf)
         } else {
             for &byte in buf.iter() {
-                try!(self.write_bits(byte as u16, 8))
+                self.write_bits(byte as u16, 8)?
             }
             Ok(buf.len())
         }
@@ -161,7 +161,7 @@ impl<W: Write> Write for $name<W> {
     fn flush(&mut self) -> io::Result<()> {
         let missing = 8 - self.bits;
         if missing > 0 {
-            try!(self.write_bits(0, missing));
+            self.write_bits(0, missing)?;
         }
         self.w.flush()
     }

@@ -482,7 +482,7 @@ pub const F_SEAL_SHRINK: ::c_int = 0x0002;
 pub const F_SEAL_GROW: ::c_int = 0x0004;
 pub const F_SEAL_WRITE: ::c_int = 0x0008;
 
-// TODO(#235): Include file sealing fcntls once we have a way to verify them.
+// FIXME(#235): Include file sealing fcntls once we have a way to verify them.
 
 pub const SIGTRAP: ::c_int = 5;
 
@@ -499,10 +499,7 @@ pub const CLOCK_MONOTONIC_COARSE: ::clockid_t = 6;
 pub const CLOCK_BOOTTIME: ::clockid_t = 7;
 pub const CLOCK_REALTIME_ALARM: ::clockid_t = 8;
 pub const CLOCK_BOOTTIME_ALARM: ::clockid_t = 9;
-// TODO(#247) Someday our Travis shall have glibc 2.21 (released in Sep
-// 2014.) See also musl/mod.rs
-// pub const CLOCK_SGI_CYCLE: ::clockid_t = 10;
-// pub const CLOCK_TAI: ::clockid_t = 11;
+pub const CLOCK_TAI: ::clockid_t = 11;
 pub const TIMER_ABSTIME: ::c_int = 1;
 
 pub const RUSAGE_SELF: ::c_int = 0;
@@ -822,6 +819,7 @@ pub const IP_TOS: ::c_int = 1;
 pub const IP_TTL: ::c_int = 2;
 pub const IP_HDRINCL: ::c_int = 3;
 pub const IP_PKTINFO: ::c_int = 8;
+pub const IP_MTU_DISCOVER: ::c_int = 10;
 pub const IP_RECVTOS: ::c_int = 13;
 pub const IP_RECVERR: ::c_int = 11;
 pub const IP_ADD_MEMBERSHIP: ::c_int = 35;
@@ -856,6 +854,11 @@ pub const IPV6_RECVPKTINFO: ::c_int = 49;
 pub const IPV6_PKTINFO: ::c_int = 50;
 pub const IPV6_RECVTCLASS: ::c_int = 66;
 pub const IPV6_TCLASS: ::c_int = 67;
+
+pub const IP_PMTUDISC_DONT: ::c_int = 0;
+pub const IP_PMTUDISC_WANT: ::c_int = 1;
+pub const IP_PMTUDISC_DO: ::c_int = 2;
+pub const IP_PMTUDISC_PROBE: ::c_int = 3;
 
 pub const TCP_NODELAY: ::c_int = 1;
 pub const TCP_MAXSEG: ::c_int = 2;

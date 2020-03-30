@@ -236,7 +236,7 @@ enum Cursor {
 type Size = usize;
 
 /// This limit falls out from above.
-const MAX_SIZE: usize = (1 << 15);
+const MAX_SIZE: usize = 1 << 15;
 
 /// An entry in the hash table. This represents the full hash code for an entry
 /// as well as the position of the entry in the `entries` vector.
@@ -3193,7 +3193,7 @@ fn to_raw_capacity(n: usize) -> usize {
 
 #[inline]
 fn desired_pos(mask: Size, hash: HashValue) -> usize {
-    (hash.0 & mask)
+    hash.0 & mask
 }
 
 /// The number of steps that `current` is forward of the desired position for hash

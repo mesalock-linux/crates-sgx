@@ -41,7 +41,7 @@ idna = { version = "0.2.0", path = "./idna" }
 matches = { git = "https://github.com/mesalock-linux/rust-std-candidates-sgx" }
 percent-encoding = { version = "2.1.0", path = "./percent_encoding" }
 serde = { git = "https://github.com/mesalock-linux/serde-sgx", version = "1.0", optional = true, features = ["derive"]}
-sgx_tstd = { rev = "v1.1.0", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [[bench]]
 name = "parse_url"

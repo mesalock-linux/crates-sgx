@@ -183,6 +183,96 @@ s! {
         pub rt_window: ::c_ulong,
         pub rt_irtt: ::c_ushort,
     }
+
+    pub struct timex {
+        pub modes: ::c_uint,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub offset: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub offset: ::c_long,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub freq: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub freq: ::c_long,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub maxerror: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub maxerror: ::c_long,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub esterror: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub esterror: ::c_long,
+        pub status: ::c_int,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub constant: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub constant: ::c_long,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub precision: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub precision: ::c_long,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub tolerance: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub tolerance: ::c_long,
+        pub time: ::timeval,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub tick: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub tick: ::c_long,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub ppsfreq: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub ppsfreq: ::c_long,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub jitter: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub jitter: ::c_long,
+        pub shift: ::c_int,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub stabil: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub stabil: ::c_long,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub jitcnt: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub jitcnt: ::c_long,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub calcnt: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub calcnt: ::c_long,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub errcnt: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub errcnt: ::c_long,
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        pub stbcnt: i64,
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        pub stbcnt: ::c_long,
+        pub tai: ::c_int,
+        pub __unused1: i32,
+        pub __unused2: i32,
+        pub __unused3: i32,
+        pub __unused4: i32,
+        pub __unused5: i32,
+        pub __unused6: i32,
+        pub __unused7: i32,
+        pub __unused8: i32,
+        pub __unused9: i32,
+        pub __unused10: i32,
+        pub __unused11: i32,
+    }
+
+    pub struct ntptimeval {
+        pub time: ::timeval,
+        pub maxerror: ::c_long,
+        pub esterror: ::c_long,
+        pub tai: ::c_long,
+        pub __glibc_reserved1: ::c_long,
+        pub __glibc_reserved2: ::c_long,
+        pub __glibc_reserved3: ::c_long,
+        pub __glibc_reserved4: ::c_long,
+    }
 }
 
 impl siginfo_t {
@@ -391,9 +481,6 @@ pub const LC_ALL_MASK: ::c_int = ::LC_CTYPE_MASK
     | LC_MEASUREMENT_MASK
     | LC_IDENTIFICATION_MASK;
 
-pub const MAP_SHARED_VALIDATE: ::c_int = 0x3;
-pub const MAP_FIXED_NOREPLACE: ::c_int = 0x100000;
-
 pub const ENOTSUP: ::c_int = EOPNOTSUPP;
 
 pub const SOCK_SEQPACKET: ::c_int = 5;
@@ -410,6 +497,7 @@ pub const TCP_QUEUE_SEQ: ::c_int = 21;
 pub const TCP_REPAIR_OPTIONS: ::c_int = 22;
 pub const TCP_FASTOPEN: ::c_int = 23;
 pub const TCP_TIMESTAMP: ::c_int = 24;
+pub const TCP_FASTOPEN_CONNECT: ::c_int = 30;
 
 /* DCCP socket options */
 pub const DCCP_SOCKOPT_PACKET_SIZE: ::c_int = 1;
@@ -543,6 +631,8 @@ pub const REISERFS_SUPER_MAGIC: ::c_long = 0x52654973;
 pub const SMB_SUPER_MAGIC: ::c_long = 0x0000517b;
 pub const TMPFS_MAGIC: ::c_long = 0x01021994;
 pub const USBDEVICE_SUPER_MAGIC: ::c_long = 0x00009fa2;
+pub const CGROUP_SUPER_MAGIC: ::c_long = 0x27e0eb;
+pub const CGROUP2_SUPER_MAGIC: ::c_long = 0x63677270;
 
 pub const CPU_SETSIZE: ::c_int = 0x400;
 
@@ -573,21 +663,6 @@ pub const EPOLLWAKEUP: ::c_int = 0x20000000;
 
 pub const SEEK_DATA: ::c_int = 3;
 pub const SEEK_HOLE: ::c_int = 4;
-
-pub const LINUX_REBOOT_MAGIC1: ::c_int = 0xfee1dead;
-pub const LINUX_REBOOT_MAGIC2: ::c_int = 672274793;
-pub const LINUX_REBOOT_MAGIC2A: ::c_int = 85072278;
-pub const LINUX_REBOOT_MAGIC2B: ::c_int = 369367448;
-pub const LINUX_REBOOT_MAGIC2C: ::c_int = 537993216;
-
-pub const LINUX_REBOOT_CMD_RESTART: ::c_int = 0x01234567;
-pub const LINUX_REBOOT_CMD_HALT: ::c_int = 0xCDEF0123;
-pub const LINUX_REBOOT_CMD_CAD_ON: ::c_int = 0x89ABCDEF;
-pub const LINUX_REBOOT_CMD_CAD_OFF: ::c_int = 0x00000000;
-pub const LINUX_REBOOT_CMD_POWER_OFF: ::c_int = 0x4321FEDC;
-pub const LINUX_REBOOT_CMD_RESTART2: ::c_int = 0xA1B2C3D4;
-pub const LINUX_REBOOT_CMD_SW_SUSPEND: ::c_int = 0xD000FCE2;
-pub const LINUX_REBOOT_CMD_KEXEC: ::c_int = 0x45584543;
 
 // linux/rtnetlink.h
 pub const TCA_PAD: ::c_ushort = 9;
@@ -647,6 +722,37 @@ pub const NF_NETDEV_NUMHOOKS: ::c_int = 1;
 
 pub const NFPROTO_INET: ::c_int = 1;
 pub const NFPROTO_NETDEV: ::c_int = 5;
+
+// linux/keyctl.h
+pub const KEYCTL_DH_COMPUTE: u32 = 23;
+pub const KEYCTL_PKEY_QUERY: u32 = 24;
+pub const KEYCTL_PKEY_ENCRYPT: u32 = 25;
+pub const KEYCTL_PKEY_DECRYPT: u32 = 26;
+pub const KEYCTL_PKEY_SIGN: u32 = 27;
+pub const KEYCTL_PKEY_VERIFY: u32 = 28;
+pub const KEYCTL_RESTRICT_KEYRING: u32 = 29;
+
+pub const KEYCTL_SUPPORTS_ENCRYPT: u32 = 0x01;
+pub const KEYCTL_SUPPORTS_DECRYPT: u32 = 0x02;
+pub const KEYCTL_SUPPORTS_SIGN: u32 = 0x04;
+pub const KEYCTL_SUPPORTS_VERIFY: u32 = 0x08;
+cfg_if! {
+    if #[cfg(not(any(target_arch="mips", target_arch="mips64")))] {
+        pub const KEYCTL_MOVE: u32 = 30;
+        pub const KEYCTL_CAPABILITIES: u32 = 31;
+
+        pub const KEYCTL_CAPS0_CAPABILITIES: u32 = 0x01;
+        pub const KEYCTL_CAPS0_PERSISTENT_KEYRINGS: u32 = 0x02;
+        pub const KEYCTL_CAPS0_DIFFIE_HELLMAN: u32 = 0x04;
+        pub const KEYCTL_CAPS0_PUBLIC_KEY: u32 = 0x08;
+        pub const KEYCTL_CAPS0_BIG_KEY: u32 = 0x10;
+        pub const KEYCTL_CAPS0_INVALIDATE: u32 = 0x20;
+        pub const KEYCTL_CAPS0_RESTRICT_KEYRING: u32 = 0x40;
+        pub const KEYCTL_CAPS0_MOVE: u32 = 0x80;
+        pub const KEYCTL_CAPS1_NS_KEYRING_NAME: u32 = 0x01;
+        pub const KEYCTL_CAPS1_NS_KEY_TAG: u32 = 0x02;
+    }
+}
 
 // linux/netfilter/nf_tables.h
 pub const NFT_TABLE_MAXNAMELEN: ::c_int = 256;
@@ -874,12 +980,99 @@ pub const STATX_ATTR_NODUMP: ::c_int = 0x0040;
 pub const STATX_ATTR_ENCRYPTED: ::c_int = 0x0800;
 pub const STATX_ATTR_AUTOMOUNT: ::c_int = 0x1000;
 
+// sys/auxv.h
+pub const AT_NULL: ::c_ulong = 0;
+pub const AT_IGNORE: ::c_ulong = 1;
+pub const AT_EXECFD: ::c_ulong = 2;
+pub const AT_PHDR: ::c_ulong = 3;
+pub const AT_PHENT: ::c_ulong = 4;
+pub const AT_PHNUM: ::c_ulong = 5;
+pub const AT_PAGESZ: ::c_ulong = 6;
+pub const AT_BASE: ::c_ulong = 7;
+pub const AT_FLAGS: ::c_ulong = 8;
+pub const AT_ENTRY: ::c_ulong = 9;
+pub const AT_NOTELF: ::c_ulong = 10;
+pub const AT_UID: ::c_ulong = 11;
+pub const AT_EUID: ::c_ulong = 12;
+pub const AT_GID: ::c_ulong = 13;
+pub const AT_EGID: ::c_ulong = 14;
+pub const AT_PLATFORM: ::c_ulong = 15;
+pub const AT_HWCAP: ::c_ulong = 16;
+pub const AT_CLKTCK: ::c_ulong = 17;
+// AT_* values 18 through 22 are reserved
+pub const AT_SECURE: ::c_ulong = 23;
+pub const AT_BASE_PLATFORM: ::c_ulong = 24;
+pub const AT_RANDOM: ::c_ulong = 25;
+pub const AT_HWCAP2: ::c_ulong = 26;
+
+pub const AT_EXECFN: ::c_ulong = 31;
+
+//sys/timex.h
+pub const ADJ_OFFSET: ::c_uint = 0x0001;
+pub const ADJ_FREQUENCY: ::c_uint = 0x0002;
+pub const ADJ_MAXERROR: ::c_uint = 0x0004;
+pub const ADJ_ESTERROR: ::c_uint = 0x0008;
+pub const ADJ_STATUS: ::c_uint = 0x0010;
+pub const ADJ_TIMECONST: ::c_uint = 0x0020;
+pub const ADJ_TAI: ::c_uint = 0x0080;
+pub const ADJ_SETOFFSET: ::c_uint = 0x0100;
+pub const ADJ_MICRO: ::c_uint = 0x1000;
+pub const ADJ_NANO: ::c_uint = 0x2000;
+pub const ADJ_TICK: ::c_uint = 0x4000;
+pub const ADJ_OFFSET_SINGLESHOT: ::c_uint = 0x8001;
+pub const ADJ_OFFSET_SS_READ: ::c_uint = 0xa001;
+pub const MOD_OFFSET: ::c_uint = ADJ_OFFSET;
+pub const MOD_FREQUENCY: ::c_uint = ADJ_FREQUENCY;
+pub const MOD_MAXERROR: ::c_uint = ADJ_MAXERROR;
+pub const MOD_ESTERROR: ::c_uint = ADJ_ESTERROR;
+pub const MOD_STATUS: ::c_uint = ADJ_STATUS;
+pub const MOD_TIMECONST: ::c_uint = ADJ_TIMECONST;
+pub const MOD_CLKB: ::c_uint = ADJ_TICK;
+pub const MOD_CLKA: ::c_uint = ADJ_OFFSET_SINGLESHOT;
+pub const MOD_TAI: ::c_uint = ADJ_TAI;
+pub const MOD_MICRO: ::c_uint = ADJ_MICRO;
+pub const MOD_NANO: ::c_uint = ADJ_NANO;
+pub const STA_PLL: ::c_int = 0x0001;
+pub const STA_PPSFREQ: ::c_int = 0x0002;
+pub const STA_PPSTIME: ::c_int = 0x0004;
+pub const STA_FLL: ::c_int = 0x0008;
+pub const STA_INS: ::c_int = 0x0010;
+pub const STA_DEL: ::c_int = 0x0020;
+pub const STA_UNSYNC: ::c_int = 0x0040;
+pub const STA_FREQHOLD: ::c_int = 0x0080;
+pub const STA_PPSSIGNAL: ::c_int = 0x0100;
+pub const STA_PPSJITTER: ::c_int = 0x0200;
+pub const STA_PPSWANDER: ::c_int = 0x0400;
+pub const STA_PPSERROR: ::c_int = 0x0800;
+pub const STA_CLOCKERR: ::c_int = 0x1000;
+pub const STA_NANO: ::c_int = 0x2000;
+pub const STA_MODE: ::c_int = 0x4000;
+pub const STA_CLK: ::c_int = 0x8000;
+pub const STA_RONLY: ::c_int = STA_PPSSIGNAL
+    | STA_PPSJITTER
+    | STA_PPSWANDER
+    | STA_PPSERROR
+    | STA_CLOCKERR
+    | STA_NANO
+    | STA_MODE
+    | STA_CLK;
+pub const NTP_API: ::c_int = 4;
+pub const TIME_OK: ::c_int = 0;
+pub const TIME_INS: ::c_int = 1;
+pub const TIME_DEL: ::c_int = 2;
+pub const TIME_OOP: ::c_int = 3;
+pub const TIME_WAIT: ::c_int = 4;
+pub const TIME_ERROR: ::c_int = 5;
+pub const TIME_BAD: ::c_int = TIME_ERROR;
+pub const MAXTC: ::c_long = 6;
+
 cfg_if! {
     if #[cfg(any(
         target_arch = "arm",
         target_arch = "x86",
         target_arch = "x86_64",
-        target_arch = "s390x"
+        target_arch = "s390x",
+        target_arch = "riscv64"
     ))] {
         pub const PTHREAD_STACK_MIN: ::size_t = 16384;
     } else if #[cfg(any(
@@ -894,6 +1087,26 @@ cfg_if! {
 pub const PTHREAD_MUTEX_ADAPTIVE_NP: ::c_int = 3;
 
 extern "C" {
+    pub fn fgetspent_r(
+        fp: *mut ::FILE,
+        spbuf: *mut ::spwd,
+        buf: *mut ::c_char,
+        buflen: ::size_t,
+        spbufp: *mut *mut ::spwd,
+    ) -> ::c_int;
+    pub fn sgetspent_r(
+        s: *const ::c_char,
+        spbuf: *mut ::spwd,
+        buf: *mut ::c_char,
+        buflen: ::size_t,
+        spbufp: *mut *mut ::spwd,
+    ) -> ::c_int;
+    pub fn getspent_r(
+        spbuf: *mut ::spwd,
+        buf: *mut ::c_char,
+        buflen: ::size_t,
+        spbufp: *mut *mut ::spwd,
+    ) -> ::c_int;
     pub fn qsort_r(
         base: *mut ::c_void,
         num: ::size_t,
@@ -972,12 +1185,19 @@ extern "C" {
         buflen: ::size_t,
         flags: ::c_uint,
     ) -> ::ssize_t;
+
     pub fn memmem(
         haystack: *const ::c_void,
         haystacklen: ::size_t,
         needle: *const ::c_void,
         needlelen: ::size_t,
     ) -> *mut ::c_void;
+    pub fn getauxval(type_: ::c_ulong) -> ::c_ulong;
+
+    pub fn adjtimex(buf: *mut timex) -> ::c_int;
+    pub fn ntp_adjtime(buf: *mut timex) -> ::c_int;
+    #[link_name = "ntp_gettimex"]
+    pub fn ntp_gettime(buf: *mut ntptimeval) -> ::c_int;
 }
 
 #[link(name = "util")]
@@ -1031,7 +1251,6 @@ extern "C" {
     pub fn sched_getcpu() -> ::c_int;
     pub fn mallinfo() -> ::mallinfo;
     pub fn malloc_usable_size(ptr: *mut ::c_void) -> ::size_t;
-    pub fn getauxval(type_: ::c_ulong) -> ::c_ulong;
     #[cfg_attr(target_os = "netbsd", link_name = "__getpwent_r50")]
     #[cfg_attr(target_os = "solaris", link_name = "__posix_getpwent_r")]
     pub fn getpwent_r(

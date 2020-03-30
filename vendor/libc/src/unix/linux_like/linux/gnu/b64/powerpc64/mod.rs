@@ -416,6 +416,9 @@ pub const F_GETOWN: ::c_int = 9;
 pub const F_SETOWN: ::c_int = 8;
 pub const F_SETLK: ::c_int = 6;
 pub const F_SETLKW: ::c_int = 7;
+pub const F_OFD_GETLK: ::c_int = 36;
+pub const F_OFD_SETLK: ::c_int = 37;
+pub const F_OFD_SETLKW: ::c_int = 38;
 
 pub const F_RDLCK: ::c_int = 0;
 pub const F_WRLCK: ::c_int = 1;
@@ -541,6 +544,7 @@ pub const O_DIRECT: ::c_int = 0x20000;
 
 pub const MAP_LOCKED: ::c_int = 0x00080;
 pub const MAP_NORESERVE: ::c_int = 0x00040;
+pub const MAP_SYNC : ::c_int = 0x080000;
 
 pub const EDEADLOCK: ::c_int = 58;
 pub const EUCLEAN: ::c_int = 117;

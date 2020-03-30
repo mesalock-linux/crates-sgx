@@ -35,7 +35,7 @@ pub type c_ulong = u32;
 pub type nlink_t = u32;
 
 #[cfg_attr(feature = "extra_traits", derive(Debug))]
-pub enum fpos64_t {} // TODO: fill this out with a struct
+pub enum fpos64_t {} // FIXME: fill this out with a struct
 impl ::Copy for fpos64_t {}
 impl ::Clone for fpos64_t {
     fn clone(&self) -> fpos64_t {
@@ -1227,6 +1227,7 @@ pub const TCP_QUEUE_SEQ: ::c_int = 21;
 pub const TCP_REPAIR_OPTIONS: ::c_int = 22;
 pub const TCP_FASTOPEN: ::c_int = 23;
 pub const TCP_TIMESTAMP: ::c_int = 24;
+pub const TCP_FASTOPEN_CONNECT: ::c_int = 30;
 
 #[doc(hidden)]
 #[deprecated(since = "0.2.55", note = "Use SIGSYS instead")]
@@ -1286,10 +1287,7 @@ pub const TIOCINQ: ::c_int = ::FIONREAD;
 pub const RTLD_GLOBAL: ::c_int = 0x100;
 pub const RTLD_NOLOAD: ::c_int = 0x4;
 
-// TODO(#247) Temporarily musl-specific (available since musl 0.9.12 / Linux
-// kernel 3.10).  See also linux_like/mod.rs
 pub const CLOCK_SGI_CYCLE: ::clockid_t = 10;
-pub const CLOCK_TAI: ::clockid_t = 11;
 
 pub const MCL_CURRENT: ::c_int = 0x0001;
 pub const MCL_FUTURE: ::c_int = 0x0002;
@@ -1580,6 +1578,9 @@ pub const F_GETOWN: ::c_int = 9;
 pub const F_SETLK: ::c_int = 13;
 pub const F_SETLKW: ::c_int = 14;
 pub const F_SETOWN: ::c_int = 8;
+pub const F_OFD_GETLK: ::c_int = 36;
+pub const F_OFD_SETLK: ::c_int = 37;
+pub const F_OFD_SETLKW: ::c_int = 38;
 
 pub const VEOF: usize = 4;
 pub const VEOL: usize = 11;

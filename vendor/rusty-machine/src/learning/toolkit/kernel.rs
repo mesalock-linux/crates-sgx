@@ -289,7 +289,7 @@ impl Kernel for SquaredExp {
         let diff = Vector::new(x1.to_vec()) - Vector::new(x2.to_vec());
 
         let x = -diff.dot(&diff) / (2f64 * self.ls * self.ls);
-        (self.ampl * x.exp())
+        self.ampl * x.exp()
     }
 }
 
@@ -351,7 +351,7 @@ impl Kernel for Exponential {
         let diff = Vector::new(x1.to_vec()) - Vector::new(x2.to_vec());
 
         let x = -Euclidean.norm(&diff) / (2f64 * self.ls * self.ls);
-        (self.ampl * x.exp())
+        self.ampl * x.exp()
     }
 }
 
