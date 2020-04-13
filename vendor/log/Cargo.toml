@@ -1,7 +1,7 @@
 [package]
 
 name = "log"
-version = "0.4.10" # remember to update html_root_url
+version = "0.4.8" # remember to update html_root_url
 authors = ["The Rust Project Developers"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -22,13 +22,8 @@ features = ["std", "serde", "kv_unstable_sval"]
 name = "filters"
 harness = false
 
-[[test]]
-name = "macros"
-harness = true
-
 [features]
 default = ["std", "mesalock_sgx"]
-
 max_level_off   = []
 max_level_error = []
 max_level_warn  = []
@@ -50,6 +45,10 @@ mesalock_sgx = ["sgx_tstd"]
 # this will have a tighter MSRV before stabilization
 kv_unstable = []
 kv_unstable_sval = ["kv_unstable", "sval/fmt"]
+
+[badges]
+travis-ci = { repository = "rust-lang-nursery/log" }
+appveyor = { repository = "alexcrichton/log" }
 
 [dependencies]
 cfg-if = "0.1.2"

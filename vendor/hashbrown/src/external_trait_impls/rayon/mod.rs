@@ -1,4 +1,5 @@
 mod helpers;
+mod raw;
+
 pub(crate) mod map;
-pub(crate) mod raw;
 pub(crate) mod set;

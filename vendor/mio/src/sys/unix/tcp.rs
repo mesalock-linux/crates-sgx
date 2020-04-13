@@ -5,7 +5,7 @@ use std::os::unix::io::{RawFd, FromRawFd, IntoRawFd, AsRawFd};
 use std::time::Duration;
 
 use net2::TcpStreamExt;
-use iovec::{IoVec, IoVecMut};
+use iovec::IoVec;
 
 use {io, Ready, Poll, PollOpt, Token};
 use event::Evented;
@@ -128,11 +128,11 @@ impl TcpStream {
         self.inner.peek(buf)
     }
 
-    pub fn readv(&self, bufs: &mut [IoVecMut]) -> io::Result<usize> {
+    pub fn readv(&self, bufs: &mut [&mut IoVec]) -> io::Result<usize> {
         self.inner.readv(bufs)
     }
 
-    pub fn writev(&self, bufs: &[IoVec]) -> io::Result<usize> {
+    pub fn writev(&self, bufs: &[&IoVec]) -> io::Result<usize> {
         self.inner.writev(bufs)
     }
 }

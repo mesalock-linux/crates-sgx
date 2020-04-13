@@ -3,6 +3,8 @@ log
 
 A Rust library providing a lightweight logging *facade*.
 
+[![Build Status](https://travis-ci.com/rust-lang-nursery/log.svg?branch=master)](https://travis-ci.com/rust-lang-nursery/log)
+[![Build status](https://ci.appveyor.com/api/projects/status/nopdjmmjt45xcrki?svg=true)](https://ci.appveyor.com/project/alexcrichton/log)
 [![Latest version](https://img.shields.io/crates/v/log.svg)](https://crates.io/crates/log)
 [![Documentation](https://docs.rs/log/badge.svg)](https://docs.rs/log)
 ![License](https://img.shields.io/crates/l/log.svg)
@@ -17,7 +19,7 @@ implementation that is most suitable for its use case.
 
 ## Minimum supported `rustc`
 
-`1.31.0+`
+`1.16.0+`
 
 This version is explicitly tested in CI and may be bumped in any release as needed. Maintaining compatibility with older compilers is a priority though, so the bar for bumping the minimum supported version is set very high. Any changes to the supported minimum version will be called out in the release notes.
 

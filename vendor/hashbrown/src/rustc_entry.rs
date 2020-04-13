@@ -29,7 +29,7 @@ where
     /// assert_eq!(letters[&'u'], 1);
     /// assert_eq!(letters.get(&'y'), None);
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn rustc_entry(&mut self, key: K) -> RustcEntry<'_, K, V> {
         let hash = make_hash(&self.hash_builder, &key);
         if let Some(elem) = self.table.find(hash, |q| q.0.eq(&key)) {
@@ -59,7 +59,7 @@ where
 ///
 /// [`HashMap`]: struct.HashMap.html
 /// [`entry`]: struct.HashMap.html#method.rustc_entry
-pub enum RustcEntry<'a, K, V> {
+pub enum RustcEntry<'a, K: 'a, V: 'a> {
     /// An occupied entry.
     Occupied(RustcOccupiedEntry<'a, K, V>),
 
@@ -125,28 +125,6 @@ impl<K: Debug, V> Debug for RustcVacantEntry<'_, K, V> {
 }
 
 impl<'a, K, V> RustcEntry<'a, K, V> {
-    /// Sets the value of the entry, and returns a RustcOccupiedEntry.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use hashbrown::HashMap;
-    ///
-    /// let mut map: HashMap<&str, u32> = HashMap::new();
-    /// let entry = map.entry("horseyland").insert(37);
-    ///
-    /// assert_eq!(entry.key(), &"horseyland");
-    /// ```
-    pub fn insert(self, value: V) -> RustcOccupiedEntry<'a, K, V> {
-        match self {
-            Vacant(entry) => entry.insert_entry(value),
-            Occupied(mut entry) => {
-                entry.insert(value);
-                entry
-            }
-        }
-    }
-
     /// Ensures a value is in the entry by inserting the default if empty, and returns
     /// a mutable reference to the value in the entry.
     ///
@@ -163,7 +141,7 @@ impl<'a, K, V> RustcEntry<'a, K, V> {
     /// *map.rustc_entry("poneyland").or_insert(10) *= 2;
     /// assert_eq!(map["poneyland"], 6);
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn or_insert(self, default: V) -> &'a mut V
     where
         K: Hash,
@@ -189,7 +167,7 @@ impl<'a, K, V> RustcEntry<'a, K, V> {
     ///
     /// assert_eq!(map["poneyland"], "hoho".to_string());
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn or_insert_with<F: FnOnce() -> V>(self, default: F) -> &'a mut V
     where
         K: Hash,
@@ -210,7 +188,7 @@ impl<'a, K, V> RustcEntry<'a, K, V> {
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// assert_eq!(map.rustc_entry("poneyland").key(), &"poneyland");
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn key(&self) -> &K {
         match *self {
             Occupied(ref entry) => entry.key(),
@@ -238,7 +216,7 @@ impl<'a, K, V> RustcEntry<'a, K, V> {
     ///    .or_insert(42);
     /// assert_eq!(map["poneyland"], 43);
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn and_modify<F>(self, f: F) -> Self
     where
         F: FnOnce(&mut V),
@@ -269,7 +247,7 @@ impl<'a, K, V: Default> RustcEntry<'a, K, V> {
     /// assert_eq!(map["poneyland"], None);
     /// # }
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn or_default(self) -> &'a mut V
     where
         K: Hash,
@@ -293,7 +271,7 @@ impl<'a, K, V> RustcOccupiedEntry<'a, K, V> {
     /// map.rustc_entry("poneyland").or_insert(12);
     /// assert_eq!(map.rustc_entry("poneyland").key(), &"poneyland");
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn key(&self) -> &K {
         unsafe { &self.elem.as_ref().0 }
     }
@@ -316,7 +294,7 @@ impl<'a, K, V> RustcOccupiedEntry<'a, K, V> {
     ///
     /// assert_eq!(map.contains_key("poneyland"), false);
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn remove_entry(self) -> (K, V) {
         unsafe {
             self.table.erase_no_drop(&self.elem);
@@ -339,7 +317,7 @@ impl<'a, K, V> RustcOccupiedEntry<'a, K, V> {
     ///     assert_eq!(o.get(), &12);
     /// }
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn get(&self) -> &V {
         unsafe { &self.elem.as_ref().1 }
     }
@@ -371,7 +349,7 @@ impl<'a, K, V> RustcOccupiedEntry<'a, K, V> {
     ///
     /// assert_eq!(map["poneyland"], 24);
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn get_mut(&mut self) -> &mut V {
         unsafe { &mut self.elem.as_mut().1 }
     }
@@ -399,7 +377,7 @@ impl<'a, K, V> RustcOccupiedEntry<'a, K, V> {
     ///
     /// assert_eq!(map["poneyland"], 22);
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn into_mut(self) -> &'a mut V {
         unsafe { &mut self.elem.as_mut().1 }
     }
@@ -421,7 +399,7 @@ impl<'a, K, V> RustcOccupiedEntry<'a, K, V> {
     ///
     /// assert_eq!(map["poneyland"], 15);
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn insert(&mut self, mut value: V) -> V {
         let old_value = self.get_mut();
         mem::swap(&mut value, old_value);
@@ -445,7 +423,7 @@ impl<'a, K, V> RustcOccupiedEntry<'a, K, V> {
     ///
     /// assert_eq!(map.contains_key("poneyland"), false);
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn remove(self) -> V {
         self.remove_entry().1
     }
@@ -470,7 +448,7 @@ impl<'a, K, V> RustcOccupiedEntry<'a, K, V> {
     /// }
     ///
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn replace_entry(self, value: V) -> (K, V) {
         let entry = unsafe { self.elem.as_mut() };
 
@@ -504,7 +482,7 @@ impl<'a, K, V> RustcOccupiedEntry<'a, K, V> {
     ///     }
     /// }
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn replace_key(self) -> K {
         let entry = unsafe { self.elem.as_mut() };
         mem::replace(&mut entry.0, self.key.unwrap())
@@ -523,7 +501,7 @@ impl<'a, K, V> RustcVacantEntry<'a, K, V> {
     /// let mut map: HashMap<&str, u32> = HashMap::new();
     /// assert_eq!(map.rustc_entry("poneyland").key(), &"poneyland");
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn key(&self) -> &K {
         &self.key
     }
@@ -542,7 +520,7 @@ impl<'a, K, V> RustcVacantEntry<'a, K, V> {
     ///     v.into_key();
     /// }
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn into_key(self) -> K {
         self.key
     }
@@ -563,42 +541,16 @@ impl<'a, K, V> RustcVacantEntry<'a, K, V> {
     /// }
     /// assert_eq!(map["poneyland"], 37);
     /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn insert(self, value: V) -> &'a mut V {
         let bucket = self.table.insert_no_grow(self.hash, (self.key, value));
         unsafe { &mut bucket.as_mut().1 }
-    }
-
-    /// Sets the value of the entry with the RustcVacantEntry's key,
-    /// and returns a RustcOccupiedEntry.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use hashbrown::HashMap;
-    /// use hashbrown::hash_map::RustcEntry;
-    ///
-    /// let mut map: HashMap<&str, u32> = HashMap::new();
-    ///
-    /// if let RustcEntry::Vacant(v) = map.rustc_entry("poneyland") {
-    ///     let o = v.insert_entry(37);
-    ///     assert_eq!(o.get(), &37);
-    /// }
-    /// ```
-    #[cfg_attr(feature = "inline-more", inline)]
-    pub fn insert_entry(self, value: V) -> RustcOccupiedEntry<'a, K, V> {
-        let bucket = self.table.insert_no_grow(self.hash, (self.key, value));
-        RustcOccupiedEntry {
-            key: None,
-            elem: bucket,
-            table: self.table,
-        }
     }
 }
 
 impl<K, V> IterMut<'_, K, V> {
     /// Returns a iterator of references over the remaining items.
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn rustc_iter(&self) -> Iter<'_, K, V> {
         self.iter()
     }
@@ -606,7 +558,7 @@ impl<K, V> IterMut<'_, K, V> {
 
 impl<K, V> IntoIter<K, V> {
     /// Returns a iterator of references over the remaining items.
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn rustc_iter(&self) -> Iter<'_, K, V> {
         self.iter()
     }
@@ -614,7 +566,7 @@ impl<K, V> IntoIter<K, V> {
 
 impl<K, V> Drain<'_, K, V> {
     /// Returns a iterator of references over the remaining items.
-    #[cfg_attr(feature = "inline-more", inline)]
+    #[inline]
     pub fn rustc_iter(&self) -> Iter<'_, K, V> {
         self.iter()
     }

@@ -14,7 +14,7 @@ use std::fmt;
 use std::net::{self, Ipv4Addr, Ipv6Addr, SocketAddr};
 
 #[cfg(all(unix, not(target_os = "fuchsia")))]
-use iovec::{IoVec, IoVecMut};
+use iovec::IoVec;
 
 /// A User Datagram Protocol socket.
 ///
@@ -563,7 +563,7 @@ impl UdpSocket {
     ///
     /// [link]: https://doc.rust-lang.org/nightly/std/io/enum.ErrorKind.html#variant.WouldBlock
     #[cfg(all(unix, not(target_os = "fuchsia")))]
-    pub fn recv_bufs(&self, bufs: &mut [IoVecMut]) -> io::Result<usize> {
+    pub fn recv_bufs(&self, bufs: &mut [&mut IoVec]) -> io::Result<usize> {
         self.sys.readv(bufs)
     }
 
@@ -584,7 +584,7 @@ impl UdpSocket {
     ///
     /// [link]: https://doc.rust-lang.org/nightly/std/io/enum.ErrorKind.html#variant.WouldBlock
     #[cfg(all(unix, not(target_os = "fuchsia")))]
-    pub fn send_bufs(&self, bufs: &[IoVec]) -> io::Result<usize> {
+    pub fn send_bufs(&self, bufs: &[&IoVec]) -> io::Result<usize> {
         self.sys.writev(bufs)
     }
 }

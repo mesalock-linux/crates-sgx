@@ -1,9 +1,12 @@
+#[cfg(feature = "mesalock_sgx")]
+use std::prelude::v1::*;
+
 use std::fmt;
 
 /// An error encountered while working with structured data.
 #[derive(Debug)]
 pub struct Error {
-    inner: Inner,
+    inner: Inner
 }
 
 #[derive(Debug)]
@@ -37,7 +40,9 @@ impl fmt::Display for Error {
 
 impl From<fmt::Error> for Error {
     fn from(_: fmt::Error) -> Self {
-        Error { inner: Inner::Fmt }
+        Error {
+            inner: Inner::Fmt,
+        }
     }
 }
 
@@ -49,7 +54,6 @@ impl From<Error> for fmt::Error {
 
 #[cfg(feature = "std")]
 mod std_support {
-    use std::prelude::v1::*;
     use super::*;
     use std::{error, io};
 
@@ -62,7 +66,7 @@ mod std_support {
             E: Into<BoxedError>,
         {
             Error {
-                inner: Inner::Boxed(err.into()),
+                inner: Inner::Boxed(err.into())
             }
         }
     }

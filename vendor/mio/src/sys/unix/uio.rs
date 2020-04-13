@@ -2,17 +2,17 @@ use std::cmp;
 use std::io;
 use std::os::unix::io::AsRawFd;
 use sgx_libc as libc;
-use iovec::{IoVec, IoVecMut};
+use iovec::IoVec;
 use iovec::unix as iovec;
 
 pub trait VecIo {
-    fn readv(&self, bufs: &mut [IoVecMut]) -> io::Result<usize>;
+    fn readv(&self, bufs: &mut [&mut IoVec]) -> io::Result<usize>;
 
-    fn writev(&self, bufs: &[IoVec]) -> io::Result<usize>;
+    fn writev(&self, bufs: &[&IoVec]) -> io::Result<usize>;
 }
 
 impl<T: AsRawFd> VecIo for T {
-    fn readv(&self, bufs: &mut [IoVecMut]) -> io::Result<usize> {
+    fn readv(&self, bufs: &mut [&mut IoVec]) -> io::Result<usize> {
         unsafe {
             let slice = iovec::as_os_slice_mut(bufs);
             let len = cmp::min(<libc::c_int>::max_value() as usize, slice.len());
@@ -27,7 +27,7 @@ impl<T: AsRawFd> VecIo for T {
         }
     }
 
-    fn writev(&self, bufs: &[IoVec]) -> io::Result<usize> {
+    fn writev(&self, bufs: &[&IoVec]) -> io::Result<usize> {
         unsafe {
             let slice = iovec::as_os_slice(bufs);
             let len = cmp::min(<libc::c_int>::max_value() as usize, slice.len());

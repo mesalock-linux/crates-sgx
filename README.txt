@@ -48,7 +48,7 @@ inflate                0.4.5
 integer-encoding       1.0.7
 inventory              0.1.5
 inventory-impl         0.1.5
-iovec                  0.2.0
+iovec                  0.1.4
 itertools              0.8.2
 itertools              0.9.0
 itoa                   0.4.5
@@ -57,7 +57,7 @@ jsonwebtoken           6.0.1
 lazy_static            1.4.0
 libc                   0.2.68
 linked-hash-map        0.5.2
-log                    0.4.10
+log                    0.4.8
 lzw                    0.10.0
 matches                0.1.8
 matrixmultiply         0.2.3
@@ -80,7 +80,7 @@ percent-encoding       2.1.0
 png                    0.15.2
 ppv-lite86             0.2.6
 proc-macro2            0.4.30
-proc-macro2            1.0.9
+proc-macro2            1.0.10
 profiler_builtins      0.1.0
 prost                  0.6.1
 prost-derive           0.6.1

@@ -1,16 +1,18 @@
 //! Structured values.
+#[cfg(feature = "mesalock_sgx")]
+use std::prelude::v1::*;
 
 use std::fmt;
 
-mod impls;
 mod internal;
+mod impls;
 
 #[cfg(test)]
 pub(in kv) mod test;
 
 pub use kv::Error;
 
-use self::internal::{Inner, Primitive, Visitor};
+use self::internal::{Inner, Visitor, Primitive};
 
 /// A type that can be converted into a [`Value`](struct.Value.html).
 pub trait ToValue {
@@ -29,12 +31,14 @@ where
 
 impl<'v> ToValue for Value<'v> {
     fn to_value(&self) -> Value {
-        Value { inner: self.inner }
+        Value {
+            inner: self.inner,
+        }
     }
 }
 
 /// A type that requires extra work to convert into a [`Value`](struct.Value.html).
-///
+/// 
 /// This trait is a more advanced initialization API than [`ToValue`](trait.ToValue.html).
 /// It's intended for erased values coming from other logging frameworks that may need
 /// to perform extra work to determine the concrete type to use.
@@ -73,11 +77,11 @@ impl<'a> Slot<'a> {
     }
 
     /// Fill the slot with a value.
-    ///
+    /// 
     /// The given value doesn't need to satisfy any particular lifetime constraints.
-    ///
+    /// 
     /// # Panics
-    ///
+    /// 
     /// Calling `fill` more than once will panic.
     pub fn fill(&mut self, value: Value) -> Result<(), Error> {
         assert!(!self.filled, "the slot has already been filled");
@@ -125,7 +129,7 @@ mod tests {
 
         impl Fill for TestFill {
             fn fill(&self, slot: &mut Slot) -> Result<(), Error> {
-                let dbg: &dyn fmt::Debug = &1;
+                let dbg: &fmt::Debug = &1;
 
                 slot.fill(Value::from_debug(&dbg))
             }

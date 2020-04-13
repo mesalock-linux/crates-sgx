@@ -195,8 +195,9 @@
 //! # Compile time filters
 //!
 //! Log levels can be statically disabled at compile time via Cargo features. Log invocations at
-//! disabled levels will be skipped and will not even be present in the resulting binary.
-//! This level is configured separately for release and debug builds. The features are:
+//! disabled levels will be skipped and will not even be present in the resulting binary unless the
+//! log level is specified dynamically. This level is configured separately for release and debug
+//! builds. The features are:
 //!
 //! * `max_level_off`
 //! * `max_level_error`
@@ -266,7 +267,7 @@
 #![doc(
     html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
     html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-    html_root_url = "https://docs.rs/log/0.4.10"
+    html_root_url = "https://docs.rs/log/0.4.8"
 )]
 #![warn(missing_docs)]
 #![deny(missing_debug_implementations)]
@@ -316,7 +317,7 @@ pub mod kv;
 
 // The LOGGER static holds a pointer to the global logger. It is protected by
 // the STATE static which determines whether LOGGER has been initialized yet.
-static mut LOGGER: &dyn Log = &NopLogger;
+static mut LOGGER: &'static dyn Log = &NopLogger;
 
 #[allow(deprecated)]
 static STATE: AtomicUsize = ATOMIC_USIZE_INIT;
@@ -331,11 +332,11 @@ const INITIALIZED: usize = 2;
 #[allow(deprecated)]
 static MAX_LOG_LEVEL_FILTER: AtomicUsize = ATOMIC_USIZE_INIT;
 
-static LOG_LEVEL_NAMES: [&str; 6] = ["OFF", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
+static LOG_LEVEL_NAMES: [&'static str; 6] = ["OFF", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"];
 
-static SET_LOGGER_ERROR: &str = "attempted to set a logger after the logging system \
-                                 was already initialized";
-static LEVEL_PARSE_ERROR: &str =
+static SET_LOGGER_ERROR: &'static str = "attempted to set a logger after the logging system \
+                                         was already initialized";
+static LEVEL_PARSE_ERROR: &'static str =
     "attempted to convert a string that doesn't match an existing log level";
 
 /// An enum representing the available verbosity levels of the logger.
@@ -842,7 +843,7 @@ impl<'a> Record<'a> {
         self.key_values.0
     }
 
-    /// Create a new [`RecordBuilder`](struct.RecordBuilder.html) based on this record.
+    /// Create a new [`Builder`](struct.Builder.html) based on this record.
     #[cfg(feature = "kv_unstable")]
     #[inline]
     pub fn to_builder(&self) -> RecordBuilder {
@@ -857,7 +858,7 @@ impl<'a> Record<'a> {
                 file: self.file,
                 line: self.line,
                 key_values: self.key_values.clone(),
-            },
+            }
         }
     }
 }
@@ -922,17 +923,28 @@ impl<'a> RecordBuilder<'a> {
     /// [`Metadata::builder().build()`]: struct.MetadataBuilder.html#method.build
     #[inline]
     pub fn new() -> RecordBuilder<'a> {
-        RecordBuilder {
+        #[cfg(feature = "kv_unstable")]
+        return RecordBuilder {
             record: Record {
                 args: format_args!(""),
                 metadata: Metadata::builder().build(),
                 module_path: None,
                 file: None,
                 line: None,
-                #[cfg(feature = "kv_unstable")]
                 key_values: KeyValues(&Option::None::<(kv::Key, kv::Value)>),
             },
-        }
+        };
+
+        #[cfg(not(feature = "kv_unstable"))]
+        return RecordBuilder {
+            record: Record {
+                args: format_args!(""),
+                metadata: Metadata::builder().build(),
+                module_path: None,
+                file: None,
+                line: None,
+            },
+        };
     }
 
     /// Set [`args`](struct.Record.html#method.args).
@@ -1210,7 +1222,7 @@ pub fn max_level() -> LevelFilter {
 /// [`set_logger`]: fn.set_logger.html
 #[cfg(all(feature = "std", atomic_cas))]
 pub fn set_boxed_logger(logger: Box<dyn Log>) -> Result<(), SetLoggerError> {
-    set_logger_inner(|| Box::leak(logger))
+    set_logger_inner(|| unsafe { &*Box::into_raw(logger) })
 }
 
 /// Sets the global logger to a `&'static Log`.
@@ -1330,7 +1342,7 @@ pub unsafe fn set_logger_racy(logger: &'static dyn Log) -> Result<(), SetLoggerE
 ///
 /// [`set_logger`]: fn.set_logger.html
 #[allow(missing_copy_implementations)]
-#[derive(Debug,Default)]
+#[derive(Debug, Default)]
 pub struct SetLoggerError(());
 
 impl fmt::Display for SetLoggerError {
@@ -1384,63 +1396,14 @@ pub fn logger() -> &'static dyn Log {
 
 // WARNING: this is not part of the crate's public API and is subject to change at any time
 #[doc(hidden)]
-#[cfg(not(feature = "kv_unstable"))]
 pub fn __private_api_log(
     args: fmt::Arguments,
     level: Level,
     &(target, module_path, file, line): &(&str, &'static str, &'static str, u32),
-    kvs: Option<&[(&str, &str)]>,
-) {
-    if kvs.is_some() {
-        panic!(
-            "key-value support is experimental and must be enabled using the `kv_unstable` feature"
-        )
-    }
-
-    logger().log(
-        &Record::builder()
-            .args(args)
-            .level(level)
-            .target(target)
-            .module_path_static(Some(module_path))
-            .file_static(Some(file))
-            .line(Some(line))
-            .build(),
-    );
-}
-
-// WARNING: this is not part of the crate's public API and is subject to change at any time
-#[cfg(feature = "kv_unstable")]
-#[doc(hidden)]
-pub fn __private_api_log(
-    args: fmt::Arguments<'_>,
-    level: Level,
-    &(target, module_path, file, line): &(&str, &'static str, &'static str, u32),
-    kvs: Option<&[(&str, &dyn kv::ToValue)]>,
 ) {
     logger().log(
         &Record::builder()
             .args(args)
-            .level(level)
-            .target(target)
-            .module_path_static(Some(module_path))
-            .file_static(Some(file))
-            .line(Some(line))
-            .key_values(&kvs)
-            .build(),
-    );
-}
-
-// WARNING: this is not part of the crate's public API and is subject to change at any time
-#[doc(hidden)]
-pub fn __private_api_log_lit(
-    message: &str,
-    level: Level,
-    &(target, module_path, file, line): &(&str, &'static str, &'static str, u32),
-) {
-    logger().log(
-        &Record::builder()
-            .args(format_args!("{}", message))
             .level(level)
             .target(target)
             .module_path_static(Some(module_path))
@@ -1690,17 +1653,24 @@ mod tests {
             fn visit_pair(
                 &mut self,
                 _: kv::Key<'kvs>,
-                _: kv::Value<'kvs>,
+                _: kv::Value<'kvs>
             ) -> Result<(), kv::Error> {
                 self.seen_pairs += 1;
                 Ok(())
             }
         }
 
-        let kvs: &[(&str, i32)] = &[("a", 1), ("b", 2)];
-        let record_test = Record::builder().key_values(&kvs).build();
+        let kvs: &[(&str, i32)] = &[
+            ("a", 1),
+            ("b", 2)
+        ];
+        let record_test = Record::builder()
+            .key_values(&kvs)
+            .build();
 
-        let mut visitor = TestVisitor { seen_pairs: 0 };
+        let mut visitor = TestVisitor {
+            seen_pairs: 0,
+        };
 
         record_test.key_values().visit(&mut visitor).unwrap();
 

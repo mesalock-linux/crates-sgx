@@ -10,13 +10,9 @@
 //#[cfg(unix)]
 extern crate sgx_libc as libc;
 
-//#[cfg(windows)]
-//extern crate winapi;
-
 mod sys;
 
-use core::ops;
-use core::marker::PhantomData;
+use core::{ops, mem};
 
 #[cfg(unix)]
 pub mod unix;
@@ -46,7 +42,7 @@ pub const MAX_LENGTH: usize = sys::MAX_LENGTH;
 /// let mut data = vec![];
 /// data.extend_from_slice(b"hello");
 ///
-/// let iovec: IoVec = data.as_slice().into();
+/// let iovec: &IoVec = data.as_slice().into();
 ///
 /// assert_eq!(&iovec[..], &b"hello"[..]);
 /// ```
@@ -57,94 +53,45 @@ pub const MAX_LENGTH: usize = sys::MAX_LENGTH;
 /// [`MAX_LENGTH`] to an `IoVec` will result in a panic.
 ///
 /// [`MAX_LENGTH`]: constant.MAX_LENGTH.html
-pub struct IoVec<'a> {
+pub struct IoVec {
     sys: sys::IoVec,
-    _p: PhantomData<&'a [u8]>,
 }
 
-/// Mutable byte slice type for performing vectored I/O operations.
-pub struct IoVecMut<'a> {
-    sys: sys::IoVec,
-    _p: PhantomData<&'a mut [u8]>,
-}
-
-// ===== impl IoVec =====
-
-impl<'a> IoVec<'a> {
-    /// Convert an `IoVec` from a byte slice
-    pub fn from_bytes(slice: &'a [u8]) -> Self {
-        IoVec {
-            sys: unsafe { sys::IoVec::from_bytes(slice) },
-            _p: PhantomData,
+impl IoVec {
+    pub fn from_bytes(slice: &[u8]) -> Option<&IoVec> {
+        if slice.len() == 0 {
+            return None
+        }
+        unsafe {
+            let iovec: &sys::IoVec = slice.into();
+            Some(mem::transmute(iovec))
         }
     }
 
-    /// Convert a slice of mutable iovecs to immutable iovecs
-    pub fn from_mut_slice<'b>(slice: &'b [IoVecMut<'a>]) -> &'b [Self] {
-        unsafe { ::core::mem::transmute(slice) }
-    }
-
-    /// Immutable borrow of the iovec.
-    pub fn borrow(&self) -> IoVec {
-        IoVec {
-            sys: self.sys.clone(),
-            _p: PhantomData,
+    pub fn from_bytes_mut(slice: &mut [u8]) -> Option<&mut IoVec> {
+        if slice.len() == 0 {
+            return None
         }
-    }
-}
-
-impl<'a> ops::Deref for IoVec<'a> {
-    type Target = [u8];
-
-    fn deref(&self) -> &[u8] {
-        self.sys.as_ref()
-    }
-}
-
-impl<'a> From<&'a [u8]> for IoVec<'a> {
-    fn from(bytes: &'a [u8]) -> Self {
-        IoVec::from_bytes(bytes)
-    }
-}
-
-impl<'a> Default for IoVec<'a> {
-    fn default() -> Self {
-        IoVec {
-            sys: sys::IoVec::default(),
-            _p: PhantomData,
-        }
-    }
-}
-
-// ===== impl IoVecMut =====
-
-impl<'a> IoVecMut<'a> {
-    /// Convert an `IoVecMut` from a mutable byte slice.
-    pub fn from_bytes(slice: &'a mut [u8]) -> Self {
-        IoVecMut {
-            sys: unsafe { sys::IoVec::from_bytes_mut(slice) },
-            _p: PhantomData,
+        unsafe {
+            let iovec: &mut sys::IoVec = slice.into();
+            Some(mem::transmute(iovec))
         }
     }
 
-    /// Immutable borrow of the iovec.
-    pub fn borrow(&self) -> IoVec {
-        IoVec {
-            sys: self.sys.clone(),
-            _p: PhantomData,
-        }
+    #[deprecated(since = "0.1.0", note = "deref instead")]
+    #[doc(hidden)]
+    pub fn as_bytes(&self) -> &[u8] {
+        &**self
     }
 
-    /// Mutable borrow of the iovec.
-    pub fn borrow_mut(&mut self) -> IoVecMut {
-        IoVecMut {
-            sys: self.sys.clone(),
-            _p: PhantomData,
-        }
+    #[deprecated(since = "0.1.0", note = "deref instead")]
+    #[doc(hidden)]
+    pub fn as_mut_bytes(&mut self) -> &mut [u8] {
+        &mut **self
     }
 }
 
-impl<'a> ops::Deref for IoVecMut<'a> {
+impl ops::Deref for IoVec {
     type Target = [u8];
 
     fn deref(&self) -> &[u8] {
@@ -152,50 +99,67 @@ impl<'a> ops::Deref for IoVecMut<'a> {
     }
 }
 
-impl<'a> ops::DerefMut for IoVecMut<'a> {
+impl ops::DerefMut for IoVec {
     fn deref_mut(&mut self) -> &mut [u8] {
         self.sys.as_mut()
     }
 }
 
-impl<'a> From<&'a mut [u8]> for IoVecMut<'a> {
-    fn from(bytes: &'a mut [u8]) -> Self {
-        IoVecMut::from_bytes(bytes)
+#[doc(hidden)]
+impl<'a> From<&'a [u8]> for &'a IoVec {
+    fn from(bytes: &'a [u8]) -> &'a IoVec {
+        IoVec::from_bytes(bytes)
+            .expect("this crate accidentally accepted 0-sized slices \
+                     originally but this was since discovered as a soundness \
+                     hole, it's recommended to use the `from_bytes` \
+                     function instead")
     }
 }
 
-impl<'a> Default for IoVecMut<'a> {
-    fn default() -> Self {
-        IoVecMut {
-            sys: sys::IoVec::default(),
-            _p: PhantomData,
-        }
+#[doc(hidden)]
+#[deprecated(since = "0.1", note = "aaa")]
+impl<'a> From<&'a mut [u8]> for &'a mut IoVec {
+    fn from(bytes: &'a mut [u8]) -> &'a mut IoVec {
+        IoVec::from_bytes_mut(bytes)
+            .expect("this crate accidentally accepted 0-sized slices \
+                     originally but this was since discovered as a soundness \
+                     hole, it's recommended to use the `from_bytes_mut` \
+                     function instead")
     }
 }
+
+//#[doc(hidden)]
+//impl<'a> Default for &'a IoVec {
+//    fn default() -> Self {
+//        panic!("this implementation was accidentally provided but is \
+//                unfortunately unsound, it's recommended to stop using \
+//                `IoVec::default` or construct a vector with a nonzero length");
+//    }
+//}
+
+//#[doc(hidden)]
+//impl<'a> Default for &'a mut IoVec {
+//    fn default() -> Self {
+//        panic!("this implementation was accidentally provided but is \
+//                unfortunately unsound, it's recommended to stop using \
+//                `IoVec::default` or construct a vector with a nonzero length");
+//    }
+//}
 
 #[cfg(test)]
 mod test {
-    extern crate std;
-
-    use self::std::vec::Vec;
-    use super::{IoVec, IoVecMut};
+    use super::IoVec;
 
     #[test]
     fn convert_ref() {
-        let buf: IoVec = (&b"hello world"[..]).into();
+        let buf: &IoVec = (&b"hello world"[..]).into();
         assert_eq!(buf[..], b"hello world"[..]);
     }
 
     #[test]
     fn convert_mut() {
         let mut buf: Vec<u8> = b"hello world".to_vec();
-        let buf: IoVecMut = (&mut buf[..]).into();
+        let buf: &mut IoVec = (&mut buf[..]).into();
         assert_eq!(buf[..], b"hello world"[..]);
-    }
-
-    #[test]
-    fn default() {
-        let buf: IoVec = IoVec::default();
-        assert_eq!(buf[..], b""[..]);
     }
 }

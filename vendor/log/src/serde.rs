@@ -1,5 +1,8 @@
 #![cfg(feature = "serde")]
 
+#[cfg(feature = "mesalock_sgx")]
+use std::prelude::v1::*;
+
 extern crate serde;
 use self::serde::de::{
     Deserialize, DeserializeSeed, Deserializer, EnumAccess, Error, Unexpected, VariantAccess,

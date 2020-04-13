@@ -36,8 +36,8 @@ ghost: MIT OR Apache-2.0
 gif: MIT/Apache-2.0
 gzip-header: MIT/Apache-2.0
 half: MIT/Apache-2.0
-hashbrown-0.3.1: Apache-2.0/MIT
 hashbrown: Apache-2.0/MIT
+hashbrown_tstd: Apache-2.0/MIT
 heapsize: MIT/Apache-2.0
 hex: MIT OR Apache-2.0
 httparse: MIT/Apache-2.0

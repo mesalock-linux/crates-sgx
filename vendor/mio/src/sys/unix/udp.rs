@@ -8,7 +8,7 @@ use std::os::unix::io::{RawFd, IntoRawFd, AsRawFd, FromRawFd};
 
 #[allow(unused_imports)] // only here for Rust 1.8
 use net2::UdpSocketExt;
-use iovec::{IoVec, IoVecMut};
+use iovec::IoVec;
 
 pub struct UdpSocket {
     io: net::UdpSocket,
@@ -131,11 +131,11 @@ impl UdpSocket {
         self.io.take_error()
     }
 
-    pub fn readv(&self, bufs: &mut [IoVecMut]) -> io::Result<usize> {
+    pub fn readv(&self, bufs: &mut [&mut IoVec]) -> io::Result<usize> {
         self.io.readv(bufs)
     }
 
-    pub fn writev(&self, bufs: &[IoVec]) -> io::Result<usize> {
+    pub fn writev(&self, bufs: &[&IoVec]) -> io::Result<usize> {
         self.io.writev(bufs)
     }
 }
