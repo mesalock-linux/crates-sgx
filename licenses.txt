@@ -47,6 +47,8 @@ idna: MIT/Apache-2.0
 image: MIT
 inflate: MIT
 integer-encoding: see license file at integer-encoding/LICENSE
+inventory-0.1.5: MIT OR Apache-2.0
+inventory-impl-0.1.5: MIT OR Apache-2.0
 inventory-impl: MIT OR Apache-2.0
 inventory: MIT OR Apache-2.0
 iovec: MIT/Apache-2.0

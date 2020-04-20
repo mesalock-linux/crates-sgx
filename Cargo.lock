@@ -181,6 +181,7 @@ dependencies = [
  "image 0.22.4 (git+https://github.com/mesalock-linux/image-sgx)",
  "inflate 0.4.5 (git+https://github.com/mesalock-linux/inflate-sgx)",
  "integer-encoding 1.0.7 (git+https://github.com/mesalock-linux/integer-encoding-rs-sgx)",
+ "inventory 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "iovec 0.1.4 (git+https://github.com/mesalock-linux/iovec-sgx)",
  "itertools 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "itoa 0.4.5 (git+https://github.com/mesalock-linux/itoa-sgx)",
@@ -518,9 +519,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "inventory"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "ctor 0.1.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ghost 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "inventory-impl 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "inventory-impl"
 version = "0.1.5"
 source = "git+https://github.com/mesalock-linux/inventory-sgx#33b712ccd94f8b8f6e996b1e3d5c0ff430a74bde"
+dependencies = [
+ "proc-macro2 1.0.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "quote 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "syn 1.0.17 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "inventory-impl"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "proc-macro2 1.0.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1673,7 +1694,9 @@ dependencies = [
 "checksum inflate 0.4.5 (git+https://github.com/mesalock-linux/inflate-sgx)" = "<none>"
 "checksum integer-encoding 1.0.7 (git+https://github.com/mesalock-linux/integer-encoding-rs-sgx)" = "<none>"
 "checksum inventory 0.1.5 (git+https://github.com/mesalock-linux/inventory-sgx)" = "<none>"
+"checksum inventory 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "82d3f4b90287725c97b17478c60dda0c6324e7c84ee1ed72fb9179d0fdf13956"
 "checksum inventory-impl 0.1.5 (git+https://github.com/mesalock-linux/inventory-sgx)" = "<none>"
+"checksum inventory-impl 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "9092a4fefc9d503e9287ef137f03180a6e7d1b04c419563171ee14947c5e80ec"
 "checksum iovec 0.1.4 (git+https://github.com/mesalock-linux/iovec-sgx)" = "<none>"
 "checksum itertools 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)" = "f56a2d0bc861f9165be4eb3442afd3c236d8a98afd426f65d92324ae1091a484"
 "checksum itertools 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "284f18f85651fe11e8a991b2adb42cb078325c996ed026d994719efcfca1d54b"

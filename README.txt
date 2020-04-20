@@ -47,7 +47,9 @@ image                  0.22.4
 inflate                0.4.5
 integer-encoding       1.0.7
 inventory              0.1.5
+inventory              0.1.6
 inventory-impl         0.1.5
+inventory-impl         0.1.6
 iovec                  0.1.4
 itertools              0.8.2
 itertools              0.9.0
