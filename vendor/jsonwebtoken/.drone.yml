@@ -3,14 +3,14 @@ name: jsonwebtoken-sgx-1604-sw
 
 steps:
 - name: sim-compile
-  image: baiduxlab/sgx-rust:1604-1.1.1
+  image: baiduxlab/sgx-rust:1604-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - . /root/.cargo/env
   - SGX_MODE=SW make -C sgx/jsonwebtoken-sgx-test
 
 - name: sim-test
-  image: baiduxlab/sgx-rust:1604-1.1.1
+  image: baiduxlab/sgx-rust:1604-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - cd sgx/jsonwebtoken-sgx-test/bin && ./app | tee result.txt && grep " 0 failed" result.txt
@@ -25,14 +25,14 @@ name: jsonwebtoken-sgx-1604-hw
 
 steps:
 - name: hw-compile
-  image: baiduxlab/sgx-rust:1604-1.1.1
+  image: baiduxlab/sgx-rust:1604-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - . /root/.cargo/env
   - make -C sgx/jsonwebtoken-sgx-test
 
 - name: hw-test
-  image: baiduxlab/sgx-rust:1604-1.1.1
+  image: baiduxlab/sgx-rust:1604-1.1.2
   privileged: true
   volumes:
   - name: isgx
@@ -63,14 +63,14 @@ name: jsonwebtoken-sgx-1804-sw
 
 steps:
 - name: sim-compile
-  image: baiduxlab/sgx-rust:1804-1.1.1
+  image: baiduxlab/sgx-rust:1804-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - . /root/.cargo/env
   - SGX_MODE=SW make -C sgx/jsonwebtoken-sgx-test
 
 - name: sim-test
-  image: baiduxlab/sgx-rust:1804-1.1.1
+  image: baiduxlab/sgx-rust:1804-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - cd sgx/jsonwebtoken-sgx-test/bin && ./app | tee result.txt && grep " 0 failed" result.txt
@@ -85,14 +85,14 @@ name: jsonwebtoken-sgx-1804-hw
 
 steps:
 - name: hw-compile
-  image: baiduxlab/sgx-rust:1804-1.1.1
+  image: baiduxlab/sgx-rust:1804-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - . /root/.cargo/env
   - make -C sgx/jsonwebtoken-sgx-test
 
 - name: hw-test
-  image: baiduxlab/sgx-rust:1804-1.1.1
+  image: baiduxlab/sgx-rust:1804-1.1.2
   privileged: true
   volumes:
   - name: isgx

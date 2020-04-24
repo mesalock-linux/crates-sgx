@@ -2,6 +2,7 @@ pub type pthread_t = c_ulong;
 pub type __priority_which_t = ::c_uint;
 pub type __rlimit_resource_t = ::c_uint;
 pub type Lmid_t = ::c_long;
+pub type regoff_t = ::c_int;
 
 s! {
     pub struct statx {
@@ -273,6 +274,17 @@ s! {
         pub __glibc_reserved3: ::c_long,
         pub __glibc_reserved4: ::c_long,
     }
+
+    pub struct regex_t {
+        __buffer: *mut ::c_void,
+        __allocated: ::size_t,
+        __used: ::size_t,
+        __syntax: ::c_ulong,
+        __fastmap: *mut ::c_char,
+        __translate: *mut ::c_char,
+        __re_nsub: ::size_t,
+        __bitfield: u8,
+    }
 }
 
 impl siginfo_t {
@@ -398,6 +410,47 @@ cfg_if! {
         }
     }
 }
+
+// include/uapi/asm-generic/hugetlb_encode.h
+pub const HUGETLB_FLAG_ENCODE_SHIFT: ::c_int = 26;
+pub const HUGETLB_FLAG_ENCODE_MASK:  ::c_int = 0x3f;
+
+pub const HUGETLB_FLAG_ENCODE_64KB:  ::c_int = 16 << HUGETLB_FLAG_ENCODE_SHIFT;
+pub const HUGETLB_FLAG_ENCODE_512KB: ::c_int = 19 << HUGETLB_FLAG_ENCODE_SHIFT;
+pub const HUGETLB_FLAG_ENCODE_1MB:   ::c_int = 20 << HUGETLB_FLAG_ENCODE_SHIFT;
+pub const HUGETLB_FLAG_ENCODE_2MB:   ::c_int = 21 << HUGETLB_FLAG_ENCODE_SHIFT;
+pub const HUGETLB_FLAG_ENCODE_8MB:   ::c_int = 23 << HUGETLB_FLAG_ENCODE_SHIFT;
+pub const HUGETLB_FLAG_ENCODE_16MB:  ::c_int = 24 << HUGETLB_FLAG_ENCODE_SHIFT;
+pub const HUGETLB_FLAG_ENCODE_32MB:  ::c_int = 25 << HUGETLB_FLAG_ENCODE_SHIFT;
+pub const HUGETLB_FLAG_ENCODE_256MB: ::c_int = 28 << HUGETLB_FLAG_ENCODE_SHIFT;
+pub const HUGETLB_FLAG_ENCODE_512MB: ::c_int = 29 << HUGETLB_FLAG_ENCODE_SHIFT;
+pub const HUGETLB_FLAG_ENCODE_1GB:   ::c_int = 30 << HUGETLB_FLAG_ENCODE_SHIFT;
+pub const HUGETLB_FLAG_ENCODE_2GB:   ::c_int = 31 << HUGETLB_FLAG_ENCODE_SHIFT;
+pub const HUGETLB_FLAG_ENCODE_16GB:  ::c_int = 34 << HUGETLB_FLAG_ENCODE_SHIFT;
+
+// include/uapi/linux/mman.h
+/*
+ * Huge page size encoding when MAP_HUGETLB is specified, and a huge page
+ * size other than the default is desired.  See hugetlb_encode.h.
+ * All known huge page size encodings are provided here.  It is the
+ * responsibility of the application to know which sizes are supported on
+ * the running system.  See mmap(2) man page for details.
+ */
+pub const MAP_HUGE_SHIFT: ::c_int = HUGETLB_FLAG_ENCODE_SHIFT;
+pub const MAP_HUGE_MASK:  ::c_int = HUGETLB_FLAG_ENCODE_MASK;
+
+pub const MAP_HUGE_64KB:  ::c_int = HUGETLB_FLAG_ENCODE_64KB;
+pub const MAP_HUGE_512KB: ::c_int = HUGETLB_FLAG_ENCODE_512KB;
+pub const MAP_HUGE_1MB:   ::c_int = HUGETLB_FLAG_ENCODE_1MB;
+pub const MAP_HUGE_2MB:   ::c_int = HUGETLB_FLAG_ENCODE_2MB;
+pub const MAP_HUGE_8MB:   ::c_int = HUGETLB_FLAG_ENCODE_8MB;
+pub const MAP_HUGE_16MB:  ::c_int = HUGETLB_FLAG_ENCODE_16MB;
+pub const MAP_HUGE_32MB:  ::c_int = HUGETLB_FLAG_ENCODE_32MB;
+pub const MAP_HUGE_256MB: ::c_int = HUGETLB_FLAG_ENCODE_256MB;
+pub const MAP_HUGE_512MB: ::c_int = HUGETLB_FLAG_ENCODE_512MB;
+pub const MAP_HUGE_1GB:   ::c_int = HUGETLB_FLAG_ENCODE_1GB;
+pub const MAP_HUGE_2GB:   ::c_int = HUGETLB_FLAG_ENCODE_2GB;
+pub const MAP_HUGE_16GB:  ::c_int = HUGETLB_FLAG_ENCODE_16GB;
 
 pub const RLIMIT_CPU: ::__rlimit_resource_t = 0;
 pub const RLIMIT_FSIZE: ::__rlimit_resource_t = 1;
@@ -1086,6 +1139,12 @@ cfg_if! {
 }
 pub const PTHREAD_MUTEX_ADAPTIVE_NP: ::c_int = 3;
 
+pub const REG_STARTEND: ::c_int = 4;
+
+pub const REG_EEND: ::c_int = 14;
+pub const REG_ESIZE: ::c_int = 15;
+pub const REG_ERPAREN: ::c_int = 16;
+
 extern "C" {
     pub fn fgetspent_r(
         fp: *mut ::FILE,
@@ -1198,6 +1257,21 @@ extern "C" {
     pub fn ntp_adjtime(buf: *mut timex) -> ::c_int;
     #[link_name = "ntp_gettimex"]
     pub fn ntp_gettime(buf: *mut ntptimeval) -> ::c_int;
+    pub fn copy_file_range(
+        fd_in: ::c_int,
+        off_in: *mut ::off64_t,
+        fd_out: ::c_int,
+        off_out: *mut ::off64_t,
+        len: ::size_t,
+        flags: ::c_uint,
+    ) -> ::ssize_t;
+    pub fn fanotify_mark(
+        fd: ::c_int,
+        flags: ::c_uint,
+        mask: u64,
+        dirfd: ::c_int,
+        path: *const ::c_char,
+    ) -> ::c_int;
 }
 
 #[link(name = "util")]
@@ -1251,16 +1325,12 @@ extern "C" {
     pub fn sched_getcpu() -> ::c_int;
     pub fn mallinfo() -> ::mallinfo;
     pub fn malloc_usable_size(ptr: *mut ::c_void) -> ::size_t;
-    #[cfg_attr(target_os = "netbsd", link_name = "__getpwent_r50")]
-    #[cfg_attr(target_os = "solaris", link_name = "__posix_getpwent_r")]
     pub fn getpwent_r(
         pwd: *mut ::passwd,
         buf: *mut ::c_char,
         buflen: ::size_t,
         result: *mut *mut ::passwd,
     ) -> ::c_int;
-    #[cfg_attr(target_os = "netbsd", link_name = "__getgrent_r50")]
-    #[cfg_attr(target_os = "solaris", link_name = "__posix_getgrent_r")]
     pub fn getgrent_r(
         grp: *mut ::group,
         buf: *mut ::c_char,

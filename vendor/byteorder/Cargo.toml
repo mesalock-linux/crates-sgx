@@ -33,7 +33,7 @@ mesalock_sgx = ["std", "sgx_tstd"]
 i128 = []
 
 [dependencies]
-sgx_tstd = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [profile.bench]
 opt-level = 3

@@ -21,7 +21,7 @@ appveyor = { repository = "rust-random/rand" }
 [dependencies]
 rand_core = { path = "../rand_core", version = "0.5" }
 c2-chacha = { git = "https://github.com/mesalock-linux/cryptocorrosion-sgx" }
-sgx_tstd = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [features]
 default = ["std", "simd", "mesalock_sgx"]

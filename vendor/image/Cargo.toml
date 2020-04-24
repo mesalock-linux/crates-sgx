@@ -34,7 +34,7 @@ byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
 num-iter = { git = "https://github.com/mesalock-linux/num-iter-sgx" }
 num-rational = { git = "https://github.com/mesalock-linux/num-rational-sgx" }
 num-traits = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
-sgx_tstd = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dependencies.gif]
 #version = "0.10.0"

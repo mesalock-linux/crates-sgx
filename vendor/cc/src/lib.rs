@@ -449,11 +449,13 @@ impl Build {
 
         let mut cmd = compiler.to_command();
         let is_arm = target.contains("aarch64") || target.contains("arm");
+        let clang = compiler.family == ToolFamily::Clang;
         command_add_output_file(
             &mut cmd,
             &obj,
             self.cuda,
             target.contains("msvc"),
+            clang,
             false,
             is_arm,
         );
@@ -847,7 +849,7 @@ impl Build {
 
     /// Configures whether the compiler will emit position independent code.
     ///
-    /// This option defaults to `false` for `windows-gnu` and `riscv` targets and
+    /// This option defaults to `false` for `windows-gnu` and bare metal targets and
     /// to `true` for all other targets.
     pub fn pic(&mut self, pic: bool) -> &mut Build {
         self.pic = Some(pic);
@@ -1144,10 +1146,11 @@ impl Build {
         let is_asm = obj.src.extension().and_then(|s| s.to_str()) == Some("asm");
         let target = self.get_target()?;
         let msvc = target.contains("msvc");
+        let compiler = self.try_get_compiler()?;
+        let clang = compiler.family == ToolFamily::Clang;
         let (mut cmd, name) = if msvc && is_asm {
             self.msvc_macro_assembler()?
         } else {
-            let compiler = self.try_get_compiler()?;
             let mut cmd = compiler.to_command();
             for &(ref a, ref b) in self.env.iter() {
                 cmd.env(a, b);
@@ -1163,7 +1166,7 @@ impl Build {
             )
         };
         let is_arm = target.contains("aarch64") || target.contains("arm");
-        command_add_output_file(&mut cmd, &obj.dst, self.cuda, msvc, is_asm, is_arm);
+        command_add_output_file(&mut cmd, &obj.dst, self.cuda, msvc, clang, is_asm, is_arm);
         // armasm and armasm64 don't requrie -c option
         if !msvc || !is_asm || !is_arm {
             cmd.arg("-c");
@@ -1371,11 +1374,11 @@ impl Build {
                     cmd.push_cc_arg("-ffunction-sections".into());
                     cmd.push_cc_arg("-fdata-sections".into());
                 }
-                // Disable generation of PIC on bare-metal RISC-V for now: rust-lld doesn't support this yet
-                if self.pic.unwrap_or(
-                    !target.contains("windows-gnu")
-                        && !(target.contains("riscv") && target.contains("-none-")),
-                ) {
+                // Disable generation of PIC on bare-metal for now: rust-lld doesn't support this yet
+                if self
+                    .pic
+                    .unwrap_or(!target.contains("windows") && !target.contains("-none-"))
+                {
                     cmd.push_cc_arg("-fPIC".into());
                     // PLT only applies if code is compiled with PIC support,
                     // and only for ELF targets.
@@ -1588,6 +1591,14 @@ impl Build {
                         cmd.args.push("-mfloat-abi=soft".into());
                     }
                 }
+                if target.starts_with("armv7a") {
+                    cmd.args.push("-march=armv7-a".into());
+
+                    if target.ends_with("eabihf") {
+                        // lowest common denominator FPU
+                        cmd.args.push("-mfpu=vfpv3-d16".into());
+                    }
+                }
                 if target.starts_with("riscv32") || target.starts_with("riscv64") {
                     // get the 32i/32imac/32imc/64gc/64imac/... part
                     let mut parts = target.split('-');
@@ -1603,6 +1614,7 @@ impl Build {
                         } else {
                             cmd.args.push("-mabi=ilp32".into());
                         }
+                        cmd.args.push("-mcmodel=medany".into());
                     }
                 }
             }
@@ -1866,7 +1878,7 @@ impl Build {
         cmd.args.push(sdk_path.trim().into());
         cmd.args.push("-fembed-bitcode".into());
         /*
-         * TODO we probably ultimatedly want the -fembed-bitcode-marker flag
+         * TODO we probably ultimately want the -fembed-bitcode-marker flag
          * but can't have it now because of an issue in LLVM:
          * https://github.com/alexcrichton/cc-rs/issues/301
          * https://github.com/rust-lang/rust/pull/48896#comment-372192660
@@ -1900,8 +1912,11 @@ impl Build {
             ("CC", "cl.exe", "gcc", "cc", "clang")
         };
 
-        // On Solaris, c++/cc unlikely to exist or be correct.
-        let default = if host.contains("solaris") {
+        // On historical Solaris systems, "cc" may have been Sun Studio, which
+        // is not flag-compatible with "gcc".  This history casts a long shadow,
+        // and many modern illumos distributions today ship GCC as "gcc" without
+        // also making it available as "cc".
+        let default = if host.contains("solaris") || host.contains("illumos") {
             gnu
         } else {
             traditional
@@ -1918,13 +1933,13 @@ impl Build {
                     .iter()
                     .find(|a| a.starts_with(DRIVER_MODE))
                     .map(|a| &a[DRIVER_MODE.len()..]);
-                // chop off leading/trailing whitespace to work around
+                // Chop off leading/trailing whitespace to work around
                 // semi-buggy build scripts which are shared in
                 // makefiles/configure scripts (where spaces are far more
                 // lenient)
                 let mut t = Tool::with_clang_driver(PathBuf::from(tool.trim()), driver_mode);
-                if let Some(cc) = wrapper {
-                    t.cc_wrapper_path = Some(PathBuf::from(cc));
+                if let Some(cc_wrapper) = wrapper {
+                    t.cc_wrapper_path = Some(PathBuf::from(cc_wrapper));
                 }
                 for arg in args {
                     t.cc_wrapper_args.push(arg.into());
@@ -1966,10 +1981,19 @@ impl Build {
                         .replace("thumbv7", "arm");
                     let gnu_compiler = format!("{}-{}", target, gnu);
                     let clang_compiler = format!("{}-{}", target, clang);
+                    // On Windows, the Android clang compiler is provided as a `.cmd` file instead
+                    // of a `.exe` file. `std::process::Command` won't run `.cmd` files unless the
+                    // `.cmd` is explicitly appended to the command name, so we do that here.
+                    let clang_compiler_cmd = format!("{}-{}.cmd", target, clang);
+
                     // Check if gnu compiler is present
                     // if not, use clang
-                    if Command::new(&gnu_compiler).spawn().is_ok() {
+                    if Command::new(&gnu_compiler).output().is_ok() {
                         gnu_compiler
+                    } else if host.contains("windows")
+                        && Command::new(&clang_compiler_cmd).output().is_ok()
+                    {
+                        clang_compiler_cmd
                     } else {
                         clang_compiler
                     }
@@ -1993,6 +2017,7 @@ impl Build {
                         "arm-unknown-linux-gnueabi" => Some("arm-linux-gnueabi"),
                         "armv4t-unknown-linux-gnueabi" => Some("arm-linux-gnueabi"),
                         "armv5te-unknown-linux-gnueabi" => Some("arm-linux-gnueabi"),
+                        "armv5te-unknown-linux-musleabi" => Some("arm-linux-gnueabi"),
                         "arm-frc-linux-gnueabi" => Some("arm-frc-linux-gnueabi"),
                         "arm-unknown-linux-gnueabihf" => Some("arm-linux-gnueabihf"),
                         "arm-unknown-linux-musleabi" => Some("arm-linux-musleabi"),
@@ -2039,6 +2064,8 @@ impl Build {
                         "sparc64-unknown-linux-gnu" => Some("sparc64-linux-gnu"),
                         "sparc64-unknown-netbsd" => Some("sparc64--netbsd"),
                         "sparcv9-sun-solaris" => Some("sparcv9-sun-solaris"),
+                        "armv7a-none-eabi" => Some("arm-none-eabi"),
+                        "armv7a-none-eabihf" => Some("arm-none-eabi"),
                         "armebv7r-none-eabi" => Some("arm-none-eabi"),
                         "armebv7r-none-eabihf" => Some("arm-none-eabi"),
                         "armv7r-none-eabi" => Some("arm-none-eabi"),
@@ -2064,7 +2091,12 @@ impl Build {
                 } else {
                     default.to_string()
                 };
-                Tool::new(PathBuf::from(compiler))
+
+                let mut t = Tool::new(PathBuf::from(compiler));
+                if let Some(cc_wrapper) = Self::rustc_wrapper_fallback() {
+                    t.cc_wrapper_path = Some(PathBuf::from(cc_wrapper));
+                }
+                t
             }
         };
 
@@ -2140,6 +2172,24 @@ impl Build {
             .collect()
     }
 
+    /// Returns a fallback `cc_compiler_wrapper` by introspecting `RUSTC_WRAPPER`
+    fn rustc_wrapper_fallback() -> Option<String> {
+        // No explicit CC wrapper was detected, but check if RUSTC_WRAPPER
+        // is defined and is a build accelerator that is compatible with
+        // C/C++ compilers (e.g. sccache)
+        let valid_wrappers = ["sccache"];
+
+        let rustc_wrapper = std::env::var_os("RUSTC_WRAPPER")?;
+        let wrapper_path = Path::new(&rustc_wrapper);
+        let wrapper_stem = wrapper_path.file_stem()?;
+
+        if valid_wrappers.contains(&wrapper_stem.to_str()?) {
+            Some(rustc_wrapper.to_str()?.to_owned())
+        } else {
+            None
+        }
+    }
+
     /// Returns compiler path, optional modifier name from whitelist, and arguments vec
     fn env_tool(&self, name: &str) -> Option<(String, Option<String>, Vec<String>)> {
         let tool = match self.get_var(name) {
@@ -2199,7 +2249,7 @@ impl Build {
 
         Some((
             maybe_wrapper.to_string(),
-            None,
+            Self::rustc_wrapper_fallback(),
             parts.map(|s| s.to_string()).collect(),
         ))
     }
@@ -2660,10 +2710,11 @@ fn command_add_output_file(
     dst: &Path,
     cuda: bool,
     msvc: bool,
+    clang: bool,
     is_asm: bool,
     is_arm: bool,
 ) {
-    if msvc && !cuda && !(is_asm && is_arm) {
+    if msvc && !clang && !cuda && !(is_asm && is_arm) {
         let mut s = OsString::from("-Fo");
         s.push(&dst);
         cmd.arg(s);

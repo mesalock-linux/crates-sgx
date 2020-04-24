@@ -1181,6 +1181,9 @@ pub const TIME_OOP: ::c_int = 3;
 pub const TIME_WAIT: ::c_int = 4;
 pub const TIME_ERROR: ::c_int = 5;
 
+pub const REG_ENOSYS: ::c_int = -1;
+pub const REG_ILLSEQ: ::c_int = 17;
+
 f! {
     pub fn WIFCONTINUED(status: ::c_int) -> bool {
         status == 0x13
@@ -1245,7 +1248,6 @@ extern "C" {
         buflen: ::size_t,
         result: *mut *mut ::group,
     ) -> ::c_int;
-    #[cfg_attr(target_os = "netbsd", link_name = "__getpwent_r50")]
     pub fn getpwent_r(
         pwd: *mut ::passwd,
         buf: *mut ::c_char,

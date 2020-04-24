@@ -1,5 +1,5 @@
 use std::prelude::v1::*;
-use chrono::offset::Utc;
+
 use serde::ser::Serialize;
 use serde_json::map::Map;
 use serde_json::{from_value, to_value, Value};
@@ -104,8 +104,8 @@ pub fn validate(claims: &Map<String, Value>, options: &Validation) -> Result<()>
     use std::time::SystemTime;
     use std::time::UNIX_EPOCH;
     use std::untrusted::time::SystemTimeEx;
-    use chrono::naive::NaiveDateTime;
-    use chrono::DateTime;
+    
+    
     let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
     let now = now.as_secs() as i64;
 

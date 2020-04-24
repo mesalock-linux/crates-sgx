@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use base64;
 use ring::constant_time::verify_slices_are_equal;
-use ring::{digest, hmac, rand, signature};
+use ring::{hmac, rand, signature};
 use std::str::FromStr;
 use untrusted;
 
@@ -61,7 +61,7 @@ fn sign_hmac(alg: &'static hmac::Algorithm, key: &[u8], signing_input: &str) -> 
     let signing_key = hmac::Key::new(*alg, key);
     let digest = hmac::sign(&signing_key, signing_input.as_bytes());
 
-    Ok(base64::encode_config::<hmac::Signature>(&digest, base64::URL_SAFE_NO_PAD))
+    Ok(base64::encode_config::<hmac::Tag>(&digest, base64::URL_SAFE_NO_PAD))
 }
 
 /// The actual ECDSA signing + encoding
@@ -74,7 +74,7 @@ fn sign_ecdsa(alg: &'static signature::EcdsaSigningAlgorithm, key: &[u8], signin
 
 /// The actual RSA signing + encoding
 /// Taken from Ring doc https://briansmith.org/rustdoc/ring/signature/index.html
-fn sign_rsa(alg: &'static signature::RsaEncoding, key: &[u8], signing_input: &str) -> Result<String> {
+fn sign_rsa(alg: &'static dyn signature::RsaEncoding, key: &[u8], signing_input: &str) -> Result<String> {
     let key_pair = Arc::new(
         signature::RsaKeyPair::from_der(key)
             .map_err(|_| ErrorKind::InvalidRsaKey)?,

@@ -503,7 +503,7 @@ fn process_chunk_greedy(
 
             // TODO: This should be cleaned up a bit.
             let (match_len, match_dist) =
-                { longest_match(data, hash_table, position, NO_LENGTH, max_hash_checks) };
+                 longest_match(data, hash_table, position, NO_LENGTH, max_hash_checks) ;
 
             if match_len >= MIN_MATCH as usize && !match_too_far(match_len, match_dist) {
                 // Casting note: length and distance is already bounded by the longest match

@@ -59,7 +59,7 @@ rand_pcg = { path = "rand_pcg", version = "0.2", optional = true }
 # This is renamed because: we need getrandom to depend on rand_core/getrandom
 getrandom_package = { git = "https://github.com/mesalock-linux/getrandom-sgx.git", package = "getrandom", optional = true }
 log = { git = "https://github.com/mesalock-linux/log-sgx.git", optional = true }
-sgx_tstd = { version = "1.0", rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { version = "1.0", rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dependencies.packed_simd]
 # NOTE: so far no version works reliably due to dependence on unstable features

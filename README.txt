@@ -15,13 +15,13 @@ byte-tools             0.3.1
 byteorder              1.3.2
 bytes                  0.5.4
 c2-chacha              0.2.3
-cc                     1.0.50
+cc                     1.0.52
 cfg-if                 0.1.10
 chrono                 0.4.10
 color_quant            1.0.1
 crc                    2.0.0
 crc32fast              1.2.0
-ctor                   0.1.13
+ctor                   0.1.14
 deflate                0.8.2
 digest                 0.8.1
 either                 1.5.3
@@ -57,7 +57,7 @@ itoa                   0.4.5
 jpeg-decoder           0.1.18
 jsonwebtoken           6.0.1
 lazy_static            1.4.0
-libc                   0.2.68
+libc                   0.2.69
 linked-hash-map        0.5.2
 log                    0.4.8
 lzw                    0.10.0
@@ -102,7 +102,7 @@ ring                   0.16.11
 rulinalg               0.4.2
 rustls                 0.16.0
 rusty-machine          0.5.4
-ryu                    1.0.3
+ryu                    1.0.4
 sct                    0.6.0
 serde                  1.0.105
 serde-big-array        0.1.5
@@ -119,7 +119,7 @@ spin                   0.5.2
 stream-cipher          0.3.2
 syn                    0.11.11
 syn                    0.15.44
-syn                    1.0.17
+syn                    1.0.18
 synom                  0.11.3
 termcolor              1.0.5
 thiserror              1.0.9
@@ -128,7 +128,7 @@ thread_local           1.0.0
 threadpool             1.8.0
 tiff                   0.4.0
 toml                   0.5.3
-typenum                1.11.2
+typenum                1.12.0
 typetag                0.1.4
 typetag-impl           0.1.4
 unicode-bidi           0.3.4

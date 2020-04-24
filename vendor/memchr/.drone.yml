@@ -3,7 +3,7 @@ name: memchr-sgx-xargo-1604-sw
 
 steps:
 - name: sim-compile
-  image: baiduxlab/sgx-rust:1604-1.1.1
+  image: baiduxlab/sgx-rust:1604-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - . /root/.cargo/env
@@ -11,7 +11,7 @@ steps:
   - (cd sgx && SGX_MODE=SW XARGO_SGX=1 make -C memchr-sgx-test-libc)
 
 - name: sim-test
-  image: baiduxlab/sgx-rust:1604-1.1.1
+  image: baiduxlab/sgx-rust:1604-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - (cd sgx/memchr-sgx-test/bin && ./app | tee result.txt && grep " 0 failed" result.txt)
@@ -27,7 +27,7 @@ name: memchr-sgx-xargo-1604-hw
 
 steps:
 - name: hw-compile
-  image: baiduxlab/sgx-rust:1604-1.1.1
+  image: baiduxlab/sgx-rust:1604-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - . /root/.cargo/env
@@ -35,7 +35,7 @@ steps:
   - (cd sgx && XARGO_SGX=1 make -C memchr-sgx-test-libc)
 
 - name: hw-test
-  image: baiduxlab/sgx-rust:1604-1.1.1
+  image: baiduxlab/sgx-rust:1604-1.1.2
   privileged: true
   volumes:
   - name: isgx
@@ -67,7 +67,7 @@ name: memchr-sgx-xargo-1804-sw
 
 steps:
 - name: sim-compile
-  image: baiduxlab/sgx-rust:1804-1.1.1
+  image: baiduxlab/sgx-rust:1804-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - . /root/.cargo/env
@@ -75,7 +75,7 @@ steps:
   - (cd sgx && SGX_MODE=SW XARGO_SGX=1 make -C memchr-sgx-test-libc)
 
 - name: sim-test
-  image: baiduxlab/sgx-rust:1804-1.1.1
+  image: baiduxlab/sgx-rust:1804-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - (cd sgx/memchr-sgx-test/bin && ./app | tee result.txt && grep " 0 failed" result.txt)
@@ -91,7 +91,7 @@ name: memchr-sgx-xargo-1804-hw
 
 steps:
 - name: hw-compile
-  image: baiduxlab/sgx-rust:1804-1.1.1
+  image: baiduxlab/sgx-rust:1804-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - . /root/.cargo/env
@@ -99,7 +99,7 @@ steps:
   - (cd sgx && XARGO_SGX=1 make -C memchr-sgx-test-libc)
 
 - name: hw-test
-  image: baiduxlab/sgx-rust:1804-1.1.1
+  image: baiduxlab/sgx-rust:1804-1.1.2
   privileged: true
   volumes:
   - name: isgx
@@ -131,7 +131,7 @@ name: memchr-sgx-1604-sw
 
 steps:
 - name: sim-compile
-  image: baiduxlab/sgx-rust:1604-1.1.1
+  image: baiduxlab/sgx-rust:1604-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - . /root/.cargo/env
@@ -139,7 +139,7 @@ steps:
   - (SGX_MODE=SW make -C sgx/memchr-sgx-test-libc)
 
 - name: sim-test
-  image: baiduxlab/sgx-rust:1604-1.1.1
+  image: baiduxlab/sgx-rust:1604-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - (cd sgx/memchr-sgx-test/bin && ./app | tee result.txt && grep " 0 failed" result.txt)
@@ -155,7 +155,7 @@ name: memchr-sgx-1604-hw
 
 steps:
 - name: hw-compile
-  image: baiduxlab/sgx-rust:1604-1.1.1
+  image: baiduxlab/sgx-rust:1604-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - . /root/.cargo/env
@@ -163,7 +163,7 @@ steps:
   - (make -C sgx/memchr-sgx-test-libc)
 
 - name: hw-test
-  image: baiduxlab/sgx-rust:1604-1.1.1
+  image: baiduxlab/sgx-rust:1604-1.1.2
   privileged: true
   volumes:
   - name: isgx
@@ -195,7 +195,7 @@ name: memchr-sgx-1804-sw
 
 steps:
 - name: sim-compile
-  image: baiduxlab/sgx-rust:1804-1.1.1
+  image: baiduxlab/sgx-rust:1804-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - . /root/.cargo/env
@@ -203,7 +203,7 @@ steps:
   - (SGX_MODE=SW make -C sgx/memchr-sgx-test-libc)
 
 - name: sim-test
-  image: baiduxlab/sgx-rust:1804-1.1.1
+  image: baiduxlab/sgx-rust:1804-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - (cd sgx/memchr-sgx-test/bin && ./app | tee result.txt && grep " 0 failed" result.txt)
@@ -219,7 +219,7 @@ name: memchr-sgx-1804-hw
 
 steps:
 - name: hw-compile
-  image: baiduxlab/sgx-rust:1804-1.1.1
+  image: baiduxlab/sgx-rust:1804-1.1.2
   commands:
   - . /opt/sgxsdk/environment
   - . /root/.cargo/env
@@ -227,7 +227,7 @@ steps:
   - (make -C sgx/memchr-sgx-test-libc)
 
 - name: hw-test
-  image: baiduxlab/sgx-rust:1804-1.1.1
+  image: baiduxlab/sgx-rust:1804-1.1.2
   privileged: true
   volumes:
   - name: isgx

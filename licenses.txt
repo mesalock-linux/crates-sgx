@@ -115,7 +115,6 @@ sgx_alloc: see license file at sgx_alloc/LICENSE
 sgx_backtrace: see license file at sgx_backtrace/LICENSE
 sgx_backtrace_sys: see license file at sgx_backtrace_sys/LICENSE
 sgx_build_helper: see license file at sgx_build_helper/LICENSE
-sgx_core_futures: see license file at sgx_core_futures/LICENSE
 sgx_cov: see license file at sgx_cov/LICENSE
 sgx_crypto_helper: see license file at sgx_crypto_helper/LICENSE
 sgx_demangle: see license file at sgx_demangle/LICENSE

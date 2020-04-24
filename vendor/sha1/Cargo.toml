@@ -15,7 +15,7 @@ mesalock_sgx = ["sgx_tstd"]
 
 [dependencies]
 serde = { version = "1.0", git = "https://github.com/mesalock-linux/serde-sgx.git", optional = true }
-sgx_tstd = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 openssl = "0.10"

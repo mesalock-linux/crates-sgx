@@ -19,9 +19,9 @@ log = { git = "https://github.com/mesalock-linux/log-sgx", optional = true, defa
 cfg-if = "0.1.2"
 
 [target.'cfg(not(all(target_env = "sgx", target_vendor = "mesalock")))'.dependencies]
-sgx_tstd = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
-sgx_trts = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
-sgx_libc = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_trts = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_libc = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 # When built as part of libstd
 #compiler_builtins = { version = "0.1", optional = true }

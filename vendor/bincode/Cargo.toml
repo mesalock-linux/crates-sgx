@@ -18,7 +18,7 @@ description = "A binary serialization / deserialization strategy that uses Serde
 [dependencies]
 byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx.git" }
 serde = { git = "https://github.com/mesalock-linux/serde-sgx.git" }
-sgx_tstd = { rev = "v1.1.1", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 #serde_bytes = "0.11"

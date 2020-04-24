@@ -208,6 +208,16 @@ s! {
         pub cookie: u32,
         pub len: u32
     }
+
+    pub struct sock_extended_err {
+        pub ee_errno: u32,
+        pub ee_origin: u8,
+        pub ee_type: u8,
+        pub ee_code: u8,
+        pub ee_pad: u8,
+        pub ee_info: u32,
+        pub ee_data: u32,
+    }
 }
 
 s_no_extra_traits! {
@@ -1572,6 +1582,7 @@ pub const SOCK_NONBLOCK: ::c_int = O_NONBLOCK;
 pub const SO_ORIGINAL_DST: ::c_int = 80;
 pub const IP_ORIGDSTADDR: ::c_int = 20;
 pub const IP_RECVORIGDSTADDR: ::c_int = IP_ORIGDSTADDR;
+pub const IPV6_FLOWINFO: ::c_int = 11;
 pub const IPV6_ORIGDSTADDR: ::c_int = 74;
 pub const IPV6_RECVORIGDSTADDR: ::c_int = IPV6_ORIGDSTADDR;
 pub const IPV6_FLOWLABEL_MGR: ::c_int = 32;
@@ -2081,6 +2092,51 @@ pub const FUTEX_CLOCK_REALTIME: ::c_int = 256;
 pub const FUTEX_CMD_MASK: ::c_int =
     !(FUTEX_PRIVATE_FLAG | FUTEX_CLOCK_REALTIME);
 
+// linux/errqueue.h
+pub const SO_EE_ORIGIN_NONE: u8 = 0;
+pub const SO_EE_ORIGIN_LOCAL: u8 = 1;
+pub const SO_EE_ORIGIN_ICMP: u8 = 2;
+pub const SO_EE_ORIGIN_ICMP6: u8 = 3;
+pub const SO_EE_ORIGIN_TXSTATUS: u8 = 4;
+pub const SO_EE_ORIGIN_TIMESTAMPING: u8 = SO_EE_ORIGIN_TXSTATUS;
+
+// errno.h
+pub const EPERM: ::c_int = 1;
+pub const ENOENT: ::c_int = 2;
+pub const ESRCH: ::c_int = 3;
+pub const EINTR: ::c_int = 4;
+pub const EIO: ::c_int = 5;
+pub const ENXIO: ::c_int = 6;
+pub const E2BIG: ::c_int = 7;
+pub const ENOEXEC: ::c_int = 8;
+pub const EBADF: ::c_int = 9;
+pub const ECHILD: ::c_int = 10;
+pub const EAGAIN: ::c_int = 11;
+pub const ENOMEM: ::c_int = 12;
+pub const EACCES: ::c_int = 13;
+pub const EFAULT: ::c_int = 14;
+pub const ENOTBLK: ::c_int = 15;
+pub const EBUSY: ::c_int = 16;
+pub const EEXIST: ::c_int = 17;
+pub const EXDEV: ::c_int = 18;
+pub const ENODEV: ::c_int = 19;
+pub const ENOTDIR: ::c_int = 20;
+pub const EISDIR: ::c_int = 21;
+pub const EINVAL: ::c_int = 22;
+pub const ENFILE: ::c_int = 23;
+pub const EMFILE: ::c_int = 24;
+pub const ENOTTY: ::c_int = 25;
+pub const ETXTBSY: ::c_int = 26;
+pub const EFBIG: ::c_int = 27;
+pub const ENOSPC: ::c_int = 28;
+pub const ESPIPE: ::c_int = 29;
+pub const EROFS: ::c_int = 30;
+pub const EMLINK: ::c_int = 31;
+pub const EPIPE: ::c_int = 32;
+pub const EDOM: ::c_int = 33;
+pub const ERANGE: ::c_int = 34;
+pub const EWOULDBLOCK: ::c_int = EAGAIN;
+
 f! {
     pub fn CMSG_NXTHDR(mhdr: *const msghdr,
                        cmsg: *const cmsghdr) -> *mut cmsghdr {
@@ -2139,6 +2195,10 @@ f! {
 
     pub fn NLA_ALIGN(len: ::c_int) -> ::c_int {
         return ((len) + NLA_ALIGNTO - 1) & !(NLA_ALIGNTO - 1)
+    }
+
+    pub fn SO_EE_OFFENDER(ee: *const ::sock_extended_err) -> *mut ::sockaddr {
+        ee.offset(1) as *mut ::sockaddr
     }
 }
 
@@ -2349,7 +2409,6 @@ extern "C" {
     pub fn setfsgid(gid: ::gid_t) -> ::c_int;
     pub fn setfsuid(uid: ::uid_t) -> ::c_int;
     pub fn sigsuspend(mask: *const ::sigset_t) -> ::c_int;
-    #[cfg_attr(target_os = "solaris", link_name = "__posix_getgrgid_r")]
     pub fn getgrgid_r(
         gid: ::gid_t,
         grp: *mut ::group,
@@ -2357,14 +2416,8 @@ extern "C" {
         buflen: ::size_t,
         result: *mut *mut ::group,
     ) -> ::c_int;
-    #[cfg_attr(
-        all(target_os = "macos", target_arch = "x86"),
-        link_name = "sigaltstack$UNIX2003"
-    )]
-    #[cfg_attr(target_os = "netbsd", link_name = "__sigaltstack14")]
     pub fn sigaltstack(ss: *const stack_t, oss: *mut stack_t) -> ::c_int;
     pub fn sem_close(sem: *mut sem_t) -> ::c_int;
-    #[cfg_attr(target_os = "solaris", link_name = "__posix_getgrnam_r")]
     pub fn getgrnam_r(
         name: *const ::c_char,
         grp: *mut ::group,
@@ -2372,10 +2425,6 @@ extern "C" {
         buflen: ::size_t,
         result: *mut *mut ::group,
     ) -> ::c_int;
-    #[cfg_attr(
-        all(target_os = "macos", target_arch = "x86"),
-        link_name = "pthread_sigmask$UNIX2003"
-    )]
     pub fn pthread_sigmask(
         how: ::c_int,
         set: *const sigset_t,
@@ -2386,8 +2435,6 @@ extern "C" {
     pub fn pthread_kill(thread: ::pthread_t, sig: ::c_int) -> ::c_int;
     pub fn sem_unlink(name: *const ::c_char) -> ::c_int;
     pub fn daemon(nochdir: ::c_int, noclose: ::c_int) -> ::c_int;
-    #[cfg_attr(target_os = "netbsd", link_name = "__getpwnam_r50")]
-    #[cfg_attr(target_os = "solaris", link_name = "__posix_getpwnam_r")]
     pub fn getpwnam_r(
         name: *const ::c_char,
         pwd: *mut passwd,
@@ -2395,8 +2442,6 @@ extern "C" {
         buflen: ::size_t,
         result: *mut *mut passwd,
     ) -> ::c_int;
-    #[cfg_attr(target_os = "netbsd", link_name = "__getpwuid_r50")]
-    #[cfg_attr(target_os = "solaris", link_name = "__posix_getpwuid_r")]
     pub fn getpwuid_r(
         uid: ::uid_t,
         pwd: *mut passwd,
@@ -2404,11 +2449,6 @@ extern "C" {
         buflen: ::size_t,
         result: *mut *mut passwd,
     ) -> ::c_int;
-    #[cfg_attr(
-        all(target_os = "macos", target_arch = "x86"),
-        link_name = "sigwait$UNIX2003"
-    )]
-    #[cfg_attr(target_os = "solaris", link_name = "__posix_sigwait")]
     pub fn sigwait(set: *const sigset_t, sig: *mut ::c_int) -> ::c_int;
     pub fn pthread_atfork(
         prepare: ::Option<unsafe extern "C" fn()>,
@@ -2427,10 +2467,6 @@ extern "C" {
         attr: *const pthread_mutexattr_t,
         pshared: *mut ::c_int,
     ) -> ::c_int;
-    #[cfg_attr(
-        all(target_os = "macos", target_arch = "x86"),
-        link_name = "popen$UNIX2003"
-    )]
     pub fn popen(command: *const c_char, mode: *const c_char) -> *mut ::FILE;
     pub fn faccessat(
         dirfd: ::c_int,
