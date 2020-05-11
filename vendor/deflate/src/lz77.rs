@@ -259,7 +259,6 @@ fn add_to_hash_table(
 /// `ProcessStatus::BufferFull($pos)` if the buffer is full after writing.
 ///
 /// `pos` should indicate the byte to start at in the next call to `process_chunk`,
-/// `is_hashed` should be set to true of the byte at pos has been added to the hash chain.
 macro_rules! write_literal {
     ($w:ident, $byte:expr, $pos:expr) => {
         let b_status = $w.write_literal($byte);
@@ -450,16 +449,21 @@ fn process_chunk_lazy(
                 state.current_distance = 0;
                 state.add = false;
 
-                // As this will be a 3-length match at the end of the input data, there can't be any
-                // overlap.
+                debug_assert!((position + prev_length as usize) >= end - 1);
+                // Needed to note overlap as we can end up with the last window containing the rest
+                // of the match.
+                overlap = (position + prev_length as usize)
+                    .saturating_sub(end)
+                    .saturating_sub(1);
+
                 // TODO: Not sure if we need to signal that the buffer is full here.
                 // It's only needed in the case of syncing.
                 if let BufferStatus::Full = b_status {
                     // TODO: These bytes should be hashed when doing a sync flush.
                     // This can't be done here as the new input data does not exist yet.
-                    return (0, buffer_full(end));
+                    return (overlap, buffer_full(end));
                 } else {
-                    return (0, ProcessStatus::Ok);
+                    return (overlap, ProcessStatus::Ok);
                 }
             };
 
@@ -645,7 +649,11 @@ pub fn lz77_compress_block(
                 }
             }
 
-            let window_start = if state.is_first_window { 0 } else { window_size };
+            let window_start = if state.is_first_window {
+                0
+            } else {
+                window_size
+            };
             let start = state.overlap + window_start;
             let end = cmp::min(window_size + window_start, buffer.current_end());
 
@@ -663,9 +671,8 @@ pub fn lz77_compress_block(
             state.bytes_to_hash = overlap;
 
             if let ProcessStatus::BufferFull(written) = p_status {
-                let nudge = if state.is_first_window { 0 } else { overlap };
                 state.current_block_input_bytes +=
-                    (written - start + nudge + pending_previous - state.pending_byte_as_num()) as u64;
+                    (written - start + pending_previous - state.pending_byte_as_num()) as u64;
 
                 // If the buffer is full, return and end the block.
                 // If overlap is non-zero, the buffer was full after outputting the last byte,
@@ -702,9 +709,9 @@ pub fn lz77_compress_block(
             state.overlap = overlap;
 
             if (state.is_first_window || remaining_data.is_none())
-                    && finish
-                    && end >= buffer.current_end() {
-
+                && finish
+                && end >= buffer.current_end()
+            {
                 current_position = if state.is_first_window {
                     end - state.pending_byte_as_num()
                 } else {

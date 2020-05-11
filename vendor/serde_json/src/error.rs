@@ -1,14 +1,10 @@
 //! When serializing or deserializing JSON goes wrong.
 
 use std::prelude::v1::*;
-use std::error;
-use std::fmt::{self, Debug, Display};
-use std::io;
-use std::result;
-use std::str::FromStr;
-
-use serde::de;
-use serde::ser;
+use crate::io;
+use crate::lib::str::FromStr;
+use crate::lib::*;
+use serde::{de, ser};
 
 /// This type represents all possible errors that can occur when serializing or
 /// deserializing JSON data.
@@ -59,10 +55,8 @@ impl Error {
             ErrorCode::ExpectedColon
             | ErrorCode::ExpectedListCommaOrEnd
             | ErrorCode::ExpectedObjectCommaOrEnd
-            | ErrorCode::ExpectedObjectOrArray
             | ErrorCode::ExpectedSomeIdent
             | ErrorCode::ExpectedSomeValue
-            | ErrorCode::ExpectedSomeString
             | ErrorCode::InvalidEscape
             | ErrorCode::InvalidNumber
             | ErrorCode::NumberOutOfRange
@@ -131,14 +125,15 @@ pub enum Category {
     Eof,
 }
 
-#[cfg_attr(feature = "cargo-clippy", allow(fallible_impl_from))]
+#[cfg(feature = "std")]
+#[allow(clippy::fallible_impl_from)]
 impl From<Error> for io::Error {
     /// Convert a `serde_json::Error` into an `io::Error`.
     ///
     /// JSON syntax and data errors are turned into `InvalidData` IO errors.
     /// EOF errors are turned into `UnexpectedEof` IO errors.
     ///
-    /// ```edition2018
+    /// ```
     /// use std::io;
     ///
     /// enum MyError {
@@ -179,9 +174,7 @@ struct ErrorImpl {
     column: usize,
 }
 
-// Not public API. Should be pub(crate).
-#[doc(hidden)]
-pub enum ErrorCode {
+pub(crate) enum ErrorCode {
     /// Catchall for syntax error messages
     Message(Box<str>),
 
@@ -209,17 +202,11 @@ pub enum ErrorCode {
     /// Expected this character to be either a `','` or a `'}'`.
     ExpectedObjectCommaOrEnd,
 
-    /// Expected this character to be either a `'{'` or a `'['`.
-    ExpectedObjectOrArray,
-
     /// Expected to parse either a `true`, `false`, or a `null`.
     ExpectedSomeIdent,
 
     /// Expected this character to start a JSON value.
     ExpectedSomeValue,
-
-    /// Expected this character to start a JSON string.
-    ExpectedSomeString,
 
     /// Invalid hex escape code.
     InvalidEscape,
@@ -256,10 +243,8 @@ pub enum ErrorCode {
 }
 
 impl Error {
-    // Not public API. Should be pub(crate).
-    #[doc(hidden)]
     #[cold]
-    pub fn syntax(code: ErrorCode, line: usize, column: usize) -> Self {
+    pub(crate) fn syntax(code: ErrorCode, line: usize, column: usize) -> Self {
         Error {
             err: Box::new(ErrorImpl {
                 code: code,
@@ -284,10 +269,8 @@ impl Error {
         }
     }
 
-    // Not public API. Should be pub(crate).
-    #[doc(hidden)]
     #[cold]
-    pub fn fix_position<F>(self, f: F) -> Self
+    pub(crate) fn fix_position<F>(self, f: F) -> Self
     where
         F: FnOnce(ErrorCode) -> Error,
     {
@@ -311,10 +294,8 @@ impl Display for ErrorCode {
             ErrorCode::ExpectedColon => f.write_str("expected `:`"),
             ErrorCode::ExpectedListCommaOrEnd => f.write_str("expected `,` or `]`"),
             ErrorCode::ExpectedObjectCommaOrEnd => f.write_str("expected `,` or `}`"),
-            ErrorCode::ExpectedObjectOrArray => f.write_str("expected `{` or `[`"),
             ErrorCode::ExpectedSomeIdent => f.write_str("expected ident"),
             ErrorCode::ExpectedSomeValue => f.write_str("expected value"),
-            ErrorCode::ExpectedSomeString => f.write_str("expected string"),
             ErrorCode::InvalidEscape => f.write_str("invalid escape"),
             ErrorCode::InvalidNumber => f.write_str("invalid number"),
             ErrorCode::NumberOutOfRange => f.write_str("number out of range"),
@@ -334,19 +315,9 @@ impl Display for ErrorCode {
     }
 }
 
-impl error::Error for Error {
-    #[allow(deprecated)]
-    fn description(&self) -> &str {
-        match self.err.code {
-            ErrorCode::Io(ref err) => error::Error::description(err),
-            _ => {
-                // If you want a better message, use Display::fmt or to_string().
-                "JSON error"
-            }
-        }
-    }
-
-    fn cause(&self) -> Option<&error::Error> {
+impl serde::de::StdError for Error {
+    #[cfg(feature = "std")]
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match self.err.code {
             ErrorCode::Io(ref err) => Some(err),
             _ => None,
@@ -395,7 +366,7 @@ impl de::Error for Error {
     }
 
     #[cold]
-    fn invalid_type(unexp: de::Unexpected, exp: &de::Expected) -> Self {
+    fn invalid_type(unexp: de::Unexpected, exp: &dyn de::Expected) -> Self {
         if let de::Unexpected::Unit = unexp {
             Error::custom(format_args!("invalid type: null, expected {}", exp))
         } else {

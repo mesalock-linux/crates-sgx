@@ -1,15 +1,15 @@
+use crate::detection::inside_proc_macro;
+use crate::{fallback, Delimiter, Punct, Spacing, TokenTree};
 use std::fmt;
 use std::iter;
 use std::ops::RangeBounds;
-use std::panic::{self, PanicInfo};
+use std::panic;
 #[cfg(super_unstable)]
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use crate::{fallback, Delimiter, Punct, Spacing, TokenTree};
-
 #[derive(Clone)]
-pub enum TokenStream {
+pub(crate) enum TokenStream {
     Compiler(DeferredTokenStream),
     Fallback(fallback::TokenStream),
 }
@@ -19,71 +19,14 @@ pub enum TokenStream {
 // we hold on to the appended tokens and do proc_macro::TokenStream::extend as
 // late as possible to batch together consecutive uses of the Extend impl.
 #[derive(Clone)]
-pub struct DeferredTokenStream {
+pub(crate) struct DeferredTokenStream {
     stream: proc_macro::TokenStream,
     extra: Vec<proc_macro::TokenTree>,
 }
 
-pub enum LexError {
+pub(crate) enum LexError {
     Compiler(proc_macro::LexError),
     Fallback(fallback::LexError),
-}
-
-fn nightly_works() -> bool {
-    use std::sync::atomic::*;
-    use std::sync::Once;
-
-    static WORKS: AtomicUsize = AtomicUsize::new(0);
-    static INIT: Once = Once::new();
-
-    match WORKS.load(Ordering::SeqCst) {
-        1 => return false,
-        2 => return true,
-        _ => {}
-    }
-
-    // Swap in a null panic hook to avoid printing "thread panicked" to stderr,
-    // then use catch_unwind to determine whether the compiler's proc_macro is
-    // working. When proc-macro2 is used from outside of a procedural macro all
-    // of the proc_macro crate's APIs currently panic.
-    //
-    // The Once is to prevent the possibility of this ordering:
-    //
-    //     thread 1 calls take_hook, gets the user's original hook
-    //     thread 1 calls set_hook with the null hook
-    //     thread 2 calls take_hook, thinks null hook is the original hook
-    //     thread 2 calls set_hook with the null hook
-    //     thread 1 calls set_hook with the actual original hook
-    //     thread 2 calls set_hook with what it thinks is the original hook
-    //
-    // in which the user's hook has been lost.
-    //
-    // There is still a race condition where a panic in a different thread can
-    // happen during the interval that the user's original panic hook is
-    // unregistered such that their hook is incorrectly not called. This is
-    // sufficiently unlikely and less bad than printing panic messages to stderr
-    // on correct use of this crate. Maybe there is a libstd feature request
-    // here. For now, if a user needs to guarantee that this failure mode does
-    // not occur, they need to call e.g. `proc_macro2::Span::call_site()` from
-    // the main thread before launching any other threads.
-    INIT.call_once(|| {
-        type PanicHook = dyn Fn(&PanicInfo) + Sync + Send + 'static;
-
-        let null_hook: Box<PanicHook> = Box::new(|_panic_info| { /* ignore */ });
-        let sanity_check = &*null_hook as *const PanicHook;
-        let original_hook = panic::take_hook();
-        panic::set_hook(null_hook);
-
-        let works = panic::catch_unwind(|| proc_macro::Span::call_site()).is_ok();
-        WORKS.store(works as usize + 1, Ordering::SeqCst);
-
-        let hopefully_null_hook = panic::take_hook();
-        panic::set_hook(original_hook);
-        if sanity_check != &*hopefully_null_hook {
-            panic!("observed race condition in proc_macro2::nightly_works");
-        }
-    });
-    nightly_works()
 }
 
 fn mismatch() -> ! {
@@ -114,7 +57,7 @@ impl DeferredTokenStream {
 
 impl TokenStream {
     pub fn new() -> TokenStream {
-        if nightly_works() {
+        if inside_proc_macro() {
             TokenStream::Compiler(DeferredTokenStream::new(proc_macro::TokenStream::new()))
         } else {
             TokenStream::Fallback(fallback::TokenStream::new())
@@ -147,7 +90,7 @@ impl FromStr for TokenStream {
     type Err = LexError;
 
     fn from_str(src: &str) -> Result<TokenStream, LexError> {
-        if nightly_works() {
+        if inside_proc_macro() {
             Ok(TokenStream::Compiler(DeferredTokenStream::new(
                 proc_macro_parse(src)?,
             )))
@@ -193,7 +136,7 @@ impl From<fallback::TokenStream> for TokenStream {
     }
 }
 
-// Assumes nightly_works().
+// Assumes inside_proc_macro().
 fn into_compiler_token(token: TokenTree) -> proc_macro::TokenTree {
     match token {
         TokenTree::Group(tt) => tt.inner.unwrap_nightly().into(),
@@ -213,7 +156,7 @@ fn into_compiler_token(token: TokenTree) -> proc_macro::TokenTree {
 
 impl From<TokenTree> for TokenStream {
     fn from(token: TokenTree) -> TokenStream {
-        if nightly_works() {
+        if inside_proc_macro() {
             TokenStream::Compiler(DeferredTokenStream::new(into_compiler_token(token).into()))
         } else {
             TokenStream::Fallback(token.into())
@@ -223,7 +166,7 @@ impl From<TokenTree> for TokenStream {
 
 impl iter::FromIterator<TokenTree> for TokenStream {
     fn from_iter<I: IntoIterator<Item = TokenTree>>(trees: I) -> Self {
-        if nightly_works() {
+        if inside_proc_macro() {
             TokenStream::Compiler(DeferredTokenStream::new(
                 trees.into_iter().map(into_compiler_token).collect(),
             ))
@@ -316,7 +259,7 @@ impl fmt::Debug for LexError {
 }
 
 #[derive(Clone)]
-pub enum TokenTreeIter {
+pub(crate) enum TokenTreeIter {
     Compiler(proc_macro::token_stream::IntoIter),
     Fallback(fallback::TokenTreeIter),
 }
@@ -375,7 +318,7 @@ impl fmt::Debug for TokenTreeIter {
 
 #[derive(Clone, PartialEq, Eq)]
 #[cfg(super_unstable)]
-pub enum SourceFile {
+pub(crate) enum SourceFile {
     Compiler(proc_macro::SourceFile),
     Fallback(fallback::SourceFile),
 }
@@ -413,20 +356,20 @@ impl fmt::Debug for SourceFile {
 }
 
 #[cfg(any(super_unstable, feature = "span-locations"))]
-pub struct LineColumn {
+pub(crate) struct LineColumn {
     pub line: usize,
     pub column: usize,
 }
 
 #[derive(Copy, Clone)]
-pub enum Span {
+pub(crate) enum Span {
     Compiler(proc_macro::Span),
     Fallback(fallback::Span),
 }
 
 impl Span {
     pub fn call_site() -> Span {
-        if nightly_works() {
+        if inside_proc_macro() {
             Span::Compiler(proc_macro::Span::call_site())
         } else {
             Span::Fallback(fallback::Span::call_site())
@@ -435,7 +378,7 @@ impl Span {
 
     #[cfg(super_unstable)]
     pub fn def_site() -> Span {
-        if nightly_works() {
+        if inside_proc_macro() {
             Span::Compiler(proc_macro::Span::def_site())
         } else {
             Span::Fallback(fallback::Span::def_site())
@@ -557,7 +500,7 @@ impl fmt::Debug for Span {
     }
 }
 
-pub fn debug_span_field_if_nontrivial(debug: &mut fmt::DebugStruct, span: Span) {
+pub(crate) fn debug_span_field_if_nontrivial(debug: &mut fmt::DebugStruct, span: Span) {
     match span {
         Span::Compiler(s) => {
             debug.field("span", &s);
@@ -567,7 +510,7 @@ pub fn debug_span_field_if_nontrivial(debug: &mut fmt::DebugStruct, span: Span) 
 }
 
 #[derive(Clone)]
-pub enum Group {
+pub(crate) enum Group {
     Compiler(proc_macro::Group),
     Fallback(fallback::Group),
 }
@@ -677,7 +620,7 @@ impl fmt::Debug for Group {
 }
 
 #[derive(Clone)]
-pub enum Ident {
+pub(crate) enum Ident {
     Compiler(proc_macro::Ident),
     Fallback(fallback::Ident),
 }
@@ -772,7 +715,7 @@ impl fmt::Debug for Ident {
 }
 
 #[derive(Clone)]
-pub enum Literal {
+pub(crate) enum Literal {
     Compiler(proc_macro::Literal),
     Fallback(fallback::Literal),
 }
@@ -780,7 +723,7 @@ pub enum Literal {
 macro_rules! suffixed_numbers {
     ($($name:ident => $kind:ident,)*) => ($(
         pub fn $name(n: $kind) -> Literal {
-            if nightly_works() {
+            if inside_proc_macro() {
                 Literal::Compiler(proc_macro::Literal::$name(n))
             } else {
                 Literal::Fallback(fallback::Literal::$name(n))
@@ -792,7 +735,7 @@ macro_rules! suffixed_numbers {
 macro_rules! unsuffixed_integers {
     ($($name:ident => $kind:ident,)*) => ($(
         pub fn $name(n: $kind) -> Literal {
-            if nightly_works() {
+            if inside_proc_macro() {
                 Literal::Compiler(proc_macro::Literal::$name(n))
             } else {
                 Literal::Fallback(fallback::Literal::$name(n))
@@ -836,7 +779,7 @@ impl Literal {
     }
 
     pub fn f32_unsuffixed(f: f32) -> Literal {
-        if nightly_works() {
+        if inside_proc_macro() {
             Literal::Compiler(proc_macro::Literal::f32_unsuffixed(f))
         } else {
             Literal::Fallback(fallback::Literal::f32_unsuffixed(f))
@@ -844,7 +787,7 @@ impl Literal {
     }
 
     pub fn f64_unsuffixed(f: f64) -> Literal {
-        if nightly_works() {
+        if inside_proc_macro() {
             Literal::Compiler(proc_macro::Literal::f64_unsuffixed(f))
         } else {
             Literal::Fallback(fallback::Literal::f64_unsuffixed(f))
@@ -852,7 +795,7 @@ impl Literal {
     }
 
     pub fn string(t: &str) -> Literal {
-        if nightly_works() {
+        if inside_proc_macro() {
             Literal::Compiler(proc_macro::Literal::string(t))
         } else {
             Literal::Fallback(fallback::Literal::string(t))
@@ -860,7 +803,7 @@ impl Literal {
     }
 
     pub fn character(t: char) -> Literal {
-        if nightly_works() {
+        if inside_proc_macro() {
             Literal::Compiler(proc_macro::Literal::character(t))
         } else {
             Literal::Fallback(fallback::Literal::character(t))
@@ -868,7 +811,7 @@ impl Literal {
     }
 
     pub fn byte_string(bytes: &[u8]) -> Literal {
-        if nightly_works() {
+        if inside_proc_macro() {
             Literal::Compiler(proc_macro::Literal::byte_string(bytes))
         } else {
             Literal::Fallback(fallback::Literal::byte_string(bytes))

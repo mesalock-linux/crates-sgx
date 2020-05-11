@@ -1,7 +1,6 @@
 mod progress;
 
 use self::progress::Progress;
-use crate::common;
 use anyhow::Result;
 use flate2::read::GzDecoder;
 use std::fs;
@@ -81,10 +80,6 @@ pub fn base_dir_filter(entry: &DirEntry) -> bool {
         // TODO: extern static with value: `extern { static X: u8 = 0; }`
         // https://github.com/dtolnay/syn/issues/762
         "test/ui/parser/foreign-static-syntactic-pass.rs" |
-
-        // TODO: extern type with bound: `extern { type A: Ord; }`
-        // https://github.com/dtolnay/syn/issues/763
-        "test/ui/parser/foreign-ty-syntactic-pass.rs" |
 
         // TODO: top level const/static without value: `const X: u8;`
         // https://github.com/dtolnay/syn/issues/764
@@ -167,10 +162,6 @@ fn download_and_unpack() -> Result<()> {
         let relative = path.strip_prefix(&prefix)?;
         let out = tests_rust.join(relative);
         entry.unpack(&out)?;
-        if common::travis_ci() {
-            // Something about this makes the travis build not deadlock...
-            errorf!(".");
-        }
     }
 
     fs::write("tests/rust/COMMIT", REVISION)?;

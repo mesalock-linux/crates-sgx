@@ -1,15 +1,14 @@
 use std::prelude::v1::*;
-use std::fmt::{self, Debug, Display};
-use std::mem;
+use crate::error::Error;
+use crate::lib::*;
 
 use serde::de::value::BorrowedStrDeserializer;
 use serde::de::{
     self, Deserialize, DeserializeSeed, Deserializer, IntoDeserializer, MapAccess, Unexpected,
     Visitor,
 };
+use serde::forward_to_deserialize_any;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
-
-use error::Error;
 
 /// Reference to a range of bytes encompassing a single valid JSON value in the
 /// input data.
@@ -33,7 +32,7 @@ use error::Error;
 ///
 /// # Example
 ///
-/// ```edition2018
+/// ```
 /// use serde::{Deserialize, Serialize};
 /// use serde_json::{Result, value::RawValue};
 ///
@@ -53,7 +52,7 @@ use error::Error;
 /// // keys into a single "info" key holding an array of code and payload.
 /// //
 /// // This could be done equivalently using serde_json::Value as the type for
-/// // payload, but &RawValue will perform netter because it does not require
+/// // payload, but &RawValue will perform better because it does not require
 /// // memory allocation. The correct range of bytes is borrowed from the input
 /// // data and pasted verbatim into the output.
 /// fn rearrange(input: &str) -> Result<String> {
@@ -79,7 +78,7 @@ use error::Error;
 ///
 /// The typical usage of `RawValue` will be in the borrowed form:
 ///
-/// ```edition2018
+/// ```
 /// # use serde::Deserialize;
 /// # use serde_json::value::RawValue;
 /// #
@@ -102,7 +101,7 @@ use error::Error;
 /// [`serde_json::from_slice`]: ../fn.from_slice.html
 /// [`serde_json::from_reader`]: ../fn.from_reader.html
 ///
-/// ```edition2018
+/// ```
 /// # use serde::Deserialize;
 /// # use serde_json::value::RawValue;
 /// #
@@ -172,7 +171,7 @@ impl RawValue {
     /// - the input has capacity equal to its length.
     pub fn from_string(json: String) -> Result<Box<Self>, Error> {
         {
-            let borrowed = ::from_str::<&Self>(&json)?;
+            let borrowed = crate::from_str::<&Self>(&json)?;
             if borrowed.json.len() < json.len() {
                 return Ok(borrowed.to_owned());
             }
@@ -184,7 +183,7 @@ impl RawValue {
     ///
     /// # Example
     ///
-    /// ```edition2018
+    /// ```
     /// use serde::Deserialize;
     /// use serde_json::{Result, value::RawValue};
     ///
@@ -218,7 +217,7 @@ impl RawValue {
     }
 }
 
-pub const TOKEN: &'static str = "$serde_json::private::RawValue";
+pub const TOKEN: &str = "$serde_json::private::RawValue";
 
 impl Serialize for RawValue {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>

@@ -12,7 +12,7 @@
 
 [package]
 name = "bit-vec"
-version = "0.6.1"
+version = "0.6.2"
 authors = ["Alexis Beingessner <a.beingessner@gmail.com>"]
 description = "A vector of bits"
 homepage = "https://github.com/contain-rs/bit-vec"
@@ -26,6 +26,12 @@ version = "1.0"
 features = ["derive"]
 optional = true
 default-features = false
+[dev-dependencies.rand]
+version = "0.7"
+
+[dev-dependencies.rand_xorshift]
+version = "0.2"
+
 [dev-dependencies.serde_json]
 version = "1.0"
 

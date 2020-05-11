@@ -291,6 +291,107 @@ impl f16 {
         self.0
     }
 
+    /// Return the memory representation of the underlying bit representation as a byte array in
+    /// little-endian byte order.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use half::prelude::*;
+    /// let bytes = f16::from_f32(12.5).to_le_bytes();
+    /// assert_eq!(bytes, [0x40, 0x4A]);
+    /// ```
+    #[inline]
+    pub fn to_le_bytes(self) -> [u8; 2] {
+        self.0.to_le_bytes()
+    }
+
+    /// Return the memory representation of the underlying bit representation as a byte array in
+    /// big-endian (network) byte order.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use half::prelude::*;
+    /// let bytes = f16::from_f32(12.5).to_be_bytes();
+    /// assert_eq!(bytes, [0x4A, 0x40]);
+    /// ```
+    #[inline]
+    pub fn to_be_bytes(self) -> [u8; 2] {
+        self.0.to_be_bytes()
+    }
+
+    /// Return the memory representation of the underlying bit representation as a byte array in
+    /// native byte order.
+    ///
+    /// As the target platform's native endianness is used, portable code should use `to_be_bytes`
+    /// or `to_le_bytes`, as appropriate, instead.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use half::prelude::*;
+    /// let bytes = f16::from_f32(12.5).to_ne_bytes();
+    /// assert_eq!(bytes, if cfg!(target_endian = "big") {
+    ///     [0x4A, 0x40]
+    /// } else {
+    ///     [0x40, 0x4A]
+    /// });
+    /// ```
+    #[inline]
+    pub fn to_ne_bytes(self) -> [u8; 2] {
+        self.0.to_ne_bytes()
+    }
+
+    /// Create a floating point value from its representation as a byte array in little endian.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use half::prelude::*;
+    /// let value = f16::from_le_bytes([0x40, 0x4A]);
+    /// assert_eq!(value, f16::from_f32(12.5));
+    /// ```
+    #[inline]
+    pub fn from_le_bytes(bytes: [u8; 2]) -> f16 {
+        f16::from_bits(u16::from_le_bytes(bytes))
+    }
+
+    /// Create a floating point value from its representation as a byte array in big endian.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use half::prelude::*;
+    /// let value = f16::from_be_bytes([0x4A, 0x40]);
+    /// assert_eq!(value, f16::from_f32(12.5));
+    /// ```
+    #[inline]
+    pub fn from_be_bytes(bytes: [u8; 2]) -> f16 {
+        f16::from_bits(u16::from_be_bytes(bytes))
+    }
+
+    /// Create a floating point value from its representation as a byte array in native endian.
+    ///
+    /// As the target platform's native endianness is used, portable code likely wants to use
+    /// `from_be_bytes` or `from_le_bytes`, as appropriate instead.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// # use half::prelude::*;
+    /// let value = f16::from_ne_bytes(if cfg!(target_endian = "big") {
+    ///     [0x4A, 0x40]
+    /// } else {
+    ///     [0x40, 0x4A]
+    /// });
+    /// assert_eq!(value, f16::from_f32(12.5));
+    /// ```
+    #[inline]
+    pub fn from_ne_bytes(bytes: [u8; 2]) -> f16 {
+        f16::from_bits(u16::from_ne_bytes(bytes))
+    }
+
     /// Converts a [`f16`](struct.f16.html) into the underlying bit representation.
     #[deprecated(since = "1.2.0", note = "renamed to [`to_bits`](#method.to_bits)")]
     #[inline]
@@ -581,8 +682,12 @@ impl f16 {
     pub const LN_2: f16 = f16(0x398Cu16);
     /// [`f16`](struct.f16.html) 𝗅𝗈𝗀₁₀ℯ
     pub const LOG10_E: f16 = f16(0x36F3u16);
+    /// [`f16`](struct.f16.html) 𝗅𝗈𝗀₁₀2
+    pub const LOG10_2: f16 = f16(0x34D1u16);
     /// [`f16`](struct.f16.html) 𝗅𝗈𝗀₂ℯ
     pub const LOG2_E: f16 = f16(0x3DC5u16);
+    /// [`f16`](struct.f16.html) 𝗅𝗈𝗀₂10
+    pub const LOG2_10: f16 = f16(0x42A5u16);
     /// [`f16`](struct.f16.html) √2
     pub const SQRT_2: f16 = f16(0x3DA8u16);
 }
@@ -842,7 +947,11 @@ mod test {
         let ln_10 = f16::from_f32(core::f32::consts::LN_10);
         let ln_2 = f16::from_f32(core::f32::consts::LN_2);
         let log10_e = f16::from_f32(core::f32::consts::LOG10_E);
+        // core::f32::consts::LOG10_2 requires rustc 1.43.0
+        let log10_2 = f16::from_f32(2f32.log10());
         let log2_e = f16::from_f32(core::f32::consts::LOG2_E);
+        // core::f32::consts::LOG2_10 requires rustc 1.43.0
+        let log2_10 = f16::from_f32(10f32.log2());
         let sqrt_2 = f16::from_f32(core::f32::consts::SQRT_2);
 
         assert_eq!(f16::E, e);
@@ -859,7 +968,9 @@ mod test {
         assert_eq!(f16::LN_10, ln_10);
         assert_eq!(f16::LN_2, ln_2);
         assert_eq!(f16::LOG10_E, log10_e);
+        assert_eq!(f16::LOG10_2, log10_2);
         assert_eq!(f16::LOG2_E, log2_e);
+        assert_eq!(f16::LOG2_10, log2_10);
         assert_eq!(f16::SQRT_2, sqrt_2);
     }
 
@@ -896,7 +1007,11 @@ mod test {
         let ln_10 = f16::from_f64(core::f64::consts::LN_10);
         let ln_2 = f16::from_f64(core::f64::consts::LN_2);
         let log10_e = f16::from_f64(core::f64::consts::LOG10_E);
+        // core::f64::consts::LOG10_2 requires rustc 1.43.0
+        let log10_2 = f16::from_f64(2f64.log10());
         let log2_e = f16::from_f64(core::f64::consts::LOG2_E);
+        // core::f64::consts::LOG2_10 requires rustc 1.43.0
+        let log2_10 = f16::from_f64(10f64.log2());
         let sqrt_2 = f16::from_f64(core::f64::consts::SQRT_2);
 
         assert_eq!(f16::E, e);
@@ -913,7 +1028,9 @@ mod test {
         assert_eq!(f16::LN_10, ln_10);
         assert_eq!(f16::LN_2, ln_2);
         assert_eq!(f16::LOG10_E, log10_e);
+        assert_eq!(f16::LOG10_2, log10_2);
         assert_eq!(f16::LOG2_E, log2_e);
+        assert_eq!(f16::LOG2_10, log2_10);
         assert_eq!(f16::SQRT_2, sqrt_2);
     }
 

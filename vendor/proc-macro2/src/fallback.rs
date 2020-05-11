@@ -1,3 +1,5 @@
+use crate::strnom::{block_comment, skip_whitespace, whitespace, word_break, Cursor, PResult};
+use crate::{Delimiter, Punct, Spacing, TokenTree};
 #[cfg(span_locations)]
 use std::cell::RefCell;
 #[cfg(span_locations)]
@@ -10,18 +12,29 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::vec;
-
-use crate::strnom::{block_comment, skip_whitespace, whitespace, word_break, Cursor, PResult};
-use crate::{Delimiter, Punct, Spacing, TokenTree};
 use unicode_xid::UnicodeXID;
 
+/// Force use of proc-macro2's fallback implementation of the API for now, even
+/// if the compiler's implementation is available.
+#[cfg(wrap_proc_macro)]
+pub fn force() {
+    crate::detection::force_fallback();
+}
+
+/// Resume using the compiler's implementation of the proc macro API if it is
+/// available.
+#[cfg(wrap_proc_macro)]
+pub fn unforce() {
+    crate::detection::unforce_fallback();
+}
+
 #[derive(Clone)]
-pub struct TokenStream {
+pub(crate) struct TokenStream {
     inner: Vec<TokenTree>,
 }
 
 #[derive(Debug)]
-pub struct LexError;
+pub(crate) struct LexError;
 
 impl TokenStream {
     pub fn new() -> TokenStream {
@@ -180,7 +193,7 @@ impl Extend<TokenStream> for TokenStream {
     }
 }
 
-pub type TokenTreeIter = vec::IntoIter<TokenTree>;
+pub(crate) type TokenTreeIter = vec::IntoIter<TokenTree>;
 
 impl IntoIterator for TokenStream {
     type Item = TokenTree;
@@ -192,7 +205,7 @@ impl IntoIterator for TokenStream {
 }
 
 #[derive(Clone, PartialEq, Eq)]
-pub struct SourceFile {
+pub(crate) struct SourceFile {
     path: PathBuf,
 }
 
@@ -218,7 +231,7 @@ impl fmt::Debug for SourceFile {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct LineColumn {
+pub(crate) struct LineColumn {
     pub line: usize,
     pub column: usize,
 }
@@ -343,7 +356,7 @@ impl SourceMap {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct Span {
+pub(crate) struct Span {
     #[cfg(span_locations)]
     lo: u32,
     #[cfg(span_locations)]
@@ -465,14 +478,14 @@ impl fmt::Debug for Span {
     }
 }
 
-pub fn debug_span_field_if_nontrivial(debug: &mut fmt::DebugStruct, span: Span) {
+pub(crate) fn debug_span_field_if_nontrivial(debug: &mut fmt::DebugStruct, span: Span) {
     if cfg!(procmacro2_semver_exempt) {
         debug.field("span", &span);
     }
 }
 
 #[derive(Clone)]
-pub struct Group {
+pub(crate) struct Group {
     delimiter: Delimiter,
     stream: TokenStream,
     span: Span,
@@ -541,7 +554,7 @@ impl fmt::Debug for Group {
 }
 
 #[derive(Clone)]
-pub struct Ident {
+pub(crate) struct Ident {
     sym: String,
     span: Span,
     raw: bool,
@@ -671,7 +684,7 @@ impl fmt::Debug for Ident {
 }
 
 #[derive(Clone)]
-pub struct Literal {
+pub(crate) struct Literal {
     text: String,
     span: Span,
 }

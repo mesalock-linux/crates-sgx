@@ -67,6 +67,9 @@ cases.
 [`Write`]: https://doc.rust-lang.org/std/io/trait.Write.html
 */
 
+// For the 'try!' macro, until we bump MSRV past 1.12.
+#![allow(deprecated)]
+
 #![deny(missing_docs)]
 #![cfg_attr(any(not(feature = "std"),
                 all(feature = "mesalock_sgx",
@@ -1426,6 +1429,40 @@ pub trait ByteOrder
     #[cfg(byteorder_i128)]
     fn write_u128_into(src: &[u128], dst: &mut [u8]);
 
+    /// Writes signed 8 bit integers from `src` into `dst`.
+    ///
+    /// Note that since each `i8` is a single byte, no byte order conversions
+    /// are used. This method is included because it provides a safe, simple
+    /// way for the caller to write from a `&[i8]` buffer. (Without this
+    /// method, the caller would have to either use `unsafe` code or convert
+    /// each byte to `u8` individually.)
+    ///
+    /// # Panics
+    ///
+    /// Panics when `buf.len() != src.len()`.
+    ///
+    /// # Examples
+    ///
+    /// Write and read `i8` numbers in little endian order:
+    ///
+    /// ```rust
+    /// use byteorder::{ByteOrder, LittleEndian, ReadBytesExt};
+    ///
+    /// let mut bytes = [0; 4];
+    /// let numbers_given = [1, 2, 0xf, 0xe];
+    /// LittleEndian::write_i8_into(&numbers_given, &mut bytes);
+    ///
+    /// let mut numbers_got = [0; 4];
+    /// bytes.as_ref().read_i8_into(&mut numbers_got);
+    /// assert_eq!(numbers_given, numbers_got);
+    /// ```
+    fn write_i8_into(src: &[i8], dst: &mut [u8]) {
+        let src = unsafe {
+            slice::from_raw_parts(src.as_ptr() as *const u8, src.len())
+        };
+        dst.copy_from_slice(src);
+    }
+
     /// Writes signed 16 bit integers from `src` into `dst`.
     ///
     /// # Panics
@@ -1994,26 +2031,26 @@ impl ByteOrder for BigEndian {
     #[inline]
     fn read_uint(buf: &[u8], nbytes: usize) -> u64 {
         assert!(1 <= nbytes && nbytes <= 8 && nbytes <= buf.len());
-        let mut out = [0u8; 8];
-        let ptr_out = out.as_mut_ptr();
+        let mut out = 0u64;
+        let ptr_out = &mut out as *mut u64 as *mut u8;
         unsafe {
             copy_nonoverlapping(
                 buf.as_ptr(), ptr_out.offset((8 - nbytes) as isize), nbytes);
-            (*(ptr_out as *const u64)).to_be()
         }
+        out.to_be()
     }
 
     #[cfg(byteorder_i128)]
     #[inline]
     fn read_uint128(buf: &[u8], nbytes: usize) -> u128 {
         assert!(1 <= nbytes && nbytes <= 16 && nbytes <= buf.len());
-        let mut out = [0u8; 16];
-        let ptr_out = out.as_mut_ptr();
+        let mut out: u128 = 0;
+        let ptr_out = &mut out as *mut u128 as *mut u8;
         unsafe {
             copy_nonoverlapping(
                 buf.as_ptr(), ptr_out.offset((16 - nbytes) as isize), nbytes);
-            (*(ptr_out as *const u128)).to_be()
         }
+        out.to_be()
     }
 
     #[inline]
@@ -2209,24 +2246,24 @@ impl ByteOrder for LittleEndian {
     #[inline]
     fn read_uint(buf: &[u8], nbytes: usize) -> u64 {
         assert!(1 <= nbytes && nbytes <= 8 && nbytes <= buf.len());
-        let mut out = [0u8; 8];
-        let ptr_out = out.as_mut_ptr();
+        let mut out = 0u64;
+        let ptr_out = &mut out as *mut u64 as *mut u8;
         unsafe {
             copy_nonoverlapping(buf.as_ptr(), ptr_out, nbytes);
-            (*(ptr_out as *const u64)).to_le()
         }
+        out.to_le()
     }
 
     #[cfg(byteorder_i128)]
     #[inline]
     fn read_uint128(buf: &[u8], nbytes: usize) -> u128 {
         assert!(1 <= nbytes && nbytes <= 16 && nbytes <= buf.len());
-        let mut out = [0u8; 16];
-        let ptr_out = out.as_mut_ptr();
+        let mut out: u128 = 0;
+        let ptr_out = &mut out as *mut u128 as *mut u8;
         unsafe {
             copy_nonoverlapping(buf.as_ptr(), ptr_out, nbytes);
-            (*(ptr_out as *const u128)).to_le()
         }
+        out.to_le()
     }
 
     #[inline]
@@ -2476,7 +2513,7 @@ mod test {
                     fn prop(n: $ty_int) -> bool {
                         let mut buf = [0; 16];
                         BigEndian::$write(&mut buf, n.clone(), $bytes);
-                        n == BigEndian::$read(&mut buf[..$bytes], $bytes)
+                        n == BigEndian::$read(&buf[..$bytes], $bytes)
                     }
                     qc_sized(prop as fn($ty_int) -> bool, $max);
                 }
@@ -2486,7 +2523,7 @@ mod test {
                     fn prop(n: $ty_int) -> bool {
                         let mut buf = [0; 16];
                         LittleEndian::$write(&mut buf, n.clone(), $bytes);
-                        n == LittleEndian::$read(&mut buf[..$bytes], $bytes)
+                        n == LittleEndian::$read(&buf[..$bytes], $bytes)
                     }
                     qc_sized(prop as fn($ty_int) -> bool, $max);
                 }
@@ -2496,7 +2533,7 @@ mod test {
                     fn prop(n: $ty_int) -> bool {
                         let mut buf = [0; 16];
                         NativeEndian::$write(&mut buf, n.clone(), $bytes);
-                        n == NativeEndian::$read(&mut buf[..$bytes], $bytes)
+                        n == NativeEndian::$read(&buf[..$bytes], $bytes)
                     }
                     qc_sized(prop as fn($ty_int) -> bool, $max);
                 }
@@ -2515,7 +2552,7 @@ mod test {
                         let bytes = size_of::<$ty_int>();
                         let mut buf = [0; 16];
                         BigEndian::$write(&mut buf[16 - bytes..], n.clone());
-                        n == BigEndian::$read(&mut buf[16 - bytes..])
+                        n == BigEndian::$read(&buf[16 - bytes..])
                     }
                     qc_sized(prop as fn($ty_int) -> bool, $max - 1);
                 }
@@ -2526,7 +2563,7 @@ mod test {
                         let bytes = size_of::<$ty_int>();
                         let mut buf = [0; 16];
                         LittleEndian::$write(&mut buf[..bytes], n.clone());
-                        n == LittleEndian::$read(&mut buf[..bytes])
+                        n == LittleEndian::$read(&buf[..bytes])
                     }
                     qc_sized(prop as fn($ty_int) -> bool, $max - 1);
                 }
@@ -2537,7 +2574,7 @@ mod test {
                         let bytes = size_of::<$ty_int>();
                         let mut buf = [0; 16];
                         NativeEndian::$write(&mut buf[..bytes], n.clone());
-                        n == NativeEndian::$read(&mut buf[..bytes])
+                        n == NativeEndian::$read(&buf[..bytes])
                     }
                     qc_sized(prop as fn($ty_int) -> bool, $max - 1);
                 }
@@ -2971,7 +3008,7 @@ mod test {
     fn uint_bigger_buffer() {
         use {ByteOrder, LittleEndian};
         let n = LittleEndian::read_uint(&[1, 2, 3, 4, 5, 6, 7, 8], 5);
-        assert_eq!(n, 0x0504030201);
+        assert_eq!(n, 0x05_0403_0201);
     }
 }
 

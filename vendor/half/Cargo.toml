@@ -13,7 +13,7 @@
 [package]
 edition = "2018"
 name = "half"
-version = "1.5.0"
+version = "1.6.0"
 authors = ["Kathryn Long <squeeself@gmail.com>"]
 description = "Half-precision floating point f16 and bf16 types for Rust implementing the IEEE 754-2008 standard binary16 and bfloat16 types."
 readme = "README.md"

@@ -1,28 +1,23 @@
 use std::prelude::v1::*;
-use error::Error;
+use crate::de::ParserNumber;
+use crate::error::Error;
+use crate::lib::*;
 use serde::de::{self, Unexpected, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::fmt::{self, Debug, Display};
+use serde::{
+    forward_to_deserialize_any, serde_if_integer128, Deserialize, Deserializer, Serialize,
+    Serializer,
+};
 
 #[cfg(feature = "arbitrary_precision")]
-use itoa;
-#[cfg(feature = "arbitrary_precision")]
-use ryu;
+use crate::error::ErrorCode;
 #[cfg(feature = "arbitrary_precision")]
 use serde::de::{IntoDeserializer, MapAccess};
 
-use de::ParserNumber;
-
 #[cfg(feature = "arbitrary_precision")]
-use error::ErrorCode;
-
-#[cfg(feature = "arbitrary_precision")]
-/// Not public API. Should be pub(crate).
-#[doc(hidden)]
-pub const TOKEN: &'static str = "$serde_json::private::Number";
+pub(crate) const TOKEN: &str = "$serde_json::private::Number";
 
 /// Represents a JSON number, whether integer or floating point.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Number {
     n: N,
 }
@@ -37,6 +32,10 @@ enum N {
     Float(f64),
 }
 
+// Implementing Eq is fine since any float values are always finite.
+#[cfg(not(feature = "arbitrary_precision"))]
+impl Eq for N {}
+
 #[cfg(feature = "arbitrary_precision")]
 type N = String;
 
@@ -47,7 +46,7 @@ impl Number {
     /// For any Number on which `is_i64` returns true, `as_i64` is guaranteed to
     /// return the integer value.
     ///
-    /// ```edition2018
+    /// ```
     /// # use serde_json::json;
     /// #
     /// let big = i64::max_value() as u64 + 10;
@@ -78,7 +77,7 @@ impl Number {
     /// For any Number on which `is_u64` returns true, `as_u64` is guaranteed to
     /// return the integer value.
     ///
-    /// ```edition2018
+    /// ```
     /// # use serde_json::json;
     /// #
     /// let v = json!({ "a": 64, "b": -64, "c": 256.0 });
@@ -110,7 +109,7 @@ impl Number {
     /// Currently this function returns true if and only if both `is_i64` and
     /// `is_u64` return false but this is not a guarantee in the future.
     ///
-    /// ```edition2018
+    /// ```
     /// # use serde_json::json;
     /// #
     /// let v = json!({ "a": 256.0, "b": 64, "c": -64 });
@@ -142,7 +141,7 @@ impl Number {
     /// If the `Number` is an integer, represent it as i64 if possible. Returns
     /// None otherwise.
     ///
-    /// ```edition2018
+    /// ```
     /// # use serde_json::json;
     /// #
     /// let big = i64::max_value() as u64 + 10;
@@ -173,7 +172,7 @@ impl Number {
     /// If the `Number` is an integer, represent it as u64 if possible. Returns
     /// None otherwise.
     ///
-    /// ```edition2018
+    /// ```
     /// # use serde_json::json;
     /// #
     /// let v = json!({ "a": 64, "b": -64, "c": 256.0 });
@@ -195,7 +194,7 @@ impl Number {
 
     /// Represents the number as f64 if possible. Returns None otherwise.
     ///
-    /// ```edition2018
+    /// ```
     /// # use serde_json::json;
     /// #
     /// let v = json!({ "a": 256.0, "b": 64, "c": -64 });
@@ -219,7 +218,7 @@ impl Number {
     /// Converts a finite `f64` to a `Number`. Infinite or NaN values are not JSON
     /// numbers.
     ///
-    /// ```edition2018
+    /// ```
     /// # use std::f64;
     /// #
     /// # use serde_json::Number;
@@ -435,7 +434,7 @@ impl<'de> de::Deserialize<'de> for NumberFromString {
             where
                 E: de::Error,
             {
-                let n = s.parse().map_err(de::Error::custom)?;
+                let n = tri!(s.parse().map_err(de::Error::custom));
                 Ok(NumberFromString { value: n })
             }
         }
@@ -511,7 +510,7 @@ macro_rules! deserialize_number {
         {
             visitor.$visit(self.n.parse().map_err(|_| invalid_number())?)
         }
-    }
+    };
 }
 
 impl<'de> Deserializer<'de> for Number {
@@ -571,9 +570,7 @@ impl<'de, 'a> Deserializer<'de> for &'a Number {
 }
 
 #[cfg(feature = "arbitrary_precision")]
-// Not public API. Should be pub(crate).
-#[doc(hidden)]
-pub struct NumberDeserializer {
+pub(crate) struct NumberDeserializer {
     pub number: Option<String>,
 }
 
@@ -732,10 +729,8 @@ serde_if_integer128! {
 
 impl Number {
     #[cfg(not(feature = "arbitrary_precision"))]
-    // Not public API. Should be pub(crate).
-    #[doc(hidden)]
     #[cold]
-    pub fn unexpected(&self) -> Unexpected {
+    pub(crate) fn unexpected(&self) -> Unexpected {
         match self.n {
             N::PosInt(u) => Unexpected::Unsigned(u),
             N::NegInt(i) => Unexpected::Signed(i),
@@ -744,10 +739,8 @@ impl Number {
     }
 
     #[cfg(feature = "arbitrary_precision")]
-    // Not public API. Should be pub(crate).
-    #[doc(hidden)]
     #[cold]
-    pub fn unexpected(&self) -> Unexpected {
+    pub(crate) fn unexpected(&self) -> Unexpected {
         Unexpected::Other("number")
     }
 }

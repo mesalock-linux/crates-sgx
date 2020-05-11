@@ -549,6 +549,29 @@ const ANCHORED_OVERLAPPING: &'static [SearchTest] = &[
     t!(aover360, &["foo", "foofoo"], "foofoo", &[(0, 0, 3), (1, 0, 6)]),
 ];
 
+/// Tests for ASCII case insensitivity.
+///
+/// These tests should all have the same behavior regardless of match semantics
+/// or whether the search is overlapping.
+const ASCII_CASE_INSENSITIVE: &'static [SearchTest] = &[
+    t!(acasei000, &["a"], "A", &[(0, 0, 1)]),
+    t!(acasei010, &["Samwise"], "SAMWISE", &[(0, 0, 7)]),
+    t!(acasei011, &["Samwise"], "SAMWISE.abcd", &[(0, 0, 7)]),
+    t!(acasei020, &["fOoBaR"], "quux foobar baz", &[(0, 5, 11)]),
+];
+
+/// Like ASCII_CASE_INSENSITIVE, but specifically for non-overlapping tests.
+const ASCII_CASE_INSENSITIVE_NON_OVERLAPPING: &'static [SearchTest] = &[
+    t!(acasei000, &["foo", "FOO"], "fOo", &[(0, 0, 3)]),
+    t!(acasei000, &["FOO", "foo"], "fOo", &[(0, 0, 3)]),
+];
+
+/// Like ASCII_CASE_INSENSITIVE, but specifically for overlapping tests.
+const ASCII_CASE_INSENSITIVE_OVERLAPPING: &'static [SearchTest] = &[
+    t!(acasei000, &["foo", "FOO"], "fOo", &[(0, 0, 3), (1, 0, 3)]),
+    t!(acasei001, &["FOO", "foo"], "fOo", &[(0, 0, 3), (1, 0, 3)]),
+];
+
 /// Regression tests that are applied to all Aho-Corasick combinations.
 ///
 /// If regression tests are needed for specific match semantics, then add them
@@ -907,6 +930,74 @@ testconfig!(
     }
 );
 
+// And also write out the test combinations for ASCII case insensitivity.
+testconfig!(
+    acasei_standard_nfa_default,
+    &[ASCII_CASE_INSENSITIVE],
+    Standard,
+    |b: &mut AhoCorasickBuilder| {
+        b.prefilter(false).ascii_case_insensitive(true);
+    }
+);
+testconfig!(
+    acasei_standard_dfa_default,
+    &[ASCII_CASE_INSENSITIVE, ASCII_CASE_INSENSITIVE_NON_OVERLAPPING],
+    Standard,
+    |b: &mut AhoCorasickBuilder| {
+        b.ascii_case_insensitive(true).dfa(true);
+    }
+);
+testconfig!(
+    overlapping,
+    acasei_standard_overlapping_nfa_default,
+    &[ASCII_CASE_INSENSITIVE, ASCII_CASE_INSENSITIVE_OVERLAPPING],
+    Standard,
+    |b: &mut AhoCorasickBuilder| {
+        b.ascii_case_insensitive(true);
+    }
+);
+testconfig!(
+    overlapping,
+    acasei_standard_overlapping_dfa_default,
+    &[ASCII_CASE_INSENSITIVE, ASCII_CASE_INSENSITIVE_OVERLAPPING],
+    Standard,
+    |b: &mut AhoCorasickBuilder| {
+        b.ascii_case_insensitive(true).dfa(true);
+    }
+);
+testconfig!(
+    acasei_leftmost_first_nfa_default,
+    &[ASCII_CASE_INSENSITIVE, ASCII_CASE_INSENSITIVE_NON_OVERLAPPING],
+    LeftmostFirst,
+    |b: &mut AhoCorasickBuilder| {
+        b.ascii_case_insensitive(true);
+    }
+);
+testconfig!(
+    acasei_leftmost_first_dfa_default,
+    &[ASCII_CASE_INSENSITIVE, ASCII_CASE_INSENSITIVE_NON_OVERLAPPING],
+    LeftmostFirst,
+    |b: &mut AhoCorasickBuilder| {
+        b.ascii_case_insensitive(true).dfa(true);
+    }
+);
+testconfig!(
+    acasei_leftmost_longest_nfa_default,
+    &[ASCII_CASE_INSENSITIVE, ASCII_CASE_INSENSITIVE_NON_OVERLAPPING],
+    LeftmostLongest,
+    |b: &mut AhoCorasickBuilder| {
+        b.ascii_case_insensitive(true);
+    }
+);
+testconfig!(
+    acasei_leftmost_longest_dfa_default,
+    &[ASCII_CASE_INSENSITIVE, ASCII_CASE_INSENSITIVE_NON_OVERLAPPING],
+    LeftmostLongest,
+    |b: &mut AhoCorasickBuilder| {
+        b.ascii_case_insensitive(true).dfa(true);
+    }
+);
+
 #[test]
 fn search_tests_have_unique_names() {
     let assert = |constname, tests: &[SearchTest]| {
@@ -994,6 +1085,45 @@ fn regression_ascii_case_insensitive_no_exponential() {
         .ascii_case_insensitive(true)
         .build(&["Tsubaki House-Triple Shot Vol01校花三姐妹"]);
     assert!(ac.find("").is_none());
+}
+
+// See: https://github.com/BurntSushi/aho-corasick/issues/53
+//
+// This test ensures that the rare byte prefilter works in a particular corner
+// case. In particular, the shift offset detected for '/' in the patterns below
+// was incorrect, leading to a false negative.
+#[test]
+fn regression_rare_byte_prefilter() {
+    use AhoCorasick;
+
+    let ac = AhoCorasick::new_auto_configured(&["ab/j/", "x/"]);
+    assert!(ac.is_match("ab/j/"));
+}
+
+#[test]
+fn regression_case_insensitive_prefilter() {
+    use AhoCorasickBuilder;
+
+    for c in b'a'..b'z' {
+        for c2 in b'a'..b'z' {
+            let c = c as char;
+            let c2 = c2 as char;
+            let needle = format!("{}{}", c, c2).to_lowercase();
+            let haystack = needle.to_uppercase();
+            let ac = AhoCorasickBuilder::new()
+                .ascii_case_insensitive(true)
+                .prefilter(true)
+                .build(&[&needle]);
+            assert_eq!(
+                1,
+                ac.find_iter(&haystack).count(),
+                "failed to find {:?} in {:?}\n\nautomaton:\n{:?}",
+                needle,
+                haystack,
+                ac,
+            );
+        }
+    }
 }
 
 fn run_search_tests<F: FnMut(&SearchTest) -> Vec<Match>>(

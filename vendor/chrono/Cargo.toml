@@ -1,6 +1,6 @@
 [package]
 name = "chrono"
-version = "0.4.10"
+version = "0.4.11"
 authors = [
     "Kang Seonghoon <public+rust@mearie.org>",
     "Brandon W Maister <quodlibetor@gmail.com>",
@@ -44,7 +44,7 @@ sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.g
 #js-sys = { version = "0.3", optional = true } # contains FFI bindings for the JS Date API
 
 [dev-dependencies]
-#serde_json = { version = "1", default-features = false }
+#serde_json = { version = "1" }
 #serde_derive = { version = "1", default-features = false }
 #bincode = { version = "0.8.0" }
 #num-iter = { version = "0.1.35", default-features = false }

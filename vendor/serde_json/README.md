@@ -1,11 +1,11 @@
-# Serde JSON &emsp; [![Build Status]][travis] [![Latest Version]][crates.io] [![Rustc Version 1.15+]][rustc]
+# Serde JSON &emsp; [![Build Status]][travis] [![Latest Version]][crates.io] [![Rustc Version 1.31+]][rustc]
 
 [Build Status]: https://api.travis-ci.org/serde-rs/json.svg?branch=master
 [travis]: https://travis-ci.org/serde-rs/json
 [Latest Version]: https://img.shields.io/crates/v/serde_json.svg
 [crates.io]: https://crates.io/crates/serde\_json
-[Rustc Version 1.15+]: https://img.shields.io/badge/rustc-1.15+-lightgray.svg
-[rustc]: https://blog.rust-lang.org/2017/02/02/Rust-1.15.html
+[Rustc Version 1.31+]: https://img.shields.io/badge/rustc-1.31+-lightgray.svg
+[rustc]: https://blog.rust-lang.org/2018/12/06/Rust-1.31-and-rust-2018.html
 
 **Serde is a framework for *ser*ializing and *de*serializing Rust data structures efficiently and generically.**
 
@@ -21,7 +21,7 @@ You may be looking for:
 - [JSON API documentation](https://docs.serde.rs/serde_json/)
 - [Serde API documentation](https://docs.serde.rs/serde/)
 - [Detailed documentation about Serde](https://serde.rs/)
-- [Setting up `#[derive(Serialize, Deserialize)]`](https://serde.rs/codegen.html)
+- [Setting up `#[derive(Serialize, Deserialize)]`](https://serde.rs/derive.html)
 - [Release notes](https://github.com/serde-rs/json/releases)
 
 JSON is a ubiquitous open-standard format that uses human-readable text to
@@ -321,8 +321,17 @@ issues](https://github.com/serde-rs/json/issues/new) as well.
 
 ## No-std support
 
-This crate currently requires the Rust standard library. For JSON support in
-Serde without a standard library, please see the [`serde-json-core`] crate.
+As long as there is a memory allocator, it is possible to use serde_json without
+the rest of the Rust standard library. This is supported on Rust 1.36+. Disable
+the default "std" feature and enable the "alloc" feature:
+
+```toml
+[dependencies]
+serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
+```
+
+For JSON support in Serde without a memory allocator, please see the
+[`serde-json-core`] crate.
 
 [`serde-json-core`]: https://japaric.github.io/serde-json-core/serde_json_core/
 

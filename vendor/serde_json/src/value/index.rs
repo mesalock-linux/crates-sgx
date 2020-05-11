@@ -1,9 +1,8 @@
 use std::prelude::v1::*;
-use std::fmt;
-use std::ops;
 
 use super::Value;
-use map::Map;
+use crate::lib::*;
+use crate::map::Map;
 
 /// A type that can be used to index into a `serde_json::Value`.
 ///
@@ -21,7 +20,7 @@ use map::Map;
 ///
 /// # Examples
 ///
-/// ```edition2018
+/// ```
 /// # use serde_json::json;
 /// #
 /// let data = json!({ "inner": [1, 2, 3] });
@@ -116,9 +115,9 @@ impl Index for String {
     }
 }
 
-impl<'a, T: ?Sized> Index for &'a T
+impl<'a, T> Index for &'a T
 where
-    T: Index,
+    T: ?Sized + Index,
 {
     fn index_into<'v>(&self, v: &'v Value) -> Option<&'v Value> {
         (**self).index_into(v)
@@ -137,8 +136,8 @@ mod private {
     pub trait Sealed {}
     impl Sealed for usize {}
     impl Sealed for str {}
-    impl Sealed for String {}
-    impl<'a, T: ?Sized> Sealed for &'a T where T: Sealed {}
+    impl Sealed for super::String {}
+    impl<'a, T> Sealed for &'a T where T: ?Sized + Sealed {}
 }
 
 /// Used in panic messages.
@@ -195,7 +194,7 @@ where
     ///
     /// # Examples
     ///
-    /// ```edition2018
+    /// ```
     /// # use serde_json::json;
     /// #
     /// let data = json!({
@@ -234,7 +233,7 @@ where
     ///
     /// # Examples
     ///
-    /// ```edition2018
+    /// ```
     /// # use serde_json::json;
     /// #
     /// let mut data = json!({ "x": 0 });

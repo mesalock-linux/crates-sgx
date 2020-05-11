@@ -78,7 +78,7 @@
 //! a different thread.
 
 // Proc-macro2 types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/proc-macro2/1.0.10")]
+#![doc(html_root_url = "https://docs.rs/proc-macro2/1.0.12")]
 #![cfg_attr(any(proc_macro_span, super_unstable), feature(proc_macro_span))]
 #![cfg_attr(super_unstable, feature(proc_macro_raw_ident, proc_macro_def_site))]
 
@@ -98,7 +98,14 @@ use std::str::FromStr;
 
 #[macro_use]
 mod strnom;
-mod fallback;
+
+#[cfg(wrap_proc_macro)]
+mod detection;
+
+// Public for proc_macro2::fallback::force() and unforce(), but those are quite
+// a niche use case so we omit it from rustdoc.
+#[doc(hidden)]
+pub mod fallback;
 
 #[cfg(not(wrap_proc_macro))]
 use crate::fallback as imp;
@@ -1154,12 +1161,12 @@ impl fmt::Display for Literal {
 
 /// Public implementation details for the `TokenStream` type, such as iterators.
 pub mod token_stream {
+    use crate::{imp, TokenTree};
     use std::fmt;
     use std::marker;
     use std::rc::Rc;
 
     pub use crate::TokenStream;
-    use crate::{imp, TokenTree};
 
     /// An iterator over `TokenStream`'s `TokenTree`s.
     ///

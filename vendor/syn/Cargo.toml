@@ -13,7 +13,7 @@
 [package]
 edition = "2018"
 name = "syn"
-version = "1.0.18"
+version = "1.0.19"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 include = ["/benches/**", "/build.rs", "/Cargo.toml", "/LICENSE-APACHE", "/LICENSE-MIT", "/README.md", "/src/**", "/tests/**"]
 description = "Parser for Rust source code"
@@ -91,5 +91,3 @@ printing = ["quote"]
 proc-macro = ["proc-macro2/proc-macro", "quote/proc-macro"]
 visit = []
 visit-mut = []
-[badges.travis-ci]
-repository = "dtolnay/syn"

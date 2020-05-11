@@ -1,6 +1,6 @@
 [package]
 name = "serde_json"
-version = "1.0.40" # remember to update html_root_url
+version = "1.0.51" # remember to update html_root_url
 authors = ["Erick Tryzelaar <erick.tryzelaar@gmail.com>", "David Tolnay <dtolnay@gmail.com>"]
 license = "MIT OR Apache-2.0"
 description = "A JSON serialization file format"
@@ -10,6 +10,7 @@ keywords = ["json", "serde", "serialization"]
 categories = ["encoding"]
 readme = "README.md"
 include = ["Cargo.toml", "src/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
+edition = "2018"
 exclude = ["/sgx/*"]
 
 [badges]
@@ -25,17 +26,18 @@ sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.g
 
 [dev-dependencies]
 #automod = "0.1"
-#rustversion = "0.1"
+#rustversion = "1.0"
 #serde_bytes = "0.11"
 #serde_derive = "1.0"
 #serde_stacker = "0.1"
-#trybuild = "1.0"
+#trybuild = { version = "1.0.19", features = ["diff"] }
 
 #[workspace]
 #members = ["tests/crate"]
 
 [package.metadata.docs.rs]
 features = ["raw_value", "unbounded_depth"]
+targets = ["x86_64-unknown-linux-gnu"]
 
 [package.metadata.playground]
 features = ["raw_value"]
@@ -44,7 +46,15 @@ features = ["raw_value"]
 ### FEATURES #################################################################
 
 [features]
-default = ["mesalock_sgx"]
+default = ["mesalock_sgx", "std"]
+
+std = ["serde/std", "mesalock_sgx"]
+
+# Provide integration for heap-allocated collections without depending on the
+# rest of the Rust standard library.
+# NOTE: Disabling both `std` *and* `alloc` features is not supported yet.
+# Available on Rust 1.36+.
+alloc = ["serde/alloc"]
 
 # Use a different representation for the map type of serde_json::Value.
 # This allows data to be read into a Value and written back to a JSON string

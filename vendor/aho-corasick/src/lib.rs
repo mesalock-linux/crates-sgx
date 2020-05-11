@@ -303,6 +303,6 @@ impl Match {
 
     #[inline]
     fn from_span(id: usize, start: usize, end: usize) -> Match {
-        Match { pattern: id, len: end - start, end: end }
+        Match { pattern: id, len: end - start, end }
     }
 }
