@@ -83,6 +83,7 @@ rdrand           = { git = "https://github.com/mesalock-linux/rust_rdrand-sgx" }
 regex            = { git = "https://github.com/mesalock-linux/regex-sgx" }
 ring             = { git = "https://github.com/mesalock-linux/ring-sgx", tag = "v0.16.5" }
 rulinalg         = { git = "https://github.com/mesalock-linux/rulinalg-sgx" }
+rustface         = { git = "https://github.com/mesalock-linux/rustface-sgx" }
 rustls           = { git = "https://github.com/mesalock-linux/rustls", branch = "mesalock_sgx-client-cert-verifier-patch" }
 rusty-machine    = { git = "https://github.com/mesalock-linux/rusty-machine-sgx" }
 sct              = { git = "https://github.com/mesalock-linux/sct.rs", branch = "mesalock_sgx" }
@@ -117,3 +118,5 @@ lazy_static    = { version = "1.4.0", features = ["spin_no_std"] }
 quote          = "0.6"
 syn            = "0.15"
 untrusted      = { version = "0.7.0" }
+
+[workspace]

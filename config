@@ -351,6 +351,11 @@ git = "https://github.com/mesalock-linux/rustcrypto-utils-sgx"
 branch = "master"
 replace-with = "vendored-sources"
 
+[source."https://github.com/mesalock-linux/rustface-sgx"]
+git = "https://github.com/mesalock-linux/rustface-sgx"
+branch = "master"
+replace-with = "vendored-sources"
+
 [source."https://github.com/mesalock-linux/rustls"]
 git = "https://github.com/mesalock-linux/rustls"
 branch = "mesalock_sgx-client-cert-verifier-patch"

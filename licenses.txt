@@ -101,6 +101,7 @@ regex: MIT OR Apache-2.0
 regex-syntax: MIT/Apache-2.0
 ring: see license file at ring/LICENSE
 rulinalg: MIT
+rustface: BSD-2-Clause
 rustls: Apache-2.0/ISC/MIT
 rusty-machine: MIT
 ryu: Apache-2.0 OR BSL-1.0

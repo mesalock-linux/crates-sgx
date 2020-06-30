@@ -100,6 +100,7 @@ regex                  1.3.1
 regex-syntax           0.6.12
 ring                   0.16.11
 rulinalg               0.4.2
+rustface               0.1.2
 rustls                 0.16.0
 rusty-machine          0.5.4
 ryu                    1.0.4
