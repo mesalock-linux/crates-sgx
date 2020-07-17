@@ -18,9 +18,6 @@
 // is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 // KIND, either express or implied.
 
-extern crate rand;
-extern crate ryu;
-
 #[macro_use]
 mod macros;
 
@@ -54,8 +51,8 @@ fn test_random() {
     }
 }
 
-#[cfg(not(miri))]
 #[test]
+#[cfg_attr(miri, ignore)]
 fn test_non_finite() {
     for i in 0u32..1 << 23 {
         let f = f32::from_bits((((1 << 8) - 1) << 23) + i);
@@ -152,7 +149,7 @@ fn test_regression() {
 fn test_looks_like_pow5() {
     // These numbers have a mantissa that is the largest power of 5 that fits,
     // and an exponent that causes the computation for q to result in 10, which
-    // is a corner case for Ryu.
+    // is a corner case for Ryū.
     assert_eq!(f32::from_bits(0x5D1502F9), 6.7108864e17);
     check!(6.7108864e17);
     assert_eq!(f32::from_bits(0x5D9502F9), 1.3421773e18);

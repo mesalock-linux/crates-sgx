@@ -1,3 +1,4 @@
+pub type wchar_t = i32;
 pub type time_t = i64;
 pub type mode_t = u32;
 pub type nlink_t = u32;
@@ -620,8 +621,6 @@ pub const SF_IMMUTABLE: ::c_ulong = 0x00020000;
 pub const SF_APPEND: ::c_ulong = 0x00040000;
 
 pub const TIMER_ABSTIME: ::c_int = 1;
-
-pub const REG_ENOSYS: ::c_int = 17;
 
 #[link(name = "util")]
 extern "C" {

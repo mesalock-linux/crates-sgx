@@ -13,13 +13,15 @@
 [package]
 edition = "2018"
 name = "ghost"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 description = "Define your own PhantomData"
 documentation = "https://docs.rs/ghost"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dtolnay/ghost"
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
 
 [lib]
 proc-macro = true

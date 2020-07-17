@@ -31,8 +31,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// conversion to `compile_error!` automatically.
 ///
 /// ```
-/// extern crate proc_macro;
-///
+/// # extern crate proc_macro;
+/// #
 /// use proc_macro::TokenStream;
 /// use syn::{parse_macro_input, AttributeArgs, ItemFn};
 ///
@@ -363,5 +363,13 @@ impl<'a> Iterator for Iter<'a> {
         Some(Error {
             messages: vec![self.messages.next()?.clone()],
         })
+    }
+}
+
+impl Extend<Error> for Error {
+    fn extend<T: IntoIterator<Item = Error>>(&mut self, iter: T) {
+        for err in iter {
+            self.combine(err);
+        }
     }
 }

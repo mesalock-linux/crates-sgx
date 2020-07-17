@@ -24,7 +24,7 @@
 /// }
 /// ```
 ///
-/// *This macro is available if Syn is built with the `"parsing"` feature,
+/// *This macro is available only if Syn is built with the `"parsing"` feature,
 /// although interpolation of syntax tree nodes into the quoted tokens is only
 /// supported if Syn is built with the `"printing"` feature as well.*
 ///
@@ -69,7 +69,7 @@
 //
 // TODO: allow Punctuated to be inferred as intra doc link, currently blocked on
 // https://github.com/rust-lang/rust/issues/62834
-#[macro_export(local_inner_macros)]
+#[macro_export]
 macro_rules! parse_quote {
     ($($tt:tt)*) => {
         $crate::parse_quote::parse(

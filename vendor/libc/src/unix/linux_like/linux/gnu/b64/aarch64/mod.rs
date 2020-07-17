@@ -212,11 +212,6 @@ pub const RTLD_DEEPBIND: ::c_int = 0x8;
 pub const RTLD_GLOBAL: ::c_int = 0x100;
 pub const RTLD_NOLOAD: ::c_int = 0x4;
 
-pub const TIOCGSOFTCAR: ::c_ulong = 0x5419;
-pub const TIOCSSOFTCAR: ::c_ulong = 0x541A;
-pub const TIOCGRS485: ::c_int = 0x542E;
-pub const TIOCSRS485: ::c_int = 0x542F;
-
 pub const RLIMIT_RSS: ::__rlimit_resource_t = 5;
 pub const RLIMIT_AS: ::__rlimit_resource_t = 9;
 pub const RLIMIT_MEMLOCK: ::__rlimit_resource_t = 8;
@@ -447,7 +442,13 @@ pub const TIOCMGET: ::c_ulong = 0x5415;
 pub const TIOCMBIS: ::c_ulong = 0x5416;
 pub const TIOCMBIC: ::c_ulong = 0x5417;
 pub const TIOCMSET: ::c_ulong = 0x5418;
+pub const TIOCGSOFTCAR: ::c_ulong = 0x5419;
+pub const TIOCSSOFTCAR: ::c_ulong = 0x541A;
 pub const TIOCCONS: ::c_ulong = 0x541D;
+pub const TIOCSBRK: ::c_ulong = 0x5427;
+pub const TIOCCBRK: ::c_ulong = 0x5428;
+pub const TIOCGRS485: ::c_int = 0x542E;
+pub const TIOCSRS485: ::c_int = 0x542F;
 
 pub const TIOCM_ST: ::c_int = 0x008;
 pub const TIOCM_SR: ::c_int = 0x010;
@@ -755,6 +756,10 @@ pub const SYS_umount2: ::c_long = 39;
 pub const SYS_mount: ::c_long = 40;
 pub const SYS_pivot_root: ::c_long = 41;
 pub const SYS_nfsservctl: ::c_long = 42;
+pub const SYS_statfs: ::c_long = 43;
+pub const SYS_fstatfs: ::c_long = 44;
+pub const SYS_truncate: ::c_long = 45;
+pub const SYS_ftruncate: ::c_long = 46;
 pub const SYS_fallocate: ::c_long = 47;
 pub const SYS_faccessat: ::c_long = 48;
 pub const SYS_chdir: ::c_long = 49;

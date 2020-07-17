@@ -738,6 +738,7 @@ pub const MSG_DONTWAIT: ::c_int = 0x00000080;
 pub const MSG_EOF: ::c_int = 0x00000100;
 
 pub const SCM_TIMESTAMP: ::c_int = 0x02;
+pub const SCM_CREDS: ::c_int = 0x03;
 
 pub const SOCK_STREAM: ::c_int = 1;
 pub const SOCK_DGRAM: ::c_int = 2;
@@ -756,8 +757,10 @@ pub const IP_DROP_MEMBERSHIP: ::c_int = 13;
 pub const IP_RECVIF: ::c_int = 20;
 pub const IPV6_JOIN_GROUP: ::c_int = 12;
 pub const IPV6_LEAVE_GROUP: ::c_int = 13;
+pub const IPV6_CHECKSUM: ::c_int = 26;
 pub const IPV6_RECVPKTINFO: ::c_int = 36;
 pub const IPV6_PKTINFO: ::c_int = 46;
+pub const IPV6_HOPLIMIT: ::c_int = 47;
 pub const IPV6_RECVTCLASS: ::c_int = 57;
 pub const IPV6_TCLASS: ::c_int = 61;
 
@@ -1042,8 +1045,6 @@ pub const TIOCSPGRP: ::c_ulong = 0x80047476;
 pub const TIOCGPGRP: ::c_uint = 0x40047477;
 pub const TIOCCDTR: ::c_uint = 0x20007478;
 pub const TIOCSDTR: ::c_uint = 0x20007479;
-pub const TIOCCBRK: ::c_uint = 0x2000747a;
-pub const TIOCSBRK: ::c_uint = 0x2000747b;
 pub const TTYDISC: ::c_int = 0x0;
 pub const SLIPDISC: ::c_int = 0x4;
 pub const PPPDISC: ::c_int = 0x5;
@@ -1193,10 +1194,6 @@ f! {
         status >> 8
     }
 
-    pub fn WIFSIGNALED(status: ::c_int) -> bool {
-        (status & 0o177) != 0o177 && (status & 0o177) != 0
-    }
-
     pub fn WIFSTOPPED(status: ::c_int) -> bool {
         (status & 0o177) == 0o177
     }
@@ -1218,17 +1215,6 @@ extern "C" {
         addrlen: *mut ::socklen_t,
         flags: ::c_int,
     ) -> ::c_int;
-    pub fn aio_read(aiocbp: *mut aiocb) -> ::c_int;
-    pub fn aio_write(aiocbp: *mut aiocb) -> ::c_int;
-    pub fn aio_fsync(op: ::c_int, aiocbp: *mut aiocb) -> ::c_int;
-    pub fn aio_error(aiocbp: *const aiocb) -> ::c_int;
-    pub fn aio_return(aiocbp: *mut aiocb) -> ::ssize_t;
-    pub fn aio_suspend(
-        aiocb_list: *const *const aiocb,
-        nitems: ::c_int,
-        timeout: *const ::timespec,
-    ) -> ::c_int;
-    pub fn aio_cancel(fd: ::c_int, aiocbp: *mut aiocb) -> ::c_int;
     pub fn chflags(path: *const ::c_char, flags: ::c_ulong) -> ::c_int;
     pub fn chflagsat(
         fd: ::c_int,
@@ -1314,43 +1300,6 @@ extern "C" {
         mode: ::mode_t,
         dev: dev_t,
     ) -> ::c_int;
-    pub fn mq_close(mqd: ::mqd_t) -> ::c_int;
-    pub fn mq_getattr(mqd: ::mqd_t, attr: *mut ::mq_attr) -> ::c_int;
-    pub fn mq_notify(mqd: ::mqd_t, notification: *const ::sigevent)
-        -> ::c_int;
-    pub fn mq_open(name: *const ::c_char, oflag: ::c_int, ...) -> ::mqd_t;
-    pub fn mq_receive(
-        mqd: ::mqd_t,
-        msg_ptr: *mut ::c_char,
-        msg_len: ::size_t,
-        msg_prio: *mut ::c_uint,
-    ) -> ::ssize_t;
-    pub fn mq_send(
-        mqd: ::mqd_t,
-        msg_ptr: *const ::c_char,
-        msg_len: ::size_t,
-        msg_prio: ::c_uint,
-    ) -> ::c_int;
-    pub fn mq_setattr(
-        mqd: ::mqd_t,
-        newattr: *const ::mq_attr,
-        oldattr: *mut ::mq_attr,
-    ) -> ::c_int;
-    pub fn mq_timedreceive(
-        mqd: ::mqd_t,
-        msg_ptr: *mut ::c_char,
-        msg_len: ::size_t,
-        msg_prio: *mut ::c_uint,
-        abs_timeout: *const ::timespec,
-    ) -> ::ssize_t;
-    pub fn mq_timedsend(
-        mqd: ::mqd_t,
-        msg_ptr: *const ::c_char,
-        msg_len: ::size_t,
-        msg_prio: ::c_uint,
-        abs_timeout: *const ::timespec,
-    ) -> ::c_int;
-    pub fn mq_unlink(name: *const ::c_char) -> ::c_int;
     pub fn mincore(
         addr: *const ::c_void,
         len: ::size_t,
@@ -1518,6 +1467,58 @@ extern "C" {
 
     pub fn ntp_adjtime(buf: *mut timex) -> ::c_int;
     pub fn ntp_gettime(buf: *mut ntptimeval) -> ::c_int;
+}
+
+#[link(name = "rt")]
+extern "C" {
+    pub fn aio_read(aiocbp: *mut aiocb) -> ::c_int;
+    pub fn aio_write(aiocbp: *mut aiocb) -> ::c_int;
+    pub fn aio_fsync(op: ::c_int, aiocbp: *mut aiocb) -> ::c_int;
+    pub fn aio_error(aiocbp: *const aiocb) -> ::c_int;
+    pub fn aio_return(aiocbp: *mut aiocb) -> ::ssize_t;
+    pub fn aio_suspend(
+        aiocb_list: *const *const aiocb,
+        nitems: ::c_int,
+        timeout: *const ::timespec,
+    ) -> ::c_int;
+    pub fn aio_cancel(fd: ::c_int, aiocbp: *mut aiocb) -> ::c_int;
+    pub fn mq_close(mqd: ::mqd_t) -> ::c_int;
+    pub fn mq_getattr(mqd: ::mqd_t, attr: *mut ::mq_attr) -> ::c_int;
+    pub fn mq_notify(mqd: ::mqd_t, notification: *const ::sigevent)
+        -> ::c_int;
+    pub fn mq_open(name: *const ::c_char, oflag: ::c_int, ...) -> ::mqd_t;
+    pub fn mq_receive(
+        mqd: ::mqd_t,
+        msg_ptr: *mut ::c_char,
+        msg_len: ::size_t,
+        msg_prio: *mut ::c_uint,
+    ) -> ::ssize_t;
+    pub fn mq_send(
+        mqd: ::mqd_t,
+        msg_ptr: *const ::c_char,
+        msg_len: ::size_t,
+        msg_prio: ::c_uint,
+    ) -> ::c_int;
+    pub fn mq_setattr(
+        mqd: ::mqd_t,
+        newattr: *const ::mq_attr,
+        oldattr: *mut ::mq_attr,
+    ) -> ::c_int;
+    pub fn mq_timedreceive(
+        mqd: ::mqd_t,
+        msg_ptr: *mut ::c_char,
+        msg_len: ::size_t,
+        msg_prio: *mut ::c_uint,
+        abs_timeout: *const ::timespec,
+    ) -> ::ssize_t;
+    pub fn mq_timedsend(
+        mqd: ::mqd_t,
+        msg_ptr: *const ::c_char,
+        msg_len: ::size_t,
+        msg_prio: ::c_uint,
+        abs_timeout: *const ::timespec,
+    ) -> ::c_int;
+    pub fn mq_unlink(name: *const ::c_char) -> ::c_int;
 }
 
 #[link(name = "util")]

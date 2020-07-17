@@ -13,7 +13,7 @@
 [package]
 edition = "2018"
 name = "quote"
-version = "1.0.4"
+version = "1.0.7"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 include = ["Cargo.toml", "src/**/*.rs", "tests/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
 description = "Quasi-quoting macro quote!(...)"
@@ -38,5 +38,3 @@ features = ["diff"]
 [features]
 default = ["proc-macro"]
 proc-macro = ["proc-macro2/proc-macro"]
-[badges.travis-ci]
-repository = "dtolnay/quote"

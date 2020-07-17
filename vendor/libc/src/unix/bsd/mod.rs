@@ -1,4 +1,3 @@
-pub type wchar_t = i32;
 pub type off_t = i64;
 pub type useconds_t = u32;
 pub type blkcnt_t = i64;
@@ -498,6 +497,13 @@ pub const REG_TRACE: ::c_int = 0o00400;
 pub const REG_LARGE: ::c_int = 0o01000;
 pub const REG_BACKR: ::c_int = 0o02000;
 
+pub const TIOCCBRK: ::c_uint = 0x2000747a;
+pub const TIOCSBRK: ::c_uint = 0x2000747b;
+
+pub const PRIO_PROCESS: ::c_int = 0;
+pub const PRIO_PGRP: ::c_int = 1;
+pub const PRIO_USER: ::c_int = 2;
+
 f! {
     pub fn CMSG_FIRSTHDR(mhdr: *const ::msghdr) -> *mut ::cmsghdr {
         if (*mhdr).msg_controllen as usize >= ::mem::size_of::<::cmsghdr>() {
@@ -574,7 +580,15 @@ extern "C" {
     pub fn abs(i: ::c_int) -> ::c_int;
     pub fn atof(s: *const ::c_char) -> ::c_double;
     pub fn labs(i: ::c_long) -> ::c_long;
+    #[cfg_attr(
+        all(target_os = "freebsd", any(freebsd12, freebsd11, freebsd10)),
+        link_name = "rand@FBSD_1.0"
+    )]
     pub fn rand() -> ::c_int;
+    #[cfg_attr(
+        all(target_os = "freebsd", any(freebsd12, freebsd11, freebsd10)),
+        link_name = "srand@FBSD_1.0"
+    )]
     pub fn srand(seed: ::c_uint);
 
     pub fn getifaddrs(ifap: *mut *mut ::ifaddrs) -> ::c_int;

@@ -5,7 +5,7 @@ ast_struct! {
     /// Lifetimes and type parameters attached to a declaration of a function,
     /// enum, trait, etc.
     ///
-    /// *This type is available if Syn is built with the `"derive"` or `"full"`
+    /// *This type is available only if Syn is built with the `"derive"` or `"full"`
     /// feature.*
     #[derive(Default)]
     pub struct Generics {
@@ -20,7 +20,7 @@ ast_enum_of_structs! {
     /// A generic type parameter, lifetime, or const generic: `T: Into<String>`,
     /// `'a: 'b`, `const LEN: usize`.
     ///
-    /// *This type is available if Syn is built with the `"derive"` or `"full"`
+    /// *This type is available only if Syn is built with the `"derive"` or `"full"`
     /// feature.*
     ///
     /// # Syntax tree enum
@@ -43,7 +43,7 @@ ast_enum_of_structs! {
 ast_struct! {
     /// A generic type parameter: `T: Into<String>`.
     ///
-    /// *This type is available if Syn is built with the `"derive"` or
+    /// *This type is available only if Syn is built with the `"derive"` or
     /// `"full"` feature.*
     pub struct TypeParam {
         pub attrs: Vec<Attribute>,
@@ -58,7 +58,7 @@ ast_struct! {
 ast_struct! {
     /// A lifetime definition: `'a: 'b + 'c + 'd`.
     ///
-    /// *This type is available if Syn is built with the `"derive"` or
+    /// *This type is available only if Syn is built with the `"derive"` or
     /// `"full"` feature.*
     pub struct LifetimeDef {
         pub attrs: Vec<Attribute>,
@@ -71,7 +71,7 @@ ast_struct! {
 ast_struct! {
     /// A const generic parameter: `const LENGTH: usize`.
     ///
-    /// *This type is available if Syn is built with the `"derive"` or
+    /// *This type is available only if Syn is built with the `"derive"` or
     /// `"full"` feature.*
     pub struct ConstParam {
         pub attrs: Vec<Attribute>,
@@ -277,7 +277,7 @@ impl<'a> Iterator for ConstParamsMut<'a> {
 
 /// Returned by `Generics::split_for_impl`.
 ///
-/// *This type is available if Syn is built with the `"derive"` or `"full"`
+/// *This type is available only if Syn is built with the `"derive"` or `"full"`
 /// feature and the `"printing"` feature.*
 #[cfg(feature = "printing")]
 #[cfg_attr(feature = "extra-traits", derive(Debug, Eq, PartialEq, Hash))]
@@ -286,7 +286,7 @@ pub struct ImplGenerics<'a>(&'a Generics);
 
 /// Returned by `Generics::split_for_impl`.
 ///
-/// *This type is available if Syn is built with the `"derive"` or `"full"`
+/// *This type is available only if Syn is built with the `"derive"` or `"full"`
 /// feature and the `"printing"` feature.*
 #[cfg(feature = "printing")]
 #[cfg_attr(feature = "extra-traits", derive(Debug, Eq, PartialEq, Hash))]
@@ -295,7 +295,7 @@ pub struct TypeGenerics<'a>(&'a Generics);
 
 /// Returned by `TypeGenerics::as_turbofish`.
 ///
-/// *This type is available if Syn is built with the `"derive"` or `"full"`
+/// *This type is available only if Syn is built with the `"derive"` or `"full"`
 /// feature and the `"printing"` feature.*
 #[cfg(feature = "printing")]
 #[cfg_attr(feature = "extra-traits", derive(Debug, Eq, PartialEq, Hash))]
@@ -323,7 +323,7 @@ impl Generics {
     /// # ;
     /// ```
     ///
-    /// *This method is available if Syn is built with the `"derive"` or
+    /// *This method is available only if Syn is built with the `"derive"` or
     /// `"full"` feature and the `"printing"` feature.*
     pub fn split_for_impl(&self) -> (ImplGenerics, TypeGenerics, Option<&WhereClause>) {
         (
@@ -338,7 +338,7 @@ impl Generics {
 impl<'a> TypeGenerics<'a> {
     /// Turn a type's generics like `<X, Y>` into a turbofish like `::<X, Y>`.
     ///
-    /// *This method is available if Syn is built with the `"derive"` or
+    /// *This method is available only if Syn is built with the `"derive"` or
     /// `"full"` feature and the `"printing"` feature.*
     pub fn as_turbofish(&self) -> Turbofish {
         Turbofish(self.0)
@@ -348,7 +348,7 @@ impl<'a> TypeGenerics<'a> {
 ast_struct! {
     /// A set of bound lifetimes: `for<'a, 'b, 'c>`.
     ///
-    /// *This type is available if Syn is built with the `"derive"` or `"full"`
+    /// *This type is available only if Syn is built with the `"derive"` or `"full"`
     /// feature.*
     #[derive(Default)]
     pub struct BoundLifetimes {
@@ -386,7 +386,7 @@ impl From<Ident> for TypeParam {
 ast_enum_of_structs! {
     /// A trait or lifetime used as a bound on a type parameter.
     ///
-    /// *This type is available if Syn is built with the `"derive"` or `"full"`
+    /// *This type is available only if Syn is built with the `"derive"` or `"full"`
     /// feature.*
     pub enum TypeParamBound {
         Trait(TraitBound),
@@ -397,7 +397,7 @@ ast_enum_of_structs! {
 ast_struct! {
     /// A trait used as a bound on a type parameter.
     ///
-    /// *This type is available if Syn is built with the `"derive"` or `"full"`
+    /// *This type is available only if Syn is built with the `"derive"` or `"full"`
     /// feature.*
     pub struct TraitBound {
         pub paren_token: Option<token::Paren>,
@@ -413,7 +413,7 @@ ast_enum! {
     /// A modifier on a trait bound, currently only used for the `?` in
     /// `?Sized`.
     ///
-    /// *This type is available if Syn is built with the `"derive"` or `"full"`
+    /// *This type is available only if Syn is built with the `"derive"` or `"full"`
     /// feature.*
     #[cfg_attr(feature = "clone-impls", derive(Copy))]
     pub enum TraitBoundModifier {
@@ -426,7 +426,7 @@ ast_struct! {
     /// A `where` clause in a definition: `where T: Deserialize<'de>, D:
     /// 'static`.
     ///
-    /// *This type is available if Syn is built with the `"derive"` or `"full"`
+    /// *This type is available only if Syn is built with the `"derive"` or `"full"`
     /// feature.*
     pub struct WhereClause {
         pub where_token: Token![where],
@@ -437,7 +437,7 @@ ast_struct! {
 ast_enum_of_structs! {
     /// A single predicate in a `where` clause: `T: Deserialize<'de>`.
     ///
-    /// *This type is available if Syn is built with the `"derive"` or `"full"`
+    /// *This type is available only if Syn is built with the `"derive"` or `"full"`
     /// feature.*
     ///
     /// # Syntax tree enum
@@ -460,7 +460,7 @@ ast_enum_of_structs! {
 ast_struct! {
     /// A type predicate in a `where` clause: `for<'c> Foo<'c>: Trait<'c>`.
     ///
-    /// *This type is available if Syn is built with the `"derive"` or
+    /// *This type is available only if Syn is built with the `"derive"` or
     /// `"full"` feature.*
     pub struct PredicateType {
         /// Any lifetimes from a `for` binding
@@ -476,7 +476,7 @@ ast_struct! {
 ast_struct! {
     /// A lifetime predicate in a `where` clause: `'a: 'b + 'c`.
     ///
-    /// *This type is available if Syn is built with the `"derive"` or
+    /// *This type is available only if Syn is built with the `"derive"` or
     /// `"full"` feature.*
     pub struct PredicateLifetime {
         pub lifetime: Lifetime,
@@ -488,7 +488,7 @@ ast_struct! {
 ast_struct! {
     /// An equality predicate in a `where` clause (unsupported).
     ///
-    /// *This type is available if Syn is built with the `"derive"` or
+    /// *This type is available only if Syn is built with the `"derive"` or
     /// `"full"` feature.*
     pub struct PredicateEq {
         pub lhs_ty: Type,
@@ -657,57 +657,53 @@ pub mod parsing {
 
     impl Parse for TypeParam {
         fn parse(input: ParseStream) -> Result<Self> {
-            let has_colon;
-            let has_default;
+            let attrs = input.call(Attribute::parse_outer)?;
+            let ident: Ident = input.parse()?;
+            let colon_token: Option<Token![:]> = input.parse()?;
+
+            let begin_bound = input.fork();
+            let mut is_maybe_const = false;
+            let mut bounds = Punctuated::new();
+            if colon_token.is_some() {
+                loop {
+                    if input.peek(Token![,]) || input.peek(Token![>]) || input.peek(Token![=]) {
+                        break;
+                    }
+                    if input.peek(Token![?]) && input.peek2(Token![const]) {
+                        input.parse::<Token![?]>()?;
+                        input.parse::<Token![const]>()?;
+                        is_maybe_const = true;
+                    }
+                    let value: TypeParamBound = input.parse()?;
+                    bounds.push_value(value);
+                    if !input.peek(Token![+]) {
+                        break;
+                    }
+                    let punct: Token![+] = input.parse()?;
+                    bounds.push_punct(punct);
+                }
+            }
+
+            let mut eq_token: Option<Token![=]> = input.parse()?;
+            let mut default = if eq_token.is_some() {
+                Some(input.parse::<Type>()?)
+            } else {
+                None
+            };
+
+            if is_maybe_const {
+                bounds.clear();
+                eq_token = None;
+                default = Some(Type::Verbatim(verbatim::between(begin_bound, input)));
+            }
+
             Ok(TypeParam {
-                attrs: input.call(Attribute::parse_outer)?,
-                ident: input.parse()?,
-                colon_token: {
-                    if input.peek(Token![:]) {
-                        has_colon = true;
-                        Some(input.parse()?)
-                    } else {
-                        has_colon = false;
-                        None
-                    }
-                },
-                bounds: {
-                    let mut bounds = Punctuated::new();
-                    if has_colon {
-                        loop {
-                            if input.peek(Token![,])
-                                || input.peek(Token![>])
-                                || input.peek(Token![=])
-                            {
-                                break;
-                            }
-                            let value = input.parse()?;
-                            bounds.push_value(value);
-                            if !input.peek(Token![+]) {
-                                break;
-                            }
-                            let punct = input.parse()?;
-                            bounds.push_punct(punct);
-                        }
-                    }
-                    bounds
-                },
-                eq_token: {
-                    if input.peek(Token![=]) {
-                        has_default = true;
-                        Some(input.parse()?)
-                    } else {
-                        has_default = false;
-                        None
-                    }
-                },
-                default: {
-                    if has_default {
-                        Some(input.parse()?)
-                    } else {
-                        None
-                    }
-                },
+                attrs,
+                ident,
+                colon_token,
+                bounds,
+                eq_token,
+                default,
             })
         }
     }
@@ -890,6 +886,8 @@ mod printing {
     use super::*;
 
     use proc_macro2::TokenStream;
+    #[cfg(feature = "full")]
+    use proc_macro2::TokenTree;
     use quote::{ToTokens, TokenStreamExt};
 
     use crate::attr::FilterAttrs;
@@ -1072,9 +1070,25 @@ mod printing {
                 TokensOrDefault(&self.colon_token).to_tokens(tokens);
                 self.bounds.to_tokens(tokens);
             }
-            if self.default.is_some() {
+            if let Some(default) = &self.default {
+                #[cfg(feature = "full")]
+                {
+                    if self.eq_token.is_none() {
+                        if let Type::Verbatim(default) = default {
+                            let mut iter = default.clone().into_iter();
+                            match (iter.next(), iter.next()) {
+                                (Some(TokenTree::Punct(ref q)), Some(TokenTree::Ident(ref c)))
+                                    if q.as_char() == '?' && c == "const" =>
+                                {
+                                    return default.to_tokens(tokens);
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                }
                 TokensOrDefault(&self.eq_token).to_tokens(tokens);
-                self.default.to_tokens(tokens);
+                default.to_tokens(tokens);
             }
         }
     }

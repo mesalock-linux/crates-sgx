@@ -1,7 +1,7 @@
 use crate::detection::inside_proc_macro;
 use crate::{fallback, Delimiter, Punct, Spacing, TokenTree};
-use std::fmt;
-use std::iter;
+use std::fmt::{self, Debug, Display};
+use std::iter::FromIterator;
 use std::ops::RangeBounds;
 use std::panic;
 #[cfg(super_unstable)]
@@ -106,11 +106,11 @@ fn proc_macro_parse(src: &str) -> Result<proc_macro::TokenStream, LexError> {
         .unwrap_or(Err(LexError::Fallback(fallback::LexError)))
 }
 
-impl fmt::Display for TokenStream {
+impl Display for TokenStream {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            TokenStream::Compiler(tts) => tts.clone().into_token_stream().fmt(f),
-            TokenStream::Fallback(tts) => tts.fmt(f),
+            TokenStream::Compiler(tts) => Display::fmt(&tts.clone().into_token_stream(), f),
+            TokenStream::Fallback(tts) => Display::fmt(tts, f),
         }
     }
 }
@@ -164,7 +164,7 @@ impl From<TokenTree> for TokenStream {
     }
 }
 
-impl iter::FromIterator<TokenTree> for TokenStream {
+impl FromIterator<TokenTree> for TokenStream {
     fn from_iter<I: IntoIterator<Item = TokenTree>>(trees: I) -> Self {
         if inside_proc_macro() {
             TokenStream::Compiler(DeferredTokenStream::new(
@@ -176,7 +176,7 @@ impl iter::FromIterator<TokenTree> for TokenStream {
     }
 }
 
-impl iter::FromIterator<TokenStream> for TokenStream {
+impl FromIterator<TokenStream> for TokenStream {
     fn from_iter<I: IntoIterator<Item = TokenStream>>(streams: I) -> Self {
         let mut streams = streams.into_iter();
         match streams.next() {
@@ -228,11 +228,11 @@ impl Extend<TokenStream> for TokenStream {
     }
 }
 
-impl fmt::Debug for TokenStream {
+impl Debug for TokenStream {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            TokenStream::Compiler(tts) => tts.clone().into_token_stream().fmt(f),
-            TokenStream::Fallback(tts) => tts.fmt(f),
+            TokenStream::Compiler(tts) => Debug::fmt(&tts.clone().into_token_stream(), f),
+            TokenStream::Fallback(tts) => Debug::fmt(tts, f),
         }
     }
 }
@@ -249,11 +249,11 @@ impl From<fallback::LexError> for LexError {
     }
 }
 
-impl fmt::Debug for LexError {
+impl Debug for LexError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            LexError::Compiler(e) => e.fmt(f),
-            LexError::Fallback(e) => e.fmt(f),
+            LexError::Compiler(e) => Debug::fmt(e, f),
+            LexError::Fallback(e) => Debug::fmt(e, f),
         }
     }
 }
@@ -310,7 +310,7 @@ impl Iterator for TokenTreeIter {
     }
 }
 
-impl fmt::Debug for TokenTreeIter {
+impl Debug for TokenTreeIter {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("TokenTreeIter").finish()
     }
@@ -346,11 +346,11 @@ impl SourceFile {
 }
 
 #[cfg(super_unstable)]
-impl fmt::Debug for SourceFile {
+impl Debug for SourceFile {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            SourceFile::Compiler(a) => a.fmt(f),
-            SourceFile::Fallback(a) => a.fmt(f),
+            SourceFile::Compiler(a) => Debug::fmt(a, f),
+            SourceFile::Fallback(a) => Debug::fmt(a, f),
         }
     }
 }
@@ -376,6 +376,16 @@ impl Span {
         }
     }
 
+    #[cfg(procmacro2_semver_exempt)]
+    #[cfg(hygiene)]
+    pub fn mixed_site() -> Span {
+        if inside_proc_macro() {
+            Span::Compiler(proc_macro::Span::mixed_site())
+        } else {
+            Span::Fallback(fallback::Span::mixed_site())
+        }
+    }
+
     #[cfg(super_unstable)]
     pub fn def_site() -> Span {
         if inside_proc_macro() {
@@ -385,19 +395,31 @@ impl Span {
         }
     }
 
-    #[cfg(super_unstable)]
+    #[cfg(procmacro2_semver_exempt)]
     pub fn resolved_at(&self, other: Span) -> Span {
         match (self, other) {
+            #[cfg(hygiene)]
             (Span::Compiler(a), Span::Compiler(b)) => Span::Compiler(a.resolved_at(b)),
+
+            // Name resolution affects semantics, but location is only cosmetic
+            #[cfg(not(hygiene))]
+            (Span::Compiler(_), Span::Compiler(_)) => other,
+
             (Span::Fallback(a), Span::Fallback(b)) => Span::Fallback(a.resolved_at(b)),
             _ => mismatch(),
         }
     }
 
-    #[cfg(super_unstable)]
+    #[cfg(procmacro2_semver_exempt)]
     pub fn located_at(&self, other: Span) -> Span {
         match (self, other) {
+            #[cfg(hygiene)]
             (Span::Compiler(a), Span::Compiler(b)) => Span::Compiler(a.located_at(b)),
+
+            // Name resolution affects semantics, but location is only cosmetic
+            #[cfg(not(hygiene))]
+            (Span::Compiler(_), Span::Compiler(_)) => *self,
+
             (Span::Fallback(a), Span::Fallback(b)) => Span::Fallback(a.located_at(b)),
             _ => mismatch(),
         }
@@ -491,11 +513,11 @@ impl From<fallback::Span> for Span {
     }
 }
 
-impl fmt::Debug for Span {
+impl Debug for Span {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Span::Compiler(s) => s.fmt(f),
-            Span::Fallback(s) => s.fmt(f),
+            Span::Compiler(s) => Debug::fmt(s, f),
+            Span::Fallback(s) => Debug::fmt(s, f),
         }
     }
 }
@@ -601,20 +623,20 @@ impl From<fallback::Group> for Group {
     }
 }
 
-impl fmt::Display for Group {
+impl Display for Group {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Group::Compiler(group) => group.fmt(formatter),
-            Group::Fallback(group) => group.fmt(formatter),
+            Group::Compiler(group) => Display::fmt(group, formatter),
+            Group::Fallback(group) => Display::fmt(group, formatter),
         }
     }
 }
 
-impl fmt::Debug for Group {
+impl Debug for Group {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Group::Compiler(group) => group.fmt(formatter),
-            Group::Fallback(group) => group.fmt(formatter),
+            Group::Compiler(group) => Debug::fmt(group, formatter),
+            Group::Fallback(group) => Debug::fmt(group, formatter),
         }
     }
 }
@@ -696,20 +718,20 @@ where
     }
 }
 
-impl fmt::Display for Ident {
+impl Display for Ident {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Ident::Compiler(t) => t.fmt(f),
-            Ident::Fallback(t) => t.fmt(f),
+            Ident::Compiler(t) => Display::fmt(t, f),
+            Ident::Fallback(t) => Display::fmt(t, f),
         }
     }
 }
 
-impl fmt::Debug for Ident {
+impl Debug for Ident {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Ident::Compiler(t) => t.fmt(f),
-            Ident::Fallback(t) => t.fmt(f),
+            Ident::Compiler(t) => Debug::fmt(t, f),
+            Ident::Fallback(t) => Debug::fmt(t, f),
         }
     }
 }
@@ -857,20 +879,20 @@ impl From<fallback::Literal> for Literal {
     }
 }
 
-impl fmt::Display for Literal {
+impl Display for Literal {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Literal::Compiler(t) => t.fmt(f),
-            Literal::Fallback(t) => t.fmt(f),
+            Literal::Compiler(t) => Display::fmt(t, f),
+            Literal::Fallback(t) => Display::fmt(t, f),
         }
     }
 }
 
-impl fmt::Debug for Literal {
+impl Debug for Literal {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Literal::Compiler(t) => t.fmt(f),
-            Literal::Fallback(t) => t.fmt(f),
+            Literal::Compiler(t) => Debug::fmt(t, f),
+            Literal::Fallback(t) => Debug::fmt(t, f),
         }
     }
 }

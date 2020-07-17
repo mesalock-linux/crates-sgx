@@ -13,9 +13,10 @@
 [package]
 edition = "2018"
 name = "inventory-impl"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 description = "Implementation of macros for the `inventory` crate"
+documentation = "https://docs.rs/inventory"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dtolnay/inventory"
 [package.metadata.docs.rs]
@@ -31,5 +32,3 @@ version = "1.0"
 
 [dependencies.syn]
 version = "1.0"
-[badges.travis-ci]
-repository = "dtolnay/inventory"

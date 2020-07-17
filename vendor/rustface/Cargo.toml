@@ -17,14 +17,17 @@ default = ["mesalock_sgx"]
 mesalock_sgx = [
   "sgx_tstd",
 ]
+include_default_model = [ ]
 
 [dependencies]
 num = { git = "https://github.com/mesalock-linux/num-sgx" }
 byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
 sgx_tstd = { git = "https://github.com/apache/teaclave-sgx-sdk", rev = "v1.1.2", optional = true }
+serde = { git = "https://github.com/mesalock-linux/serde-sgx", features = ["derive"] }
+serde_json = { git = "https://github.com/mesalock-linux/serde-json-sgx" }
 
 # [dev-dependencies]
-# image = "0.21.0"
+image = { git = "https://github.com/mesalock-linux/image-sgx" }
 # imageproc = "0.18.0"
 # criterion = "0.2.4"
 

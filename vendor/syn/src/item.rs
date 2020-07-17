@@ -13,7 +13,7 @@ use std::mem;
 ast_enum_of_structs! {
     /// Things that can appear directly inside of a module or scope.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     ///
     /// # Syntax tree enum
     ///
@@ -85,7 +85,7 @@ ast_enum_of_structs! {
 ast_struct! {
     /// A constant item: `const MAX: u16 = 65535`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemConst {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -102,7 +102,7 @@ ast_struct! {
 ast_struct! {
     /// An enum definition: `enum Foo<A, B> { A(A), B(B) }`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemEnum {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -117,7 +117,7 @@ ast_struct! {
 ast_struct! {
     /// An `extern crate` item: `extern crate serde`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemExternCrate {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -133,7 +133,7 @@ ast_struct! {
     /// A free-standing function: `fn process(n: usize) -> Result<()> { ...
     /// }`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemFn {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -145,7 +145,7 @@ ast_struct! {
 ast_struct! {
     /// A block of foreign items: `extern "C" { ... }`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemForeignMod {
         pub attrs: Vec<Attribute>,
         pub abi: Abi,
@@ -158,7 +158,7 @@ ast_struct! {
     /// An impl block providing trait or associated items: `impl<A> Trait
     /// for Data<A> { ... }`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemImpl {
         pub attrs: Vec<Attribute>,
         pub defaultness: Option<Token![default]>,
@@ -177,7 +177,7 @@ ast_struct! {
 ast_struct! {
     /// A macro invocation, which includes `macro_rules!` definitions.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemMacro {
         pub attrs: Vec<Attribute>,
         /// The `example` in `macro_rules! example { ... }`.
@@ -190,7 +190,7 @@ ast_struct! {
 ast_struct! {
     /// A 2.0-style declarative macro introduced by the `macro` keyword.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemMacro2 #manual_extra_traits {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -203,7 +203,7 @@ ast_struct! {
 ast_struct! {
     /// A module or module declaration: `mod m` or `mod m { ... }`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemMod {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -217,7 +217,7 @@ ast_struct! {
 ast_struct! {
     /// A static item: `static BIKE: Shed = Shed(42)`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemStatic {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -235,7 +235,7 @@ ast_struct! {
 ast_struct! {
     /// A struct definition: `struct Foo<A> { x: A }`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemStruct {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -250,7 +250,7 @@ ast_struct! {
 ast_struct! {
     /// A trait definition: `pub trait Iterator { ... }`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemTrait {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -269,7 +269,7 @@ ast_struct! {
 ast_struct! {
     /// A trait alias: `pub trait SharableIterator = Iterator + Sync`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemTraitAlias {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -285,7 +285,7 @@ ast_struct! {
 ast_struct! {
     /// A type alias: `type Result<T> = std::result::Result<T, MyError>`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemType {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -301,7 +301,7 @@ ast_struct! {
 ast_struct! {
     /// A union definition: `union Foo<A, B> { x: A, y: B }`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemUnion {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -315,7 +315,7 @@ ast_struct! {
 ast_struct! {
     /// A use declaration: `use std::collections::HashMap`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ItemUse {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -574,7 +574,7 @@ impl From<ItemUnion> for DeriveInput {
 ast_enum_of_structs! {
     /// A suffix of an import tree in a `use` item: `Type as Renamed` or `*`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     ///
     /// # Syntax tree enum
     ///
@@ -605,7 +605,7 @@ ast_enum_of_structs! {
 ast_struct! {
     /// A path prefix of imports in a `use` item: `std::...`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct UsePath {
         pub ident: Ident,
         pub colon2_token: Token![::],
@@ -616,7 +616,7 @@ ast_struct! {
 ast_struct! {
     /// An identifier imported by a `use` item: `HashMap`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct UseName {
         pub ident: Ident,
     }
@@ -625,7 +625,7 @@ ast_struct! {
 ast_struct! {
     /// An renamed identifier imported by a `use` item: `HashMap as Map`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct UseRename {
         pub ident: Ident,
         pub as_token: Token![as],
@@ -636,7 +636,7 @@ ast_struct! {
 ast_struct! {
     /// A glob import in a `use` item: `*`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct UseGlob {
         pub star_token: Token![*],
     }
@@ -645,7 +645,7 @@ ast_struct! {
 ast_struct! {
     /// A braced group of imports in a `use` item: `{A, B, C}`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct UseGroup {
         pub brace_token: token::Brace,
         pub items: Punctuated<UseTree, Token![,]>,
@@ -655,7 +655,7 @@ ast_struct! {
 ast_enum_of_structs! {
     /// An item within an `extern` block.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     ///
     /// # Syntax tree enum
     ///
@@ -689,7 +689,7 @@ ast_enum_of_structs! {
 ast_struct! {
     /// A foreign function in an `extern` block.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ForeignItemFn {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -701,7 +701,7 @@ ast_struct! {
 ast_struct! {
     /// A foreign static item in an `extern` block: `static ext: u8`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ForeignItemStatic {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -717,7 +717,7 @@ ast_struct! {
 ast_struct! {
     /// A foreign type in an `extern` block: `type void`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ForeignItemType {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -730,7 +730,7 @@ ast_struct! {
 ast_struct! {
     /// A macro invocation within an extern block.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ForeignItemMacro {
         pub attrs: Vec<Attribute>,
         pub mac: Macro,
@@ -792,7 +792,7 @@ impl Hash for ForeignItem {
 ast_enum_of_structs! {
     /// An item declaration within the definition of a trait.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     ///
     /// # Syntax tree enum
     ///
@@ -826,7 +826,7 @@ ast_enum_of_structs! {
 ast_struct! {
     /// An associated constant within the definition of a trait.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct TraitItemConst {
         pub attrs: Vec<Attribute>,
         pub const_token: Token![const],
@@ -841,7 +841,7 @@ ast_struct! {
 ast_struct! {
     /// A trait method within the definition of a trait.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct TraitItemMethod {
         pub attrs: Vec<Attribute>,
         pub sig: Signature,
@@ -853,7 +853,7 @@ ast_struct! {
 ast_struct! {
     /// An associated type within the definition of a trait.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct TraitItemType {
         pub attrs: Vec<Attribute>,
         pub type_token: Token![type],
@@ -869,7 +869,7 @@ ast_struct! {
 ast_struct! {
     /// A macro invocation within the definition of a trait.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct TraitItemMacro {
         pub attrs: Vec<Attribute>,
         pub mac: Macro,
@@ -931,7 +931,7 @@ impl Hash for TraitItem {
 ast_enum_of_structs! {
     /// An item within an impl block.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     ///
     /// # Syntax tree enum
     ///
@@ -965,7 +965,7 @@ ast_enum_of_structs! {
 ast_struct! {
     /// An associated constant within an impl block.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ImplItemConst {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -983,7 +983,7 @@ ast_struct! {
 ast_struct! {
     /// A method within an impl block.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ImplItemMethod {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -996,7 +996,7 @@ ast_struct! {
 ast_struct! {
     /// An associated type within an impl block.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ImplItemType {
         pub attrs: Vec<Attribute>,
         pub vis: Visibility,
@@ -1013,7 +1013,7 @@ ast_struct! {
 ast_struct! {
     /// A macro invocation within an impl block.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct ImplItemMacro {
         pub attrs: Vec<Attribute>,
         pub mac: Macro,
@@ -1076,7 +1076,7 @@ ast_struct! {
     /// A function signature in a trait or implementation: `unsafe fn
     /// initialize(&self)`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct Signature {
         pub constness: Option<Token![const]>,
         pub asyncness: Option<Token![async]>,
@@ -1113,7 +1113,7 @@ impl Signature {
 ast_enum_of_structs! {
     /// An argument in a function signature: the `n: usize` in `fn f(n: usize)`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub enum FnArg {
         /// The `self` argument of an associated method, whether taken by value
         /// or by reference.
@@ -1134,7 +1134,7 @@ ast_struct! {
     /// Note that `self` receivers with a specified type, such as `self:
     /// Box<Self>`, are parsed as a `FnArg::Typed`.
     ///
-    /// *This type is available if Syn is built with the `"full"` feature.*
+    /// *This type is available only if Syn is built with the `"full"` feature.*
     pub struct Receiver {
         pub attrs: Vec<Attribute>,
         pub reference: Option<(Token![&], Option<Lifetime>)>,
@@ -1164,18 +1164,26 @@ pub mod parsing {
 
     impl Parse for Item {
         fn parse(input: ParseStream) -> Result<Self> {
+            let begin = input.fork();
             let mut attrs = input.call(Attribute::parse_outer)?;
             let ahead = input.fork();
             let vis: Visibility = ahead.parse()?;
 
             let lookahead = ahead.lookahead1();
-            let mut item = if lookahead.peek(Token![extern]) {
+            let mut item = if lookahead.peek(Token![fn]) || peek_signature(&ahead) {
+                let vis: Visibility = input.parse()?;
+                let sig = parse_signature(input)?;
+                if input.peek(Token![;]) {
+                    input.parse::<Token![;]>()?;
+                    Ok(Item::Verbatim(verbatim::between(begin, input)))
+                } else {
+                    parse_rest_of_fn(input, Vec::new(), vis, sig).map(Item::Fn)
+                }
+            } else if lookahead.peek(Token![extern]) {
                 ahead.parse::<Token![extern]>()?;
                 let lookahead = ahead.lookahead1();
                 if lookahead.peek(Token![crate]) {
                     input.parse().map(Item::ExternCrate)
-                } else if lookahead.peek(Token![fn]) {
-                    input.parse().map(Item::Fn)
                 } else if lookahead.peek(token::Brace) {
                     input.parse().map(Item::ForeignMod)
                 } else if lookahead.peek(LitStr) {
@@ -1183,8 +1191,6 @@ pub mod parsing {
                     let lookahead = ahead.lookahead1();
                     if lookahead.peek(token::Brace) {
                         input.parse().map(Item::ForeignMod)
-                    } else if lookahead.peek(Token![fn]) {
-                        input.parse().map(Item::Fn)
                     } else {
                         Err(lookahead.error())
                     }
@@ -1194,18 +1200,61 @@ pub mod parsing {
             } else if lookahead.peek(Token![use]) {
                 input.parse().map(Item::Use)
             } else if lookahead.peek(Token![static]) {
-                input.parse().map(Item::Static)
+                let vis = input.parse()?;
+                let static_token = input.parse()?;
+                let mutability = input.parse()?;
+                let ident = input.parse()?;
+                let colon_token = input.parse()?;
+                let ty = input.parse()?;
+                if input.peek(Token![;]) {
+                    input.parse::<Token![;]>()?;
+                    Ok(Item::Verbatim(verbatim::between(begin, input)))
+                } else {
+                    Ok(Item::Static(ItemStatic {
+                        attrs: Vec::new(),
+                        vis,
+                        static_token,
+                        mutability,
+                        ident,
+                        colon_token,
+                        ty,
+                        eq_token: input.parse()?,
+                        expr: input.parse()?,
+                        semi_token: input.parse()?,
+                    }))
+                }
             } else if lookahead.peek(Token![const]) {
                 ahead.parse::<Token![const]>()?;
                 let lookahead = ahead.lookahead1();
                 if lookahead.peek(Ident) || lookahead.peek(Token![_]) {
-                    input.parse().map(Item::Const)
-                } else if lookahead.peek(Token![unsafe])
-                    || lookahead.peek(Token![async])
-                    || lookahead.peek(Token![extern])
-                    || lookahead.peek(Token![fn])
-                {
-                    input.parse().map(Item::Fn)
+                    let vis = input.parse()?;
+                    let const_token = input.parse()?;
+                    let ident = {
+                        let lookahead = input.lookahead1();
+                        if lookahead.peek(Ident) || lookahead.peek(Token![_]) {
+                            input.call(Ident::parse_any)?
+                        } else {
+                            return Err(lookahead.error());
+                        }
+                    };
+                    let colon_token = input.parse()?;
+                    let ty = input.parse()?;
+                    if input.peek(Token![;]) {
+                        input.parse::<Token![;]>()?;
+                        Ok(Item::Verbatim(verbatim::between(begin, input)))
+                    } else {
+                        Ok(Item::Const(ItemConst {
+                            attrs: Vec::new(),
+                            vis,
+                            const_token,
+                            ident,
+                            colon_token,
+                            ty,
+                            eq_token: input.parse()?,
+                            expr: input.parse()?,
+                            semi_token: input.parse()?,
+                        }))
+                    }
                 } else {
                     Err(lookahead.error())
                 }
@@ -1217,21 +1266,19 @@ pub mod parsing {
                 {
                     input.parse().map(Item::Trait)
                 } else if lookahead.peek(Token![impl]) {
-                    input.parse().map(Item::Impl)
-                } else if lookahead.peek(Token![async])
-                    || lookahead.peek(Token![extern])
-                    || lookahead.peek(Token![fn])
-                {
-                    input.parse().map(Item::Fn)
+                    let allow_const_impl = true;
+                    if let Some(item) = parse_impl(input, allow_const_impl)? {
+                        Ok(Item::Impl(item))
+                    } else {
+                        Ok(Item::Verbatim(verbatim::between(begin, input)))
+                    }
                 } else {
                     Err(lookahead.error())
                 }
-            } else if lookahead.peek(Token![async]) || lookahead.peek(Token![fn]) {
-                input.parse().map(Item::Fn)
             } else if lookahead.peek(Token![mod]) {
                 input.parse().map(Item::Mod)
             } else if lookahead.peek(Token![type]) {
-                input.parse().map(Item::Type)
+                parse_item_type(begin, input)
             } else if lookahead.peek(existential) {
                 input.call(item_existential).map(Item::Verbatim)
             } else if lookahead.peek(Token![struct]) {
@@ -1247,14 +1294,18 @@ pub mod parsing {
             } else if lookahead.peek(Token![impl])
                 || lookahead.peek(Token![default]) && !ahead.peek2(Token![!])
             {
-                input.parse().map(Item::Impl)
+                let allow_const_impl = true;
+                if let Some(item) = parse_impl(input, allow_const_impl)? {
+                    Ok(Item::Impl(item))
+                } else {
+                    Ok(Item::Verbatim(verbatim::between(begin, input)))
+                }
             } else if lookahead.peek(Token![macro]) {
                 input.parse().map(Item::Macro2)
             } else if vis.is_inherited()
                 && (lookahead.peek(Ident)
                     || lookahead.peek(Token![self])
                     || lookahead.peek(Token![super])
-                    || lookahead.peek(Token![extern])
                     || lookahead.peek(Token![crate])
                     || lookahead.peek(Token![::]))
             {
@@ -1266,6 +1317,61 @@ pub mod parsing {
             attrs.extend(item.replace_attrs(Vec::new()));
             item.replace_attrs(attrs);
             Ok(item)
+        }
+    }
+
+    struct FlexibleItemType {
+        vis: Visibility,
+        defaultness: Option<Token![default]>,
+        type_token: Token![type],
+        ident: Ident,
+        generics: Generics,
+        colon_token: Option<Token![:]>,
+        bounds: Punctuated<TypeParamBound, Token![+]>,
+        ty: Option<(Token![=], Type)>,
+        semi_token: Token![;],
+    }
+
+    impl Parse for FlexibleItemType {
+        fn parse(input: ParseStream) -> Result<Self> {
+            let vis: Visibility = input.parse()?;
+            let defaultness: Option<Token![default]> = input.parse()?;
+            let type_token: Token![type] = input.parse()?;
+            let ident: Ident = input.parse()?;
+            let mut generics: Generics = input.parse()?;
+            let colon_token: Option<Token![:]> = input.parse()?;
+            let mut bounds = Punctuated::new();
+            if colon_token.is_some() {
+                loop {
+                    bounds.push_value(input.parse::<TypeParamBound>()?);
+                    if input.peek(Token![where]) || input.peek(Token![=]) || input.peek(Token![;]) {
+                        break;
+                    }
+                    bounds.push_punct(input.parse::<Token![+]>()?);
+                    if input.peek(Token![where]) || input.peek(Token![=]) || input.peek(Token![;]) {
+                        break;
+                    }
+                }
+            }
+            generics.where_clause = input.parse()?;
+            let ty = if let Some(eq_token) = input.parse()? {
+                Some((eq_token, input.parse::<Type>()?))
+            } else {
+                None
+            };
+            let semi_token: Token![;] = input.parse()?;
+
+            Ok(FlexibleItemType {
+                vis,
+                defaultness,
+                type_token,
+                ident,
+                generics,
+                colon_token,
+                bounds,
+                ty,
+                semi_token,
+            })
         }
     }
 
@@ -1387,7 +1493,6 @@ pub mod parsing {
                 || lookahead.peek(Token![self])
                 || lookahead.peek(Token![super])
                 || lookahead.peek(Token![crate])
-                || lookahead.peek(Token![extern])
             {
                 let ident = input.call(Ident::parse_any)?;
                 if input.peek(Token![::]) {
@@ -1517,53 +1622,76 @@ pub mod parsing {
         ])
     }
 
+    fn peek_signature(input: ParseStream) -> bool {
+        let fork = input.fork();
+        fork.parse::<Option<Token![const]>>().is_ok()
+            && fork.parse::<Option<Token![async]>>().is_ok()
+            && fork.parse::<Option<Token![unsafe]>>().is_ok()
+            && fork.parse::<Option<Abi>>().is_ok()
+            && fork.peek(Token![fn])
+    }
+
+    fn parse_signature(input: ParseStream) -> Result<Signature> {
+        let constness: Option<Token![const]> = input.parse()?;
+        let asyncness: Option<Token![async]> = input.parse()?;
+        let unsafety: Option<Token![unsafe]> = input.parse()?;
+        let abi: Option<Abi> = input.parse()?;
+        let fn_token: Token![fn] = input.parse()?;
+        let ident: Ident = input.parse()?;
+        let generics: Generics = input.parse()?;
+
+        let content;
+        let paren_token = parenthesized!(content in input);
+        let mut inputs = parse_fn_args(&content)?;
+        let variadic = pop_variadic(&mut inputs);
+
+        let output: ReturnType = input.parse()?;
+        let where_clause: Option<WhereClause> = input.parse()?;
+
+        Ok(Signature {
+            constness,
+            asyncness,
+            unsafety,
+            abi,
+            fn_token,
+            ident,
+            paren_token,
+            inputs,
+            output,
+            variadic,
+            generics: Generics {
+                where_clause,
+                ..generics
+            },
+        })
+    }
+
     impl Parse for ItemFn {
         fn parse(input: ParseStream) -> Result<Self> {
             let outer_attrs = input.call(Attribute::parse_outer)?;
             let vis: Visibility = input.parse()?;
-            let constness: Option<Token![const]> = input.parse()?;
-            let asyncness: Option<Token![async]> = input.parse()?;
-            let unsafety: Option<Token![unsafe]> = input.parse()?;
-            let abi: Option<Abi> = input.parse()?;
-            let fn_token: Token![fn] = input.parse()?;
-            let ident: Ident = input.parse()?;
-            let generics: Generics = input.parse()?;
-
-            let content;
-            let paren_token = parenthesized!(content in input);
-            let mut inputs = parse_fn_args(&content)?;
-            let variadic = pop_variadic(&mut inputs);
-
-            let output: ReturnType = input.parse()?;
-            let where_clause: Option<WhereClause> = input.parse()?;
-
-            let content;
-            let brace_token = braced!(content in input);
-            let inner_attrs = content.call(Attribute::parse_inner)?;
-            let stmts = content.call(Block::parse_within)?;
-
-            Ok(ItemFn {
-                attrs: private::attrs(outer_attrs, inner_attrs),
-                vis,
-                sig: Signature {
-                    constness,
-                    asyncness,
-                    unsafety,
-                    abi,
-                    fn_token,
-                    ident,
-                    paren_token,
-                    inputs,
-                    output,
-                    variadic,
-                    generics: Generics {
-                        where_clause,
-                        ..generics
-                    },
-                },
-                block: Box::new(Block { brace_token, stmts }),
-            })
+            let sig = parse_signature(input)?;
+            parse_rest_of_fn(input, outer_attrs, vis, sig)
         }
+    }
+
+    fn parse_rest_of_fn(
+        input: ParseStream,
+        outer_attrs: Vec<Attribute>,
+        vis: Visibility,
+        sig: Signature,
+    ) -> Result<ItemFn> {
+        let content;
+        let brace_token = braced!(content in input);
+        let inner_attrs = content.call(Attribute::parse_inner)?;
+        let stmts = content.call(Block::parse_within)?;
+
+        Ok(ItemFn {
+            attrs: private::attrs(outer_attrs, inner_attrs),
+            vis,
+            sig,
+            block: Box::new(Block { brace_token, stmts }),
+        })
     }
 
     impl Parse for FnArg {
@@ -1671,7 +1799,7 @@ pub mod parsing {
 
         Ok(PatType {
             attrs: Vec::new(),
-            pat: input.parse()?,
+            pat: Box::new(pat::parsing::multi_pat(input)?),
             colon_token: input.parse()?,
             ty: Box::new(match input.parse::<Option<Token![...]>>()? {
                 Some(dot3) => Type::Verbatim(variadic_to_tokens(&dot3)),
@@ -1751,17 +1879,54 @@ pub mod parsing {
             let vis: Visibility = ahead.parse()?;
 
             let lookahead = ahead.lookahead1();
-            let mut item = if lookahead.peek(Token![fn]) {
-                input.parse().map(ForeignItem::Fn)
+            let mut item = if lookahead.peek(Token![fn]) || peek_signature(&ahead) {
+                let vis: Visibility = input.parse()?;
+                let sig = parse_signature(input)?;
+                if input.peek(token::Brace) {
+                    let content;
+                    braced!(content in input);
+                    content.call(Attribute::parse_inner)?;
+                    content.call(Block::parse_within)?;
+
+                    Ok(ForeignItem::Verbatim(verbatim::between(begin, input)))
+                } else {
+                    Ok(ForeignItem::Fn(ForeignItemFn {
+                        attrs: Vec::new(),
+                        vis,
+                        sig,
+                        semi_token: input.parse()?,
+                    }))
+                }
             } else if lookahead.peek(Token![static]) {
-                input.parse().map(ForeignItem::Static)
+                let vis = input.parse()?;
+                let static_token = input.parse()?;
+                let mutability = input.parse()?;
+                let ident = input.parse()?;
+                let colon_token = input.parse()?;
+                let ty = input.parse()?;
+                if input.peek(Token![=]) {
+                    input.parse::<Token![=]>()?;
+                    input.parse::<Expr>()?;
+                    input.parse::<Token![;]>()?;
+                    Ok(ForeignItem::Verbatim(verbatim::between(begin, input)))
+                } else {
+                    Ok(ForeignItem::Static(ForeignItemStatic {
+                        attrs: Vec::new(),
+                        vis,
+                        static_token,
+                        mutability,
+                        ident,
+                        colon_token,
+                        ty,
+                        semi_token: input.parse()?,
+                    }))
+                }
             } else if lookahead.peek(Token![type]) {
-                parse_flexible_foreign_item_type(begin, input)
+                parse_foreign_item_type(begin, input)
             } else if vis.is_inherited()
                 && (lookahead.peek(Ident)
                     || lookahead.peek(Token![self])
                     || lookahead.peek(Token![super])
-                    || lookahead.peek(Token![extern])
                     || lookahead.peek(Token![crate])
                     || lookahead.peek(Token![::]))
             {
@@ -1789,38 +1954,12 @@ pub mod parsing {
         fn parse(input: ParseStream) -> Result<Self> {
             let attrs = input.call(Attribute::parse_outer)?;
             let vis: Visibility = input.parse()?;
-            let fn_token: Token![fn] = input.parse()?;
-            let ident: Ident = input.parse()?;
-            let generics: Generics = input.parse()?;
-
-            let content;
-            let paren_token = parenthesized!(content in input);
-            let mut inputs = parse_fn_args(&content)?;
-            let variadic = pop_variadic(&mut inputs);
-
-            let output: ReturnType = input.parse()?;
-            let where_clause: Option<WhereClause> = input.parse()?;
+            let sig = parse_signature(input)?;
             let semi_token: Token![;] = input.parse()?;
-
             Ok(ForeignItemFn {
                 attrs,
                 vis,
-                sig: Signature {
-                    constness: None,
-                    asyncness: None,
-                    unsafety: None,
-                    abi: None,
-                    fn_token,
-                    ident,
-                    paren_token,
-                    inputs,
-                    output,
-                    variadic,
-                    generics: Generics {
-                        where_clause,
-                        ..generics
-                    },
-                },
+                sig,
                 semi_token,
             })
         }
@@ -1853,43 +1992,25 @@ pub mod parsing {
         }
     }
 
-    fn parse_flexible_foreign_item_type(
-        begin: ParseBuffer,
-        input: ParseStream,
-    ) -> Result<ForeignItem> {
-        let mut extra = false;
+    fn parse_foreign_item_type(begin: ParseBuffer, input: ParseStream) -> Result<ForeignItem> {
+        let FlexibleItemType {
+            vis,
+            defaultness,
+            type_token,
+            ident,
+            generics,
+            colon_token,
+            bounds: _,
+            ty,
+            semi_token,
+        } = input.parse()?;
 
-        let vis: Visibility = input.parse()?;
-        let type_token: Token![type] = input.parse()?;
-        let ident: Ident = input.parse()?;
-        if input.peek(Token![<]) {
-            extra = true;
-            input.parse::<Generics>()?;
-        }
-        if input.parse::<Option<Token![:]>>()?.is_some() {
-            extra = true;
-            loop {
-                input.parse::<TypeParamBound>()?;
-                if input.peek(Token![where]) || input.peek(Token![;]) {
-                    break;
-                }
-                input.parse::<Token![+]>()?;
-                if input.peek(Token![where]) || input.peek(Token![;]) {
-                    break;
-                }
-            }
-        }
-        if input.peek(Token![where]) {
-            extra = true;
-            input.parse::<WhereClause>()?;
-        }
-        if input.parse::<Option<Token![=]>>()?.is_some() {
-            extra = true;
-            input.parse::<Type>()?;
-        }
-        let semi_token: Token![;] = input.parse()?;
-
-        if extra {
+        if defaultness.is_some()
+            || generics.lt_token.is_some()
+            || generics.where_clause.is_some()
+            || colon_token.is_some()
+            || ty.is_some()
+        {
             Ok(ForeignItem::Verbatim(verbatim::between(begin, input)))
         } else {
             Ok(ForeignItem::Type(ForeignItemType {
@@ -1935,6 +2056,36 @@ pub mod parsing {
                 ty: input.parse()?,
                 semi_token: input.parse()?,
             })
+        }
+    }
+
+    fn parse_item_type(begin: ParseBuffer, input: ParseStream) -> Result<Item> {
+        let FlexibleItemType {
+            vis,
+            defaultness,
+            type_token,
+            ident,
+            generics,
+            colon_token,
+            bounds: _,
+            ty,
+            semi_token,
+        } = input.parse()?;
+
+        if defaultness.is_some() || colon_token.is_some() || ty.is_none() {
+            Ok(Item::Verbatim(verbatim::between(begin, input)))
+        } else {
+            let (eq_token, ty) = ty.unwrap();
+            Ok(Item::Type(ItemType {
+                attrs: Vec::new(),
+                vis,
+                type_token,
+                ident,
+                generics,
+                eq_token,
+                ty: Box::new(ty),
+                semi_token,
+            }))
         }
     }
 
@@ -2083,7 +2234,7 @@ pub mod parsing {
 
     impl Parse for ItemTrait {
         fn parse(input: ParseStream) -> Result<Self> {
-            let attrs = input.call(Attribute::parse_outer)?;
+            let outer_attrs = input.call(Attribute::parse_outer)?;
             let vis: Visibility = input.parse()?;
             let unsafety: Option<Token![unsafe]> = input.parse()?;
             let auto_token: Option<Token![auto]> = input.parse()?;
@@ -2092,7 +2243,7 @@ pub mod parsing {
             let generics: Generics = input.parse()?;
             parse_rest_of_trait(
                 input,
-                attrs,
+                outer_attrs,
                 vis,
                 unsafety,
                 auto_token,
@@ -2105,7 +2256,7 @@ pub mod parsing {
 
     fn parse_rest_of_trait(
         input: ParseStream,
-        attrs: Vec<Attribute>,
+        outer_attrs: Vec<Attribute>,
         vis: Visibility,
         unsafety: Option<Token![unsafe]>,
         auto_token: Option<Token![auto]>,
@@ -2133,13 +2284,14 @@ pub mod parsing {
 
         let content;
         let brace_token = braced!(content in input);
+        let inner_attrs = content.call(Attribute::parse_inner)?;
         let mut items = Vec::new();
         while !content.is_empty() {
             items.push(content.parse()?);
         }
 
         Ok(ItemTrait {
-            attrs,
+            attrs: private::attrs(outer_attrs, inner_attrs),
             vis,
             unsafety,
             auto_token,
@@ -2217,10 +2369,12 @@ pub mod parsing {
             let ahead = input.fork();
 
             let lookahead = ahead.lookahead1();
-            let mut item = if lookahead.peek(Token![const]) {
+            let mut item = if lookahead.peek(Token![fn]) || peek_signature(&ahead) {
+                input.parse().map(TraitItem::Method)
+            } else if lookahead.peek(Token![const]) {
                 ahead.parse::<Token![const]>()?;
                 let lookahead = ahead.lookahead1();
-                if lookahead.peek(Ident) {
+                if lookahead.peek(Ident) || lookahead.peek(Token![_]) {
                     input.parse().map(TraitItem::Const)
                 } else if lookahead.peek(Token![async])
                     || lookahead.peek(Token![unsafe])
@@ -2231,18 +2385,11 @@ pub mod parsing {
                 } else {
                     Err(lookahead.error())
                 }
-            } else if lookahead.peek(Token![async])
-                || lookahead.peek(Token![unsafe])
-                || lookahead.peek(Token![extern])
-                || lookahead.peek(Token![fn])
-            {
-                input.parse().map(TraitItem::Method)
             } else if lookahead.peek(Token![type]) {
-                input.parse().map(TraitItem::Type)
+                parse_trait_item_type(begin.fork(), input)
             } else if lookahead.peek(Ident)
                 || lookahead.peek(Token![self])
                 || lookahead.peek(Token![super])
-                || lookahead.peek(Token![extern])
                 || lookahead.peek(Token![crate])
                 || lookahead.peek(Token![::])
             {
@@ -2274,7 +2421,14 @@ pub mod parsing {
             Ok(TraitItemConst {
                 attrs: input.call(Attribute::parse_outer)?,
                 const_token: input.parse()?,
-                ident: input.parse()?,
+                ident: {
+                    let lookahead = input.lookahead1();
+                    if lookahead.peek(Ident) || lookahead.peek(Token![_]) {
+                        input.call(Ident::parse_any)?
+                    } else {
+                        return Err(lookahead.error());
+                    }
+                },
                 colon_token: input.parse()?,
                 ty: input.parse()?,
                 default: {
@@ -2294,21 +2448,7 @@ pub mod parsing {
     impl Parse for TraitItemMethod {
         fn parse(input: ParseStream) -> Result<Self> {
             let outer_attrs = input.call(Attribute::parse_outer)?;
-            let constness: Option<Token![const]> = input.parse()?;
-            let asyncness: Option<Token![async]> = input.parse()?;
-            let unsafety: Option<Token![unsafe]> = input.parse()?;
-            let abi: Option<Abi> = input.parse()?;
-            let fn_token: Token![fn] = input.parse()?;
-            let ident: Ident = input.parse()?;
-            let generics: Generics = input.parse()?;
-
-            let content;
-            let paren_token = parenthesized!(content in input);
-            let mut inputs = parse_fn_args(&content)?;
-            let variadic = pop_variadic(&mut inputs);
-
-            let output: ReturnType = input.parse()?;
-            let where_clause: Option<WhereClause> = input.parse()?;
+            let sig = parse_signature(input)?;
 
             let lookahead = input.lookahead1();
             let (brace_token, inner_attrs, stmts, semi_token) = if lookahead.peek(token::Brace) {
@@ -2326,22 +2466,7 @@ pub mod parsing {
 
             Ok(TraitItemMethod {
                 attrs: private::attrs(outer_attrs, inner_attrs),
-                sig: Signature {
-                    constness,
-                    asyncness,
-                    unsafety,
-                    abi,
-                    fn_token,
-                    ident,
-                    paren_token,
-                    inputs,
-                    output,
-                    variadic,
-                    generics: Generics {
-                        where_clause,
-                        ..generics
-                    },
-                },
+                sig,
                 default: brace_token.map(|brace_token| Block { brace_token, stmts }),
                 semi_token,
             })
@@ -2390,6 +2515,35 @@ pub mod parsing {
         }
     }
 
+    fn parse_trait_item_type(begin: ParseBuffer, input: ParseStream) -> Result<TraitItem> {
+        let FlexibleItemType {
+            vis,
+            defaultness,
+            type_token,
+            ident,
+            generics,
+            colon_token,
+            bounds,
+            ty,
+            semi_token,
+        } = input.parse()?;
+
+        if defaultness.is_some() || vis.is_some() {
+            Ok(TraitItem::Verbatim(verbatim::between(begin, input)))
+        } else {
+            Ok(TraitItem::Type(TraitItemType {
+                attrs: Vec::new(),
+                type_token,
+                ident,
+                generics,
+                colon_token,
+                bounds,
+                default: ty,
+                semi_token,
+            }))
+        }
+    }
+
     impl Parse for TraitItemMacro {
         fn parse(input: ParseStream) -> Result<Self> {
             let attrs = input.call(Attribute::parse_outer)?;
@@ -2409,45 +2563,63 @@ pub mod parsing {
 
     impl Parse for ItemImpl {
         fn parse(input: ParseStream) -> Result<Self> {
-            let outer_attrs = input.call(Attribute::parse_outer)?;
-            let defaultness: Option<Token![default]> = input.parse()?;
-            let unsafety: Option<Token![unsafe]> = input.parse()?;
-            let impl_token: Token![impl] = input.parse()?;
+            let allow_const_impl = false;
+            parse_impl(input, allow_const_impl).map(Option::unwrap)
+        }
+    }
 
-            let has_generics = input.peek(Token![<])
-                && (input.peek2(Token![>])
-                    || input.peek2(Token![#])
-                    || (input.peek2(Ident) || input.peek2(Lifetime))
-                        && (input.peek3(Token![:])
-                            || input.peek3(Token![,])
-                            || input.peek3(Token![>])));
-            let generics: Generics = if has_generics {
-                input.parse()?
-            } else {
-                Generics::default()
-            };
+    fn parse_impl(input: ParseStream, allow_const_impl: bool) -> Result<Option<ItemImpl>> {
+        let outer_attrs = input.call(Attribute::parse_outer)?;
+        let defaultness: Option<Token![default]> = input.parse()?;
+        let unsafety: Option<Token![unsafe]> = input.parse()?;
+        let impl_token: Token![impl] = input.parse()?;
 
-            let trait_ = (|| -> Option<_> {
-                let ahead = input.fork();
-                let polarity: Option<Token![!]> = ahead.parse().ok()?;
-                let path: Path = ahead.parse().ok()?;
-                let for_token: Token![for] = ahead.parse().ok()?;
-                input.advance_to(&ahead);
-                Some((polarity, path, for_token))
-            })();
-            let self_ty: Type = input.parse()?;
-            let where_clause: Option<WhereClause> = input.parse()?;
+        let has_generics = input.peek(Token![<])
+            && (input.peek2(Token![>])
+                || input.peek2(Token![#])
+                || (input.peek2(Ident) || input.peek2(Lifetime))
+                    && (input.peek3(Token![:])
+                        || input.peek3(Token![,])
+                        || input.peek3(Token![>]))
+                || input.peek2(Token![const]));
+        let generics: Generics = if has_generics {
+            input.parse()?
+        } else {
+            Generics::default()
+        };
 
-            let content;
-            let brace_token = braced!(content in input);
-            let inner_attrs = content.call(Attribute::parse_inner)?;
+        let is_const_impl = allow_const_impl
+            && (input.peek(Token![const]) || input.peek(Token![?]) && input.peek2(Token![const]));
+        if is_const_impl {
+            input.parse::<Option<Token![?]>>()?;
+            input.parse::<Token![const]>()?;
+        }
 
-            let mut items = Vec::new();
-            while !content.is_empty() {
-                items.push(content.parse()?);
-            }
+        let trait_ = (|| -> Option<_> {
+            let ahead = input.fork();
+            let polarity: Option<Token![!]> = ahead.parse().ok()?;
+            let path: Path = ahead.parse().ok()?;
+            let for_token: Token![for] = ahead.parse().ok()?;
+            input.advance_to(&ahead);
+            Some((polarity, path, for_token))
+        })();
 
-            Ok(ItemImpl {
+        let self_ty: Type = input.parse()?;
+        let where_clause: Option<WhereClause> = input.parse()?;
+
+        let content;
+        let brace_token = braced!(content in input);
+        let inner_attrs = content.call(Attribute::parse_inner)?;
+
+        let mut items = Vec::new();
+        while !content.is_empty() {
+            items.push(content.parse()?);
+        }
+
+        if is_const_impl {
+            Ok(None)
+        } else {
+            Ok(Some(ItemImpl {
                 attrs: private::attrs(outer_attrs, inner_attrs),
                 defaultness,
                 unsafety,
@@ -2460,7 +2632,7 @@ pub mod parsing {
                 self_ty: Box::new(self_ty),
                 brace_token,
                 items,
-            })
+            }))
         }
     }
 
@@ -2480,12 +2652,14 @@ pub mod parsing {
                 None
             };
 
-            let mut item = if lookahead.peek(Token![const]) {
+            let mut item = if lookahead.peek(Token![fn]) || peek_signature(&ahead) {
+                input.parse().map(ImplItem::Method)
+            } else if lookahead.peek(Token![const]) {
                 let const_token: Token![const] = ahead.parse()?;
                 let lookahead = ahead.lookahead1();
-                if lookahead.peek(Ident) {
+                if lookahead.peek(Ident) || lookahead.peek(Token![_]) {
                     input.advance_to(&ahead);
-                    let ident: Ident = input.parse()?;
+                    let ident: Ident = input.call(Ident::parse_any)?;
                     let colon_token: Token![:] = input.parse()?;
                     let ty: Type = input.parse()?;
                     if let Some(eq_token) = input.parse()? {
@@ -2505,57 +2679,11 @@ pub mod parsing {
                         input.parse::<Token![;]>()?;
                         return Ok(ImplItem::Verbatim(verbatim::between(begin, input)));
                     }
-                } else if lookahead.peek(Token![unsafe])
-                    || lookahead.peek(Token![async])
-                    || lookahead.peek(Token![extern])
-                    || lookahead.peek(Token![fn])
-                {
-                    input.parse().map(ImplItem::Method)
                 } else {
                     Err(lookahead.error())
                 }
-            } else if lookahead.peek(Token![unsafe])
-                || lookahead.peek(Token![async])
-                || lookahead.peek(Token![extern])
-                || lookahead.peek(Token![fn])
-            {
-                input.parse().map(ImplItem::Method)
             } else if lookahead.peek(Token![type]) {
-                input.advance_to(&ahead);
-                let type_token: Token![type] = input.parse()?;
-                let ident: Ident = input.parse()?;
-                let mut generics: Generics = input.parse()?;
-                let colon_token: Option<Token![:]> = input.parse()?;
-                if colon_token.is_some() {
-                    let mut first = true;
-                    while !input.peek(Token![where])
-                        && !input.peek(Token![=])
-                        && !input.peek(Token![;])
-                    {
-                        if !first {
-                            input.parse::<Token![+]>()?;
-                        }
-                        input.parse::<TypeParamBound>()?;
-                        first = false;
-                    }
-                }
-                generics.where_clause = input.parse()?;
-                if let Some(eq_token) = input.parse()? {
-                    return Ok(ImplItem::Type(ImplItemType {
-                        attrs,
-                        vis,
-                        defaultness,
-                        type_token,
-                        ident,
-                        generics,
-                        eq_token,
-                        ty: input.parse()?,
-                        semi_token: input.parse()?,
-                    }));
-                } else {
-                    input.parse::<Token![;]>()?;
-                    return Ok(ImplItem::Verbatim(verbatim::between(begin, input)));
-                }
+                parse_impl_item_type(begin, input)
             } else if vis.is_inherited() && defaultness.is_none() && lookahead.peek(existential) {
                 input.call(item_existential).map(ImplItem::Verbatim)
             } else if vis.is_inherited()
@@ -2563,7 +2691,6 @@ pub mod parsing {
                 && (lookahead.peek(Ident)
                     || lookahead.peek(Token![self])
                     || lookahead.peek(Token![super])
-                    || lookahead.peek(Token![extern])
                     || lookahead.peek(Token![crate])
                     || lookahead.peek(Token![::]))
             {
@@ -2596,7 +2723,14 @@ pub mod parsing {
                 vis: input.parse()?,
                 defaultness: input.parse()?,
                 const_token: input.parse()?,
-                ident: input.parse()?,
+                ident: {
+                    let lookahead = input.lookahead1();
+                    if lookahead.peek(Ident) || lookahead.peek(Token![_]) {
+                        input.call(Ident::parse_any)?
+                    } else {
+                        return Err(lookahead.error());
+                    }
+                },
                 colon_token: input.parse()?,
                 ty: input.parse()?,
                 eq_token: input.parse()?,
@@ -2611,21 +2745,7 @@ pub mod parsing {
             let mut attrs = input.call(Attribute::parse_outer)?;
             let vis: Visibility = input.parse()?;
             let defaultness: Option<Token![default]> = input.parse()?;
-            let constness: Option<Token![const]> = input.parse()?;
-            let asyncness: Option<Token![async]> = input.parse()?;
-            let unsafety: Option<Token![unsafe]> = input.parse()?;
-            let abi: Option<Abi> = input.parse()?;
-            let fn_token: Token![fn] = input.parse()?;
-            let ident: Ident = input.parse()?;
-            let generics: Generics = input.parse()?;
-
-            let content;
-            let paren_token = parenthesized!(content in input);
-            let mut inputs = parse_fn_args(&content)?;
-            let variadic = pop_variadic(&mut inputs);
-
-            let output: ReturnType = input.parse()?;
-            let where_clause: Option<WhereClause> = input.parse()?;
+            let sig = parse_signature(input)?;
 
             let block = if let Some(semi) = input.parse::<Option<Token![;]>>()? {
                 // Accept methods without a body in an impl block because
@@ -2653,22 +2773,7 @@ pub mod parsing {
                 attrs,
                 vis,
                 defaultness,
-                sig: Signature {
-                    constness,
-                    asyncness,
-                    unsafety,
-                    abi,
-                    fn_token,
-                    ident,
-                    paren_token,
-                    inputs,
-                    output,
-                    variadic,
-                    generics: Generics {
-                        where_clause,
-                        ..generics
-                    },
-                },
+                sig,
                 block,
             })
         }
@@ -2691,6 +2796,37 @@ pub mod parsing {
                 ty: input.parse()?,
                 semi_token: input.parse()?,
             })
+        }
+    }
+
+    fn parse_impl_item_type(begin: ParseBuffer, input: ParseStream) -> Result<ImplItem> {
+        let FlexibleItemType {
+            vis,
+            defaultness,
+            type_token,
+            ident,
+            generics,
+            colon_token,
+            bounds: _,
+            ty,
+            semi_token,
+        } = input.parse()?;
+
+        if colon_token.is_some() || ty.is_none() {
+            Ok(ImplItem::Verbatim(verbatim::between(begin, input)))
+        } else {
+            let (eq_token, ty) = ty.unwrap();
+            Ok(ImplItem::Type(ImplItemType {
+                attrs: Vec::new(),
+                vis,
+                defaultness,
+                type_token,
+                ident,
+                generics,
+                eq_token,
+                ty,
+                semi_token,
+            }))
         }
     }
 

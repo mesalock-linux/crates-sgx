@@ -1,10 +1,7 @@
-use core::{mem, slice, str};
-
+use crate::raw;
 #[cfg(maybe_uninit)]
 use core::mem::MaybeUninit;
-
-use raw;
-
+use core::{mem, slice, str};
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
 
@@ -16,12 +13,11 @@ const NEG_INFINITY: &'static str = "-inf";
 ///
 /// ## Example
 ///
-/// ```edition2018
+/// ```
 /// let mut buffer = ryu::Buffer::new();
 /// let printed = buffer.format_finite(1.234);
 /// assert_eq!(printed, "1.234");
 /// ```
-#[derive(Copy, Clone)]
 pub struct Buffer {
     #[cfg(maybe_uninit)]
     bytes: [MaybeUninit<u8>; 24],
@@ -90,6 +86,15 @@ impl Buffer {
             let slice = slice::from_raw_parts(self.bytes.as_ptr() as *const u8, n);
             str::from_utf8_unchecked(slice)
         }
+    }
+}
+
+impl Copy for Buffer {}
+
+impl Clone for Buffer {
+    #[inline]
+    fn clone(&self) -> Self {
+        Buffer::new()
     }
 }
 

@@ -11,10 +11,10 @@
 # will likely look very different (and much more reasonable)
 
 [package]
+edition = "2018"
 name = "ryu"
-version = "1.0.4"
+version = "1.0.5"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
-build = "build.rs"
 description = "Fast floating point to string conversion"
 documentation = "https://docs.rs/ryu"
 readme = "README.md"
@@ -36,5 +36,3 @@ version = "0.2"
 
 [features]
 small = []
-[badges.travis-ci]
-repository = "dtolnay/ryu"

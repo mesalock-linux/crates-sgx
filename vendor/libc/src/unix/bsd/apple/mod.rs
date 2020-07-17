@@ -2,6 +2,7 @@
 //!
 //! This covers *-apple-* triples currently
 pub type c_char = i8;
+pub type wchar_t = i32;
 pub type clock_t = c_ulong;
 pub type time_t = c_long;
 pub type suseconds_t = i32;
@@ -1760,8 +1761,6 @@ pub const TIOCGETD: ::c_ulong = 0x4004741a;
 pub const TIOCSETD: ::c_ulong = 0x8004741b;
 pub const TIOCIXON: ::c_uint = 0x20007481;
 pub const TIOCIXOFF: ::c_uint = 0x20007480;
-pub const TIOCSBRK: ::c_uint = 0x2000747b;
-pub const TIOCCBRK: ::c_uint = 0x2000747a;
 pub const TIOCSDTR: ::c_uint = 0x20007479;
 pub const TIOCCDTR: ::c_uint = 0x20007478;
 pub const TIOCGPGRP: ::c_ulong = 0x40047477;
@@ -2249,14 +2248,18 @@ pub const IP_PKTINFO: ::c_int = 26;
 pub const IP_RECVTOS: ::c_int = 27;
 pub const IPV6_JOIN_GROUP: ::c_int = 12;
 pub const IPV6_LEAVE_GROUP: ::c_int = 13;
+pub const IPV6_CHECKSUM: ::c_int = 26;
 pub const IPV6_RECVTCLASS: ::c_int = 35;
 pub const IPV6_TCLASS: ::c_int = 36;
 pub const IPV6_PKTINFO: ::c_int = 46;
+pub const IPV6_HOPLIMIT: ::c_int = 47;
 pub const IPV6_RECVPKTINFO: ::c_int = 61;
 
 pub const TCP_NOPUSH: ::c_int = 4;
 pub const TCP_NOOPT: ::c_int = 8;
 pub const TCP_KEEPALIVE: ::c_int = 0x10;
+pub const TCP_KEEPINTVL: ::c_int = 0x101;
+pub const TCP_KEEPCNT: ::c_int = 0x102;
 /// Enable/Disable TCP Fastopen on this socket
 pub const TCP_FASTOPEN: ::c_int = 0x105;
 

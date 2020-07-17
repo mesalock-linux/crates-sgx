@@ -2,6 +2,7 @@
 // It is not intended for manual editing.
 
 #![allow(unreachable_code, unused_variables)]
+#![allow(clippy::match_wildcard_for_single_variants)]
 #[cfg(any(feature = "full", feature = "derive"))]
 use crate::gen::helper::fold::*;
 #[cfg(any(feature = "full", feature = "derive"))]
@@ -26,7 +27,7 @@ macro_rules! full {
 ///
 /// [module documentation]: self
 ///
-/// *This trait is available if Syn is built with the `"fold"` feature.*
+/// *This trait is available only if Syn is built with the `"fold"` feature.*
 pub trait Fold {
     #[cfg(any(feature = "derive", feature = "full"))]
     fn fold_abi(&mut self, i: Abi) -> Abi {

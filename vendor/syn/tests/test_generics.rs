@@ -1,5 +1,3 @@
-mod features;
-
 #[macro_use]
 mod macros;
 
@@ -47,7 +45,7 @@ fn test_split_for_impl() {
                                     },
                                 ],
                             },
-                            tokens: ``,
+                            tokens: TokenStream(``),
                         },
                     ],
                     ident: "T",

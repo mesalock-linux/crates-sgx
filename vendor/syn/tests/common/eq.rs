@@ -11,7 +11,8 @@ use rustc_ast::ast::{
     BinOpKind, BindingMode, Block, BlockCheckMode, BorrowKind, CaptureBy, Const, Crate, CrateSugar,
     Defaultness, EnumDef, Expr, ExprKind, Extern, Field, FieldPat, FloatTy, FnDecl, FnHeader,
     FnRetTy, FnSig, ForeignItemKind, ForeignMod, GenericArg, GenericArgs, GenericBound,
-    GenericParam, GenericParamKind, Generics, GlobalAsm, Ident, ImplPolarity, IntTy, IsAuto, Item,
+    GenericParam, GenericParamKind, Generics, GlobalAsm, ImplPolarity, InlineAsm, InlineAsmOperand,
+    InlineAsmOptions, InlineAsmRegOrRegClass, InlineAsmTemplatePiece, IntTy, IsAuto, Item,
     ItemKind, Label, Lifetime, Lit, LitFloatType, LitIntType, LitKind, LlvmAsmDialect,
     LlvmInlineAsm, LlvmInlineAsmOutput, Local, MacArgs, MacCall, MacDelimiter, MacStmtStyle,
     MacroDef, Mod, Movability, MutTy, Mutability, NodeId, Param, ParenthesizedArgs, Pat, PatKind,
@@ -27,6 +28,7 @@ use rustc_ast::util::comments;
 use rustc_data_structures::sync::Lrc;
 use rustc_data_structures::thin_vec::ThinVec;
 use rustc_span::source_map::Spanned;
+use rustc_span::symbol::Ident;
 use rustc_span::{sym, Span, Symbol, SyntaxContext, DUMMY_SP};
 
 pub trait SpanlessEq {
@@ -123,8 +125,10 @@ spanless_eq_partial_eq!(u16);
 spanless_eq_partial_eq!(u128);
 spanless_eq_partial_eq!(usize);
 spanless_eq_partial_eq!(char);
+spanless_eq_partial_eq!(String);
 spanless_eq_partial_eq!(Symbol);
 spanless_eq_partial_eq!(DelimToken);
+spanless_eq_partial_eq!(InlineAsmOptions);
 
 macro_rules! spanless_eq_struct {
     {
@@ -269,7 +273,7 @@ spanless_eq_struct!(BareFnTy; unsafety ext generic_params decl);
 spanless_eq_struct!(Block; stmts id rules span);
 spanless_eq_struct!(Crate; module attrs span proc_macros);
 spanless_eq_struct!(EnumDef; variants);
-spanless_eq_struct!(Expr; id kind span attrs);
+spanless_eq_struct!(Expr; id kind span attrs !tokens);
 spanless_eq_struct!(Field; attrs id span ident expr is_shorthand is_placeholder);
 spanless_eq_struct!(FieldPat; ident pat is_shorthand attrs id span is_placeholder);
 spanless_eq_struct!(FnDecl; inputs output);
@@ -279,6 +283,7 @@ spanless_eq_struct!(ForeignMod; abi items);
 spanless_eq_struct!(GenericParam; id ident attrs bounds is_placeholder kind);
 spanless_eq_struct!(Generics; params where_clause span);
 spanless_eq_struct!(GlobalAsm; asm);
+spanless_eq_struct!(InlineAsm; template operands options line_spans);
 spanless_eq_struct!(Item<K>; attrs id span vis ident kind !tokens);
 spanless_eq_struct!(Label; ident);
 spanless_eq_struct!(Lifetime; id ident);
@@ -306,7 +311,7 @@ spanless_eq_struct!(Ty; id kind span);
 spanless_eq_struct!(UseTree; prefix kind span);
 spanless_eq_struct!(Variant; attrs id span vis ident data disr_expr is_placeholder);
 spanless_eq_struct!(WhereBoundPredicate; span bound_generic_params bounded_ty bounds);
-spanless_eq_struct!(WhereClause; predicates span);
+spanless_eq_struct!(WhereClause; has_where_token predicates span);
 spanless_eq_struct!(WhereEqPredicate; id span lhs_ty rhs_ty);
 spanless_eq_struct!(WhereRegionPredicate; span lifetime bounds);
 spanless_eq_enum!(AngleBracketedArg; Arg(0) Constraint(0));
@@ -330,8 +335,10 @@ spanless_eq_enum!(ForeignItemKind; Static(0 1 2) Fn(0 1 2 3) TyAlias(0 1 2 3) Ma
 spanless_eq_enum!(GenericArg; Lifetime(0) Type(0) Const(0));
 spanless_eq_enum!(GenericArgs; AngleBracketed(0) Parenthesized(0));
 spanless_eq_enum!(GenericBound; Trait(0 1) Outlives(0));
-spanless_eq_enum!(GenericParamKind; Lifetime Type(default) Const(ty));
+spanless_eq_enum!(GenericParamKind; Lifetime Type(default) Const(ty kw_span));
 spanless_eq_enum!(ImplPolarity; Positive Negative(0));
+spanless_eq_enum!(InlineAsmRegOrRegClass; Reg(0) RegClass(0));
+spanless_eq_enum!(InlineAsmTemplatePiece; String(0) Placeholder(operand_idx modifier span));
 spanless_eq_enum!(IntTy; Isize I8 I16 I32 I64 I128);
 spanless_eq_enum!(IsAuto; Yes No);
 spanless_eq_enum!(LitFloatType; Suffixed(0) Unsuffixed);
@@ -357,13 +364,16 @@ spanless_eq_enum!(UseTreeKind; Simple(0 1 2) Nested(0) Glob);
 spanless_eq_enum!(VariantData; Struct(0 1) Tuple(0 1) Unit(0));
 spanless_eq_enum!(VisibilityKind; Public Crate(0) Restricted(path id) Inherited);
 spanless_eq_enum!(WherePredicate; BoundPredicate(0) RegionPredicate(0) EqPredicate(0));
-spanless_eq_enum!(ExprKind; Box(0) Array(0) Call(0 1) MethodCall(0 1) Tup(0)
+spanless_eq_enum!(ExprKind; Box(0) Array(0) Call(0 1) MethodCall(0 1 2) Tup(0)
     Binary(0 1 2) Unary(0 1) Lit(0) Cast(0 1) Type(0 1) Let(0 1) If(0 1 2)
     While(0 1 2) ForLoop(0 1 2 3) Loop(0 1) Match(0 1) Closure(0 1 2 3 4 5)
     Block(0 1) Async(0 1 2) Await(0) TryBlock(0) Assign(0 1 2) AssignOp(0 1 2)
     Field(0 1) Index(0 1) Range(0 1 2) Path(0 1) AddrOf(0 1 2) Break(0 1)
-    Continue(0) Ret(0) LlvmInlineAsm(0) MacCall(0) Struct(0 1 2) Repeat(0 1)
-    Paren(0) Try(0) Yield(0) Err);
+    Continue(0) Ret(0) InlineAsm(0) LlvmInlineAsm(0) MacCall(0) Struct(0 1 2)
+    Repeat(0 1) Paren(0) Try(0) Yield(0) Err);
+spanless_eq_enum!(InlineAsmOperand; In(reg expr) Out(reg late expr)
+    InOut(reg late expr) SplitInOut(reg late in_expr out_expr) Const(expr)
+    Sym(expr));
 spanless_eq_enum!(ItemKind; ExternCrate(0) Use(0) Static(0 1 2) Const(0 1 2)
     Fn(0 1 2 3) Mod(0) ForeignMod(0) GlobalAsm(0) TyAlias(0 1 2 3) Enum(0 1)
     Struct(0 1) Union(0 1) Trait(0 1 2 3 4) TraitAlias(0 1)

@@ -1,15 +1,12 @@
 mod exponent;
 mod mantissa;
 
-use core::{mem, ptr};
-
 use self::exponent::*;
 use self::mantissa::*;
-use common;
-use d2s;
-use d2s::*;
-use f2s::*;
-
+use crate::common;
+use crate::d2s::{self, *};
+use crate::f2s::*;
+use core::{mem, ptr};
 #[cfg(feature = "no-panic")]
 use no_panic::no_panic;
 
@@ -37,7 +34,7 @@ use no_panic::no_panic;
 ///
 /// ## Example
 ///
-/// ```edition2018
+/// ```
 /// use std::{mem::MaybeUninit, slice, str};
 ///
 /// let f = 1.234f64;
@@ -50,7 +47,7 @@ use no_panic::no_panic;
 ///     assert_eq!(print, "1.234");
 /// }
 /// ```
-#[cfg_attr(must_use_return, must_use)]
+#[must_use]
 #[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn format64(f: f64, result: *mut u8) -> usize {
     let bits = mem::transmute::<f64, u64>(f);
@@ -144,7 +141,7 @@ pub unsafe fn format64(f: f64, result: *mut u8) -> usize {
 ///
 /// ## Example
 ///
-/// ```edition2018
+/// ```
 /// use std::{mem::MaybeUninit, slice, str};
 ///
 /// let f = 1.234f32;
@@ -157,7 +154,7 @@ pub unsafe fn format64(f: f64, result: *mut u8) -> usize {
 ///     assert_eq!(print, "1.234");
 /// }
 /// ```
-#[cfg_attr(must_use_return, must_use)]
+#[must_use]
 #[cfg_attr(feature = "no-panic", no_panic)]
 pub unsafe fn format32(f: f32, result: *mut u8) -> usize {
     let bits = mem::transmute::<f32, u32>(f);

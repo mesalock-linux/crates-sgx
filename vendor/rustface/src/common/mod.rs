@@ -16,13 +16,15 @@
 // You should have received a copy of the BSD 2-Clause License along with the software.
 // If not, see < https://opensource.org/licenses/BSD-2-Clause>.
 
+extern crate serde;
+
 mod image_pyramid;
 
 use std::mem;
 
 pub use self::image_pyramid::{resize_image, ImageData, ImagePyramid};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct Rectangle {
     x: i32,
     y: i32,
@@ -73,7 +75,7 @@ impl Rectangle {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, serde::Serialize)]
 pub struct FaceInfo {
     bbox: Rectangle,
     roll: f64,
