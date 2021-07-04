@@ -478,7 +478,7 @@ uniform_int_impl! { usize, usize, usize }
 #[cfg(not(target_os = "emscripten"))]
 uniform_int_impl! { u128, u128, u128 }
 
-#[cfg(all(feature = "simd_support", feature = "nightly"))]
+#[cfg(feature = "simd_support")]
 macro_rules! uniform_simd_int_impl {
     ($ty:ident, $unsigned:ident, $u_scalar:ident) => {
         // The "pick the largest zone that can fit in an `u32`" optimization
@@ -585,7 +585,7 @@ macro_rules! uniform_simd_int_impl {
     };
 }
 
-#[cfg(all(feature = "simd_support", feature = "nightly"))]
+#[cfg(feature = "simd_support")]
 uniform_simd_int_impl! {
     (u64x2, i64x2),
     (u64x4, i64x4),
@@ -593,7 +593,7 @@ uniform_simd_int_impl! {
     u64
 }
 
-#[cfg(all(feature = "simd_support", feature = "nightly"))]
+#[cfg(feature = "simd_support")]
 uniform_simd_int_impl! {
     (u32x2, i32x2),
     (u32x4, i32x4),
@@ -602,7 +602,7 @@ uniform_simd_int_impl! {
     u32
 }
 
-#[cfg(all(feature = "simd_support", feature = "nightly"))]
+#[cfg(feature = "simd_support")]
 uniform_simd_int_impl! {
     (u16x2, i16x2),
     (u16x4, i16x4),
@@ -612,7 +612,7 @@ uniform_simd_int_impl! {
     u16
 }
 
-#[cfg(all(feature = "simd_support", feature = "nightly"))]
+#[cfg(feature = "simd_support")]
 uniform_simd_int_impl! {
     (u8x2, i8x2),
     (u8x4, i8x4),
@@ -1058,7 +1058,7 @@ mod tests {
         #[cfg(not(target_os = "emscripten"))]
         t!(i128, u128);
 
-        #[cfg(all(feature = "simd_support", feature = "nightly"))]
+        #[cfg(feature = "simd_support")]
         {
             t!(u8x2, u8x4, u8x8, u8x16, u8x32, u8x64 => u8);
             t!(i8x2, i8x4, i8x8, i8x16, i8x32, i8x64 => i8);

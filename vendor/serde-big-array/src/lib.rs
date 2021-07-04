@@ -1,5 +1,5 @@
 #![forbid(unsafe_code)]
-#![cfg_attr(feature = "const-generics", feature(const_generics))]
+#![cfg_attr(feature = "const-generics", feature(min_const_generics))]
 
 /*!
 Big array helper for serde.
@@ -37,8 +37,6 @@ fn test() {
 */
 #![no_std]
 
-extern crate serde;
-
 #[doc(hidden)]
 pub mod reex {
     pub use core::fmt;
@@ -61,11 +59,8 @@ This is the main macro of this crate.
 Invoking it creates a trait that can be used together with a `#[serde(with = "TraitName")]` like attribute
 on an array that's a member of a struct you want to (de-) serialize.
 ```
-# extern crate serde;
-# #[macro_use]
-# extern crate serde_derive;
-# #[macro_use]
-# extern crate serde_big_array;
+# use serde_derive::{Serialize, Deserialize};
+# use serde_big_array::big_array;
 # fn main() {}
 #
 big_array! { BigArray; }
@@ -82,11 +77,8 @@ The macro doesn't automatically implement the trait for all possible array lengt
 Instead, the trait is implemented for a pre-specified set of numbers.
 The default way to invoke the macro is by specifying the name only, like:
 ```
-# extern crate serde;
-# #[macro_use]
-# extern crate serde_derive;
-# #[macro_use]
-# extern crate serde_big_array;
+# use serde_derive::{Serialize, Deserialize};
+# use serde_big_array::big_array;
 # fn main() {}
 #
 big_array! {
@@ -106,16 +98,13 @@ If this default setting is not suiting your use case, the macro has you covered 
 You can specify a custom set of numbers by using the second way to invoke the macro:
 
 ```
-# extern crate serde;
-# #[macro_use]
-# extern crate serde_derive;
-# #[macro_use]
-# extern crate serde_big_array;
+# use serde_derive::{Serialize, Deserialize};
+# use serde_big_array::big_array;
 # fn main() {}
 #
 big_array! {
     BigArray;
-    42, 300, 1234, 99999,
+    +42, 300, 1234, 99999,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -126,10 +115,13 @@ struct S {
     arr_b: [u8; 42],
 }
 ```
+
+If the `+` is specified like in the example above, the trait is also implemented for the
+pre-defined set of array lengths. If omitted, it's implemented for the specified numbers only.
 */
 #[macro_export]
 macro_rules! big_array {
-    ($name:ident; $($len:tt,)+) => {
+    ($name:ident; $($len:expr),+ $(,)?) => {
         pub trait $name<'de>: Sized {
             fn serialize<S>(&self, serializer: S) -> $crate::reex::result::Result<S::Ok, S::Error>
                 where S: $crate::reex::Serializer;
@@ -165,13 +157,6 @@ macro_rules! big_array {
                         type Value = [T; $len];
 
                         fn expecting(&self, formatter: &mut $crate::reex::fmt::Formatter) -> $crate::reex::fmt::Result {
-                            #[cfg(not(macros_literal))]
-                            macro_rules! write_len {
-                                ($l:tt) => {
-                                    write!(formatter, "an array of length {}", $l)
-                                };
-                            }
-                            #[cfg(macros_literal)]
                             macro_rules! write_len {
                                 ($l:literal) => {
                                     write!(formatter, concat!("an array of length ", $l))
@@ -204,11 +189,17 @@ macro_rules! big_array {
             }
         )+
     };
-    ($name:ident;) => {
+    ($name:ident; + $($len:expr),* $(,)?) => {
         big_array! {
             $name;
             40, 48, 50, 56, 64, 72, 96, 100, 128, 160, 192, 200, 224, 256, 384, 512,
             768, 1024, 2048, 4096, 8192, 16384, 32768, 65536,
+            $($len,)*
+        }
+    };
+    ($name:ident;) => {
+        big_array! {
+            $name; +
         }
     }
 }

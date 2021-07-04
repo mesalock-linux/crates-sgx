@@ -46,10 +46,6 @@ contains some APIs that may be useful more generally.
 [`syn::DeriveInput`]: https://docs.rs/syn/1.0/syn/struct.DeriveInput.html
 [parser functions]: https://docs.rs/syn/1.0/syn/parse/index.html
 
-If you get stuck with anything involving procedural macros in Rust I am happy to
-provide help even if the issue is not related to Syn. Please file a ticket in
-this repo.
-
 *Version requirement: Syn supports rustc 1.31 and up.*
 
 [*Release notes*](https://github.com/dtolnay/syn/releases)
@@ -154,7 +150,7 @@ By tracking span information all the way through the expansion of a procedural
 macro as shown in the `heapsize` example, token-based macros in Syn are able to
 trigger errors that directly pinpoint the source of the problem.
 
-```
+```console
 error[E0277]: the trait bound `std::thread::Thread: HeapSize` is not satisfied
  --> src/main.rs:7:5
   |
@@ -175,7 +171,7 @@ Syn's parsing API.
 The example reimplements the popular `lazy_static` crate from crates.io as a
 procedural macro.
 
-```
+```rust
 lazy_static! {
     static ref USERNAME: Regex = Regex::new("^[a-z0-9_-]{3,16}$").unwrap();
 }
@@ -184,7 +180,7 @@ lazy_static! {
 The implementation shows how to trigger custom warnings and error messages on
 the macro input.
 
-```
+```console
 warning: come on, pick a more creative name
   --> src/main.rs:10:16
    |

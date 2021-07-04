@@ -99,6 +99,9 @@ use proc_macro::TokenStream;
 /// #[used]
 /// #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
 /// #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
+/// #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
+/// #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
+/// #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
 /// #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_init_func")]
 /// #[cfg_attr(target_os = "windows", link_section = ".CRT$XCU")]
 /// static FOO: extern fn() = {
@@ -116,6 +119,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
         let syn::ItemFn {
             attrs,
             block,
+            vis,
             sig:
                 syn::Signature {
                     ident,
@@ -134,21 +138,33 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
         // Why .CRT$XCU on Windows? https://www.cnblogs.com/sunkang/archive/2011/05/24/2055635.html
         // 'I'=C init, 'C'=C++ init, 'P'=Pre-terminators and 'T'=Terminators
 
+        let ctor_ident =
+            syn::parse_str::<syn::Ident>(format!("{}___rust_ctor___ctor", ident).as_ref())
+                .expect("Unable to create identifier");
+
         let output = quote!(
+            #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd", target_os = "illumos", target_os = "macos", target_os = "ios", windows)))]
+            compile_error!("#[ctor] is not supported on the current target");
+
+            #(#attrs)*
+            #vis #unsafety extern #abi #constness fn #ident() #block
+
             #[used]
             #[allow(non_upper_case_globals)]
             #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
             #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
             #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_init_func")]
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
-            #(#attrs)*
-            static #ident
+            static #ctor_ident
             :
-            #unsafety extern #abi #constness fn() =
+            unsafe extern "C" fn() =
             {
                 #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
-                #unsafety extern #abi #constness fn #ident() #block;
-                #ident
+                unsafe extern "C" fn #ctor_ident() { #ident() };
+                #ctor_ident
             }
             ;
         );
@@ -188,6 +204,9 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
                 .expect("Unable to create identifier");
 
         let output = quote!(
+            #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd", target_os = "illumos", target_os = "macos", target_os = "ios", windows)))]
+            compile_error!("#[ctor] is not supported on the current target");
+
             // This is mutable, but only by this macro code!
             static mut #storage_ident: Option<#ty> = None;
 
@@ -215,13 +234,16 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             #[allow(non_upper_case_globals)]
             #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
             #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
             #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_init_func")]
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
             static #ctor_ident
             :
-            unsafe fn() = {
+            unsafe extern "C" fn() = {
                 #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
-                unsafe fn initer() {
+                unsafe extern "C" fn initer() {
                     #storage_ident = Some(#expr);
                 }; initer }
             ;
@@ -247,6 +269,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 /// ```rust
 /// # extern crate ctor;
 /// # use ctor::*;
+/// # fn main() {}
 ///
 /// #[dtor]
 /// fn shutdown() {
@@ -261,6 +284,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
     let syn::ItemFn {
         attrs,
         block,
+        vis,
         sig:
             syn::Signature {
                 ident,
@@ -272,33 +296,73 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
         ..
     } = function;
 
+    let mod_ident =
+        syn::parse_str::<syn::Ident>(format!("{}___rust_dtor___mod", ident).as_ref())
+            .expect("Unable to create identifier");
+
+    let dtor_ident =
+        syn::parse_str::<syn::Ident>(format!("{}___rust_dtor___dtor", ident).as_ref())
+            .expect("Unable to create identifier");
+
     let output = quote!(
-        mod #ident {
-            use super::*;
+        #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd", target_os = "illumos", target_os = "macos", target_os = "ios", windows)))]
+        compile_error!("#[dtor] is not supported on the current target");
+
+        #(#attrs)*
+        #vis #unsafety extern #abi #constness fn #ident() #block
+
+        // Targets that use `atexit`.
+        #[cfg(not(any(
+            target_os = "macos",
+            target_os = "ios",
+        )))]
+        mod #mod_ident {
+            use super::#ident;
 
             // Avoid a dep on libc by linking directly
             extern "C" {
-                fn atexit(cb: #unsafety extern fn());
+                fn atexit(cb: unsafe extern fn());
             }
 
             #[used]
             #[allow(non_upper_case_globals)]
             #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
             #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
-            #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_init_func")]
+            #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
-            #(#attrs)*
             static __dtor_export
             :
-            unsafe extern #abi #constness fn() =
+            unsafe extern "C" fn() =
             {
                 #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.exit")]
-                #unsafety extern #abi #constness fn #ident() #block;
+                unsafe extern "C" fn #dtor_ident() { #ident() };
                 #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
                 unsafe extern fn __dtor_atexit() {
-                    atexit(#ident);
+                    atexit(#dtor_ident);
                 };
                 __dtor_atexit
+            };
+        }
+
+        // Targets that don't rely on `atexit`.
+        #[cfg(any(
+            target_os = "macos",
+            target_os = "ios",
+        ))]
+        mod #mod_ident {
+            use super::#ident;
+
+            #[used]
+            #[allow(non_upper_case_globals)]
+            #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_term_func")]
+            static __dtor_export
+            :
+            unsafe extern "C" fn() =
+            {
+                unsafe extern fn __dtor() { #ident() };
+                __dtor
             };
         }
     );

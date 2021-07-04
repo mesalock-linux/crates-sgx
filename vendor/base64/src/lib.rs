@@ -43,6 +43,14 @@
 //! Input can be invalid because it has invalid characters or invalid padding. (No padding at all is
 //! valid, but excess padding is not.) Whitespace in the input is invalid.
 //!
+//! # `Read` and `Write`
+//!
+//! To map a `Read` of b64 bytes to the decoded bytes, wrap a reader (file, network socket, etc)
+//! with `base64::read::DecoderReader`. To write raw bytes and have them b64 encoded on the fly,
+//! wrap a writer with `base64::write::EncoderWriter`. There is some performance overhead (15% or
+//! so) because of the necessary buffer shuffling -- still fast enough that almost nobody cares.
+//! Also, these implementations do not heap allocate.
+//!
 //! # Panics
 //!
 //! If length calculations result in overflowing `usize`, a panic will result.
@@ -67,7 +75,8 @@
                 not(target_env = "sgx")), no_std)]
 #![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
 
-#[cfg(all(feature = "alloc", not(any(feature = "std", test))))]
+#[cfg(any(feature = "alloc", feature = "std"))]
+//#[cfg(all(feature = "alloc", not(any(feature = "std", test))))]
 extern crate alloc;
 //#[cfg(any(feature = "std", test))]
 //extern crate std as alloc;
@@ -76,15 +85,10 @@ extern crate alloc;
 #[macro_use]
 extern crate sgx_tstd as std;
 
-#[cfg(test)]
-#[macro_use]
-extern crate doc_comment;
-
-#[cfg(test)]
-doctest!("../README.md");
-
 mod chunked_encoder;
 pub mod display;
+#[cfg(any(feature = "std", test))]
+pub mod read;
 mod tables;
 #[cfg(any(feature = "std", test))]
 pub mod write;
@@ -117,6 +121,16 @@ pub enum CharacterSet {
     ///
     /// Not standardized, but folk wisdom on the net asserts that this alphabet is what crypt uses.
     Crypt,
+    /// The bcrypt character set (uses `./ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789`).
+    Bcrypt,
+    /// The character set used in IMAP-modified UTF-7 (uses `+` and `,`).
+    ///
+    /// See [RFC 3501](https://tools.ietf.org/html/rfc3501#section-5.1.3)
+    ImapMutf7,
+    /// The character set used in BinHex 4.0 files.
+    ///
+    /// See [BinHex 4.0 Definition](http://files.stairways.com/other/binhex-40-specs-info.txt)
+    BinHex,
 }
 
 impl CharacterSet {
@@ -125,6 +139,9 @@ impl CharacterSet {
             CharacterSet::Standard => tables::STANDARD_ENCODE,
             CharacterSet::UrlSafe => tables::URL_SAFE_ENCODE,
             CharacterSet::Crypt => tables::CRYPT_ENCODE,
+            CharacterSet::Bcrypt => tables::BCRYPT_ENCODE,
+            CharacterSet::ImapMutf7 => tables::IMAP_MUTF7_ENCODE,
+            CharacterSet::BinHex => tables::BINHEX_ENCODE,
         }
     }
 
@@ -133,6 +150,9 @@ impl CharacterSet {
             CharacterSet::Standard => tables::STANDARD_DECODE,
             CharacterSet::UrlSafe => tables::URL_SAFE_DECODE,
             CharacterSet::Crypt => tables::CRYPT_DECODE,
+            CharacterSet::Bcrypt => tables::BCRYPT_DECODE,
+            CharacterSet::ImapMutf7 => tables::IMAP_MUTF7_DECODE,
+            CharacterSet::BinHex => tables::BINHEX_DECODE,
         }
     }
 }
@@ -150,7 +170,7 @@ pub struct Config {
 
 impl Config {
     /// Create a new `Config`.
-    pub fn new(char_set: CharacterSet, pad: bool) -> Config {
+    pub const fn new(char_set: CharacterSet, pad: bool) -> Config {
         Config {
             char_set,
             pad,
@@ -159,7 +179,7 @@ impl Config {
     }
 
     /// Sets whether to pad output with `=` characters.
-    pub fn pad(self, pad: bool) -> Config {
+    pub const fn pad(self, pad: bool) -> Config {
         Config { pad, ..self }
     }
 
@@ -167,7 +187,7 @@ impl Config {
     ///
     /// This is useful when implementing
     /// [forgiving-base64 decode](https://infra.spec.whatwg.org/#forgiving-base64-decode).
-    pub fn decode_allow_trailing_bits(self, allow: bool) -> Config {
+    pub const fn decode_allow_trailing_bits(self, allow: bool) -> Config {
         Config {
             decode_allow_trailing_bits: allow,
             ..self
@@ -209,3 +229,26 @@ pub const CRYPT: Config = Config {
     pad: false,
     decode_allow_trailing_bits: false,
 };
+
+/// Bcrypt character set
+pub const BCRYPT: Config = Config {
+    char_set: CharacterSet::Bcrypt,
+    pad: false,
+    decode_allow_trailing_bits: false,
+};
+
+/// IMAP modified UTF-7 requirements
+pub const IMAP_MUTF7: Config = Config {
+    char_set: CharacterSet::ImapMutf7,
+    pad: false,
+    decode_allow_trailing_bits: false,
+};
+
+/// BinHex character set
+pub const BINHEX: Config = Config {
+    char_set: CharacterSet::BinHex,
+    pad: false,
+    decode_allow_trailing_bits: false,
+};
+
+const PAD_BYTE: u8 = b'=';

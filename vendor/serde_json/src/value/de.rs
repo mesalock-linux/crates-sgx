@@ -138,7 +138,7 @@ impl FromStr for Value {
     }
 }
 
-macro_rules! deserialize_prim_number {
+macro_rules! deserialize_number {
     ($method:ident) => {
         #[cfg(not(feature = "arbitrary_precision"))]
         fn $method<V>(self, visitor: V) -> Result<V::Value, Error>
@@ -219,20 +219,20 @@ impl<'de> serde::Deserializer<'de> for Value {
         }
     }
 
-    deserialize_prim_number!(deserialize_i8);
-    deserialize_prim_number!(deserialize_i16);
-    deserialize_prim_number!(deserialize_i32);
-    deserialize_prim_number!(deserialize_i64);
-    deserialize_prim_number!(deserialize_u8);
-    deserialize_prim_number!(deserialize_u16);
-    deserialize_prim_number!(deserialize_u32);
-    deserialize_prim_number!(deserialize_u64);
-    deserialize_prim_number!(deserialize_f32);
-    deserialize_prim_number!(deserialize_f64);
+    deserialize_number!(deserialize_i8);
+    deserialize_number!(deserialize_i16);
+    deserialize_number!(deserialize_i32);
+    deserialize_number!(deserialize_i64);
+    deserialize_number!(deserialize_u8);
+    deserialize_number!(deserialize_u16);
+    deserialize_number!(deserialize_u32);
+    deserialize_number!(deserialize_u64);
+    deserialize_number!(deserialize_f32);
+    deserialize_number!(deserialize_f64);
 
     serde_if_integer128! {
-        deserialize_prim_number!(deserialize_i128);
-        deserialize_prim_number!(deserialize_u128);
+        deserialize_number!(deserialize_i128);
+        deserialize_number!(deserialize_u128);
     }
 
     #[inline]
@@ -286,10 +286,7 @@ impl<'de> serde::Deserializer<'de> for Value {
             }
         };
 
-        visitor.visit_enum(EnumDeserializer {
-            variant: variant,
-            value: value,
-        })
+        visitor.visit_enum(EnumDeserializer { variant, value })
     }
 
     #[inline]
@@ -545,7 +542,7 @@ impl<'de> VariantAccess<'de> for VariantDeserializer {
                 other.unexpected(),
                 &"struct variant",
             )),
-            _ => Err(serde::de::Error::invalid_type(
+            None => Err(serde::de::Error::invalid_type(
                 Unexpected::UnitVariant,
                 &"struct variant",
             )),
@@ -778,8 +775,8 @@ impl<'de> serde::Deserializer<'de> for &'de Value {
     deserialize_value_ref_number!(deserialize_f64);
 
     serde_if_integer128! {
-        deserialize_prim_number!(deserialize_i128);
-        deserialize_prim_number!(deserialize_u128);
+        deserialize_number!(deserialize_i128);
+        deserialize_number!(deserialize_u128);
     }
 
     fn deserialize_option<V>(self, visitor: V) -> Result<V::Value, Error>
@@ -831,10 +828,7 @@ impl<'de> serde::Deserializer<'de> for &'de Value {
             }
         };
 
-        visitor.visit_enum(EnumRefDeserializer {
-            variant: variant,
-            value: value,
-        })
+        visitor.visit_enum(EnumRefDeserializer { variant, value })
     }
 
     #[inline]
@@ -1079,7 +1073,7 @@ impl<'de> VariantAccess<'de> for VariantRefDeserializer<'de> {
                 other.unexpected(),
                 &"struct variant",
             )),
-            _ => Err(serde::de::Error::invalid_type(
+            None => Err(serde::de::Error::invalid_type(
                 Unexpected::UnitVariant,
                 &"struct variant",
             )),
@@ -1388,7 +1382,7 @@ struct BorrowedCowStrDeserializer<'de> {
 
 impl<'de> BorrowedCowStrDeserializer<'de> {
     fn new(value: Cow<'de, str>) -> Self {
-        BorrowedCowStrDeserializer { value: value }
+        BorrowedCowStrDeserializer { value }
     }
 }
 

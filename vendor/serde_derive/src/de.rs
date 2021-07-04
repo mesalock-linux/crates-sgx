@@ -8,10 +8,11 @@ use bound;
 use dummy;
 use fragment::{Expr, Fragment, Match, Stmts};
 use internals::ast::{Container, Data, Field, Style, Variant};
-use internals::{attr, Ctxt, Derive};
+use internals::{attr, ungroup, Ctxt, Derive};
 use pretend;
 
 use std::collections::BTreeSet;
+use std::ptr;
 
 pub fn expand_derive_deserialize(input: &syn::DeriveInput) -> Result<TokenStream, Vec<syn::Error>> {
     let ctxt = Ctxt::new();
@@ -77,7 +78,7 @@ fn precondition(cx: &Ctxt, cont: &Container) {
 fn precondition_sized(cx: &Ctxt, cont: &Container) {
     if let Data::Struct(_, fields) = &cont.data {
         if let Some(last) = fields.last() {
-            if let syn::Type::Slice(_) = *last.ty {
+            if let syn::Type::Slice(_) = ungroup(last.ty) {
                 cx.error_spanned_by(
                     cont.original,
                     "cannot deserialize a dynamically sized struct",
@@ -134,11 +135,11 @@ impl Parameters {
         let has_getter = cont.data.has_getter();
 
         Parameters {
-            local: local,
-            this: this,
-            generics: generics,
-            borrowed: borrowed,
-            has_getter: has_getter,
+            local,
+            this,
+            generics,
+            borrowed,
+            has_getter,
         }
     }
 
@@ -359,7 +360,7 @@ fn deserialize_transparent(cont: &Container, params: &Parameters) -> Fragment {
 
     let assign = fields.iter().map(|field| {
         let member = &field.member;
-        if field as *const Field == transparent_field as *const Field {
+        if ptr::eq(field, transparent_field) {
             quote!(#member: __transparent)
         } else {
             let value = match field.attrs.default() {
@@ -1153,10 +1154,13 @@ fn prepare_enum_variant_enum(
     variants: &[Variant],
     cattrs: &attr::Container,
 ) -> (TokenStream, Stmts) {
-    let variant_names_idents: Vec<_> = variants
+    let mut deserialized_variants = variants
         .iter()
         .enumerate()
-        .filter(|&(_, variant)| !variant.attrs.skip_deserializing())
+        .filter(|&(_, variant)| !variant.attrs.skip_deserializing());
+
+    let variant_names_idents: Vec<_> = deserialized_variants
+        .clone()
         .map(|(i, variant)| {
             (
                 variant.attrs.name().deserialize_name(),
@@ -1166,7 +1170,7 @@ fn prepare_enum_variant_enum(
         })
         .collect();
 
-    let other_idx = variants.iter().position(|variant| variant.attrs.other());
+    let other_idx = deserialized_variants.position(|(_, variant)| variant.attrs.other());
 
     let variants_stmt = {
         let variant_names = variant_names_idents.iter().map(|(name, _, _)| name);
@@ -1374,39 +1378,44 @@ fn deserialize_adjacently_tagged_enum(
         }
     };
 
-    fn is_unit(variant: &Variant) -> bool {
-        match variant.style {
-            Style::Unit => true,
-            Style::Struct | Style::Tuple | Style::Newtype => false,
-        }
-    }
-
     let mut missing_content = quote! {
         _serde::export::Err(<__A::Error as _serde::de::Error>::missing_field(#content))
     };
-    if variants.iter().any(is_unit) {
-        let fallthrough = if variants.iter().all(is_unit) {
-            None
-        } else {
-            Some(quote! {
-                _ => #missing_content
-            })
-        };
-        let arms = variants
-            .iter()
-            .enumerate()
-            .filter(|&(_, variant)| !variant.attrs.skip_deserializing() && is_unit(variant))
-            .map(|(i, variant)| {
-                let variant_index = field_i(i);
-                let variant_ident = &variant.ident;
-                quote! {
-                    __Field::#variant_index => _serde::export::Ok(#this::#variant_ident),
+    let mut missing_content_fallthrough = quote!();
+    let missing_content_arms = variants
+        .iter()
+        .enumerate()
+        .filter(|&(_, variant)| !variant.attrs.skip_deserializing())
+        .filter_map(|(i, variant)| {
+            let variant_index = field_i(i);
+            let variant_ident = &variant.ident;
+
+            let arm = match variant.style {
+                Style::Unit => quote! {
+                    _serde::export::Ok(#this::#variant_ident)
+                },
+                Style::Newtype if variant.attrs.deserialize_with().is_none() => {
+                    let span = variant.original.span();
+                    let func = quote_spanned!(span=> _serde::private::de::missing_field);
+                    quote! {
+                        #func(#content).map(#this::#variant_ident)
+                    }
                 }
-            });
+                _ => {
+                    missing_content_fallthrough = quote!(_ => #missing_content);
+                    return None;
+                }
+            };
+            Some(quote! {
+                __Field::#variant_index => #arm,
+            })
+        })
+        .collect::<Vec<_>>();
+    if !missing_content_arms.is_empty() {
         missing_content = quote! {
             match __field {
-                #(#arms)*
-                #fallthrough
+                #(#missing_content_arms)*
+                #missing_content_fallthrough
             }
         };
     }

@@ -1,9 +1,14 @@
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "bytemuck")]
+use bytemuck::{Pod, Zeroable};
+
 use core::{
     cmp::Ordering,
-    fmt::{Debug, Display, Error, Formatter, LowerExp, UpperExp},
+    fmt::{
+        Binary, Debug, Display, Error, Formatter, LowerExp, LowerHex, Octal, UpperExp, UpperHex,
+    },
     num::{FpCategory, ParseFloatError},
     str::FromStr,
 };
@@ -28,6 +33,7 @@ pub(crate) mod convert;
 #[derive(Clone, Copy, Default)]
 #[repr(transparent)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "bytemuck", derive(Zeroable, Pod))]
 pub struct bf16(u16);
 
 impl bf16 {
@@ -593,7 +599,7 @@ impl FromStr for bf16 {
 
 impl Debug for bf16 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
-        write!(f, "0x{:X}", self.0)
+        write!(f, "{:?}", self.to_f32())
     }
 }
 
@@ -612,6 +618,102 @@ impl LowerExp for bf16 {
 impl UpperExp for bf16 {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         write!(f, "{:E}", self.to_f32())
+    }
+}
+
+impl Binary for bf16 {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        write!(f, "{:b}", self.0)
+    }
+}
+
+impl Octal for bf16 {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        write!(f, "{:o}", self.0)
+    }
+}
+
+impl LowerHex for bf16 {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        write!(f, "{:x}", self.0)
+    }
+}
+
+impl UpperHex for bf16 {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        write!(f, "{:X}", self.0)
+    }
+}
+
+#[cfg(feature = "num-traits")]
+mod impl_num_traits {
+    use super::bf16;
+    use num_traits::{FromPrimitive, ToPrimitive};
+
+    impl ToPrimitive for bf16 {
+        fn to_i64(&self) -> Option<i64> {
+            Self::to_f32(*self).to_i64()
+        }
+        fn to_u64(&self) -> Option<u64> {
+            Self::to_f32(*self).to_u64()
+        }
+        fn to_i8(&self) -> Option<i8> {
+            Self::to_f32(*self).to_i8()
+        }
+        fn to_u8(&self) -> Option<u8> {
+            Self::to_f32(*self).to_u8()
+        }
+        fn to_i16(&self) -> Option<i16> {
+            Self::to_f32(*self).to_i16()
+        }
+        fn to_u16(&self) -> Option<u16> {
+            Self::to_f32(*self).to_u16()
+        }
+        fn to_i32(&self) -> Option<i32> {
+            Self::to_f32(*self).to_i32()
+        }
+        fn to_u32(&self) -> Option<u32> {
+            Self::to_f32(*self).to_u32()
+        }
+        fn to_f32(&self) -> Option<f32> {
+            Some(Self::to_f32(*self))
+        }
+        fn to_f64(&self) -> Option<f64> {
+            Some(Self::to_f64(*self))
+        }
+    }
+
+    impl FromPrimitive for bf16 {
+        fn from_i64(n: i64) -> Option<Self> {
+            n.to_f32().map(|x| Self::from_f32(x))
+        }
+        fn from_u64(n: u64) -> Option<Self> {
+            n.to_f32().map(|x| Self::from_f32(x))
+        }
+        fn from_i8(n: i8) -> Option<Self> {
+            n.to_f32().map(|x| Self::from_f32(x))
+        }
+        fn from_u8(n: u8) -> Option<Self> {
+            n.to_f32().map(|x| Self::from_f32(x))
+        }
+        fn from_i16(n: i16) -> Option<Self> {
+            n.to_f32().map(|x| Self::from_f32(x))
+        }
+        fn from_u16(n: u16) -> Option<Self> {
+            n.to_f32().map(|x| Self::from_f32(x))
+        }
+        fn from_i32(n: i32) -> Option<Self> {
+            n.to_f32().map(|x| Self::from_f32(x))
+        }
+        fn from_u32(n: u32) -> Option<Self> {
+            n.to_f32().map(|x| Self::from_f32(x))
+        }
+        fn from_f32(n: f32) -> Option<Self> {
+            n.to_f32().map(|x| Self::from_f32(x))
+        }
+        fn from_f64(n: f64) -> Option<Self> {
+            n.to_f64().map(|x| Self::from_f64(x))
+        }
     }
 }
 

@@ -1,5 +1,32 @@
 # Changelog
 
+## 7.2.0 (2020-06-30)
+
+- Add `dangerous_insecure_decode` to replace `dangerous_unsafe_decode`, which is now deprecated
+- Add `dangerous_insecure_decode_with_validation`
+
+## 7.1.2 (2020-06-16)
+
+- Derive `Hash` for `Header` and `Algorithm`
+
+## 7.1.1 (2020-06-09)
+
+- Update dependencies
+
+## 7.1.0 (2020-03-01)
+
+- Add `into_static` to `DecodingKey` for easier re-use
+
+# 7.0.0 (2020-01-28)
+
+- Add support for PS256, PS384 and PS512
+- Add support for verifying with modulus/exponent components for RSA
+- Update to 2018 edition
+- Changed aud field type in Validation to `Option<HashSet<String>>`.  Audience 
+  validation now tests for "any-of-these" audience membership.
+- Add support for keys in PEM format
+- Add EncodingKey/DecodingKey API to improve performance and UX
+
 ## 6.0.1 (2019-05-10)
 
 - Fix Algorithm mapping in FromStr for RSA

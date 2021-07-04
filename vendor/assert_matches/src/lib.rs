@@ -12,6 +12,7 @@
 //! [`debug_assert_matches!`]: macro.debug_assert_matches.html
 
 #![deny(missing_docs)]
+#![cfg_attr(not(test), no_std)]
 
 /// Asserts that an expression matches a given pattern.
 ///
@@ -60,60 +61,60 @@
 /// ```
 #[macro_export]
 macro_rules! assert_matches {
-    ( $e:expr , $pat:pat ) => {
+    ( $e:expr , $($pat:pat)|+ ) => {
         match $e {
-            $pat => (),
+            $($pat)|+ => (),
             ref e => panic!("assertion failed: `{:?}` does not match `{}`",
-                e, stringify!($pat))
+                e, stringify!($($pat)|+))
         }
     };
-    ( $e:expr , $pat:pat if $cond:expr ) => {
+    ( $e:expr , $($pat:pat)|+ if $cond:expr ) => {
         match $e {
-            $pat if $cond => (),
+            $($pat)|+ if $cond => (),
             ref e => panic!("assertion failed: `{:?}` does not match `{}`",
-                e, stringify!($pat if $cond))
+                e, stringify!($($pat)|+ if $cond))
         }
     };
-    ( $e:expr , $pat:pat => $arm:expr ) => {
+    ( $e:expr , $($pat:pat)|+ => $arm:expr ) => {
         match $e {
-            $pat => $arm,
+            $($pat)|+ => $arm,
             ref e => panic!("assertion failed: `{:?}` does not match `{}`",
-                e, stringify!($pat))
+                e, stringify!($($pat)|+))
         }
     };
-    ( $e:expr , $pat:pat if $cond:expr => $arm:expr ) => {
+    ( $e:expr , $($pat:pat)|+ if $cond:expr => $arm:expr ) => {
         match $e {
-            $pat if $cond => $arm,
+            $($pat)|+ if $cond => $arm,
             ref e => panic!("assertion failed: `{:?}` does not match `{}`",
-                e, stringify!($pat if $cond))
+                e, stringify!($($pat)|+ if $cond))
         }
     };
-    ( $e:expr , $pat:pat , $($arg:tt)* ) => {
+    ( $e:expr , $($pat:pat)|+ , $($arg:tt)* ) => {
         match $e {
-            $pat => (),
+            $($pat)|+ => (),
             ref e => panic!("assertion failed: `{:?}` does not match `{}`: {}",
-                e, stringify!($pat), format_args!($($arg)*))
+                e, stringify!($($pat)|+), format_args!($($arg)*))
         }
     };
-    ( $e:expr , $pat:pat if $cond:expr , $($arg:tt)* ) => {
+    ( $e:expr , $($pat:pat)|+ if $cond:expr , $($arg:tt)* ) => {
         match $e {
-            $pat if $cond => (),
+            $($pat)|+ if $cond => (),
             ref e => panic!("assertion failed: `{:?}` does not match `{}`: {}",
-                e, stringify!($pat if $cond), format_args!($($arg)*))
+                e, stringify!($($pat)|+ if $cond), format_args!($($arg)*))
         }
     };
-    ( $e:expr , $pat:pat => $arm:expr , $($arg:tt)* ) => {
+    ( $e:expr , $($pat:pat)|+ => $arm:expr , $($arg:tt)* ) => {
         match $e {
-            $pat => $arm,
+            $($pat)|+ => $arm,
             ref e => panic!("assertion failed: `{:?}` does not match `{}`: {}",
-                e, stringify!($pat), format_args!($($arg)*))
+                e, stringify!($($pat)|+), format_args!($($arg)*))
         }
     };
-    ( $e:expr , $pat:pat if $cond:expr => $arm:expr , $($arg:tt)* ) => {
+    ( $e:expr , $($pat:pat)|+ if $cond:expr => $arm:expr , $($arg:tt)* ) => {
         match $e {
-            $pat if $cond => $arm,
+            $($pat)|+ if $cond => $arm,
             ref e => panic!("assertion failed: `{:?}` does not match `{}`: {}",
-                e, stringify!($pat if $cond), format_args!($($arg)*))
+                e, stringify!($($pat)|+ if $cond), format_args!($($arg)*))
         }
     };
 }
@@ -128,13 +129,19 @@ macro_rules! assert_matches {
 /// See the macro [`assert_matches!`] documentation for more information.
 ///
 /// [`assert_matches!`]: macro.assert_matches.html
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! debug_assert_matches {
     ( $($tt:tt)* ) => { {
-        if cfg!(debug_assertions) {
+        if _assert_matches_cfg!(debug_assertions) {
             assert_matches!($($tt)*);
         }
     } }
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! _assert_matches_cfg {
+    ( $($tt:tt)* ) => { cfg!($($tt)*) }
 }
 
 #[cfg(test)]
@@ -145,6 +152,7 @@ mod test {
     enum Foo {
         A(i32),
         B(&'static str),
+        C(&'static str),
     }
 
     #[test]
@@ -154,6 +162,7 @@ mod test {
         assert_matches!(a, Foo::A(_));
         assert_matches!(a, Foo::A(123));
         assert_matches!(a, Foo::A(i) if i == 123);
+        assert_matches!(a, Foo::A(42) | Foo::A(123));
 
         let b = Foo::B("foo");
 
@@ -164,6 +173,16 @@ mod test {
         assert_matches!(b, Foo::B(s) => { assert_eq!(s, "foo"); assert!(true) });
         assert_matches!(b, Foo::B(s) if s == "foo" => assert_eq!(s, "foo"));
         assert_matches!(b, Foo::B(s) if s == "foo" => { assert_eq!(s, "foo"); assert!(true) });
+
+        let c = Foo::C("foo");
+
+        assert_matches!(c, Foo::B(_) | Foo::C(_));
+        assert_matches!(c, Foo::B("foo") | Foo::C("foo"));
+        assert_matches!(c, Foo::B(s) | Foo::C(s) if s == "foo");
+        assert_matches!(c, Foo::B(s) | Foo::C(s) => assert_eq!(s, "foo"));
+        assert_matches!(c, Foo::B(s) | Foo::C(s) => { assert_eq!(s, "foo"); assert!(true) });
+        assert_matches!(c, Foo::B(s) | Foo::C(s) if s == "foo" => assert_eq!(s, "foo"));
+        assert_matches!(c, Foo::B(s) | Foo::C(s) if s == "foo" => { assert_eq!(s, "foo"); assert!(true) });
     }
 
     #[test]

@@ -102,9 +102,14 @@ that dlopen occurs.
 
 [`ctor`]: https://github.com/mmastrac/rust-ctor
 
-Platform support includes Linux, macOS and Windows. Other platforms will simply
-find that no plugins have been registered. Support for other targets would need
-to be added in the `ctor` crate.
+Platform support includes Linux, macOS, iOS, FreeBSD, Android, and Windows.
+Other platforms will simply find that no plugins have been registered. Support
+for other targets would need to be added in the `ctor` crate.
+
+For a different approach to plugin registration that *does not* involve
+life-before-main, see the [`linkme`] crate.
+
+[`linkme`]: https://github.com/dtolnay/linkme
 
 <br>
 

@@ -1,6 +1,6 @@
 [package]
 name = "rand_chacha"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["The Rand Project Developers", "The Rust Project Developers", "The CryptoCorrosion Contributors"]
 license = "MIT OR Apache-2.0"
 readme = "README.md"
@@ -20,11 +20,11 @@ appveyor = { repository = "rust-random/rand" }
 
 [dependencies]
 rand_core = { path = "../rand_core", version = "0.5" }
-c2-chacha = { git = "https://github.com/mesalock-linux/cryptocorrosion-sgx" }
-sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+ppv-lite86 = { default-features = false, features = ["simd"], git = "https://github.com/mesalock-linux/cryptocorrosion-sgx" }
+sgx_tstd = { rev = "v1.1.3", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [features]
 default = ["std", "simd", "mesalock_sgx"]
-std = ["c2-chacha/simd"]
-simd = []
+std = ["ppv-lite86/std"]
+simd = [] # deprecated
 mesalock_sgx = ["sgx_tstd"]

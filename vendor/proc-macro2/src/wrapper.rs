@@ -29,6 +29,14 @@ pub(crate) enum LexError {
     Fallback(fallback::LexError),
 }
 
+impl LexError {
+    fn call_site() -> Self {
+        LexError::Fallback(fallback::LexError {
+            span: fallback::Span::call_site(),
+        })
+    }
+}
+
 fn mismatch() -> ! {
     panic!("stable/nightly mismatch")
 }
@@ -46,7 +54,12 @@ impl DeferredTokenStream {
     }
 
     fn evaluate_now(&mut self) {
-        self.stream.extend(self.extra.drain(..));
+        // If-check provides a fast short circuit for the common case of `extra`
+        // being empty, which saves a round trip over the proc macro bridge.
+        // Improves macro expansion time in winrt by 6% in debug mode.
+        if !self.extra.is_empty() {
+            self.stream.extend(self.extra.drain(..));
+        }
     }
 
     fn into_token_stream(mut self) -> proc_macro::TokenStream {
@@ -102,8 +115,8 @@ impl FromStr for TokenStream {
 
 // Work around https://github.com/rust-lang/rust/issues/58736.
 fn proc_macro_parse(src: &str) -> Result<proc_macro::TokenStream, LexError> {
-    panic::catch_unwind(|| src.parse().map_err(LexError::Compiler))
-        .unwrap_or(Err(LexError::Fallback(fallback::LexError)))
+    let result = panic::catch_unwind(|| src.parse().map_err(LexError::Compiler));
+    result.unwrap_or_else(|_| Err(LexError::call_site()))
 }
 
 impl Display for TokenStream {
@@ -145,9 +158,9 @@ fn into_compiler_token(token: TokenTree) -> proc_macro::TokenTree {
                 Spacing::Joint => proc_macro::Spacing::Joint,
                 Spacing::Alone => proc_macro::Spacing::Alone,
             };
-            let mut op = proc_macro::Punct::new(tt.as_char(), spacing);
-            op.set_span(tt.span().inner.unwrap_nightly());
-            op.into()
+            let mut punct = proc_macro::Punct::new(tt.as_char(), spacing);
+            punct.set_span(tt.span().inner.unwrap_nightly());
+            punct.into()
         }
         TokenTree::Ident(tt) => tt.inner.unwrap_nightly().into(),
         TokenTree::Literal(tt) => tt.inner.unwrap_nightly().into(),
@@ -201,14 +214,15 @@ impl FromIterator<TokenStream> for TokenStream {
 }
 
 impl Extend<TokenTree> for TokenStream {
-    fn extend<I: IntoIterator<Item = TokenTree>>(&mut self, streams: I) {
+    fn extend<I: IntoIterator<Item = TokenTree>>(&mut self, stream: I) {
         match self {
             TokenStream::Compiler(tts) => {
                 // Here is the reason for DeferredTokenStream.
-                tts.extra
-                    .extend(streams.into_iter().map(into_compiler_token));
+                for token in stream {
+                    tts.extra.push(into_compiler_token(token));
+                }
             }
-            TokenStream::Fallback(tts) => tts.extend(streams),
+            TokenStream::Fallback(tts) => tts.extend(stream),
         }
     }
 }
@@ -219,10 +233,10 @@ impl Extend<TokenStream> for TokenStream {
             TokenStream::Compiler(tts) => {
                 tts.evaluate_now();
                 tts.stream
-                    .extend(streams.into_iter().map(|stream| stream.unwrap_nightly()));
+                    .extend(streams.into_iter().map(TokenStream::unwrap_nightly));
             }
             TokenStream::Fallback(tts) => {
-                tts.extend(streams.into_iter().map(|stream| stream.unwrap_stable()));
+                tts.extend(streams.into_iter().map(TokenStream::unwrap_stable));
             }
         }
     }
@@ -233,6 +247,15 @@ impl Debug for TokenStream {
         match self {
             TokenStream::Compiler(tts) => Debug::fmt(&tts.clone().into_token_stream(), f),
             TokenStream::Fallback(tts) => Debug::fmt(tts, f),
+        }
+    }
+}
+
+impl LexError {
+    pub(crate) fn span(&self) -> Span {
+        match self {
+            LexError::Compiler(_) => Span::call_site(),
+            LexError::Fallback(e) => Span::Fallback(e.span()),
         }
     }
 }
@@ -254,6 +277,23 @@ impl Debug for LexError {
         match self {
             LexError::Compiler(e) => Debug::fmt(e, f),
             LexError::Fallback(e) => Debug::fmt(e, f),
+        }
+    }
+}
+
+impl Display for LexError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            #[cfg(lexerror_display)]
+            LexError::Compiler(e) => Display::fmt(e, f),
+            #[cfg(not(lexerror_display))]
+            LexError::Compiler(_e) => Display::fmt(
+                &fallback::LexError {
+                    span: fallback::Span::call_site(),
+                },
+                f,
+            ),
+            LexError::Fallback(e) => Display::fmt(e, f),
         }
     }
 }
@@ -376,7 +416,6 @@ impl Span {
         }
     }
 
-    #[cfg(procmacro2_semver_exempt)]
     #[cfg(hygiene)]
     pub fn mixed_site() -> Span {
         if inside_proc_macro() {
@@ -395,7 +434,6 @@ impl Span {
         }
     }
 
-    #[cfg(procmacro2_semver_exempt)]
     pub fn resolved_at(&self, other: Span) -> Span {
         match (self, other) {
             #[cfg(hygiene)]
@@ -410,7 +448,6 @@ impl Span {
         }
     }
 
-    #[cfg(procmacro2_semver_exempt)]
     pub fn located_at(&self, other: Span) -> Span {
         match (self, other) {
             #[cfg(hygiene)]
@@ -876,6 +913,30 @@ impl Literal {
 impl From<fallback::Literal> for Literal {
     fn from(s: fallback::Literal) -> Literal {
         Literal::Fallback(s)
+    }
+}
+
+impl FromStr for Literal {
+    type Err = LexError;
+
+    fn from_str(repr: &str) -> Result<Self, Self::Err> {
+        if inside_proc_macro() {
+            // TODO: use libproc_macro's FromStr impl once it is available in
+            // rustc. https://github.com/rust-lang/rust/pull/84717
+            let tokens = proc_macro_parse(repr)?;
+            let mut iter = tokens.into_iter();
+            if let (Some(proc_macro::TokenTree::Literal(literal)), None) =
+                (iter.next(), iter.next())
+            {
+                if literal.to_string().len() == repr.len() {
+                    return Ok(Literal::Compiler(literal));
+                }
+            }
+            Err(LexError::call_site())
+        } else {
+            let literal = fallback::Literal::from_str(repr)?;
+            Ok(Literal::Fallback(literal))
+        }
     }
 }
 

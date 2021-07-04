@@ -6,7 +6,7 @@ use std::fmt;
 /// An error encountered while working with structured data.
 #[derive(Debug)]
 pub struct Error {
-    inner: Inner
+    inner: Inner,
 }
 
 #[derive(Debug)]
@@ -40,15 +40,7 @@ impl fmt::Display for Error {
 
 impl From<fmt::Error> for Error {
     fn from(_: fmt::Error) -> Self {
-        Error {
-            inner: Inner::Fmt,
-        }
-    }
-}
-
-impl From<Error> for fmt::Error {
-    fn from(_: Error) -> Self {
-        fmt::Error
+        Error { inner: Inner::Fmt }
     }
 }
 
@@ -66,26 +58,16 @@ mod std_support {
             E: Into<BoxedError>,
         {
             Error {
-                inner: Inner::Boxed(err.into())
+                inner: Inner::Boxed(err.into()),
             }
         }
     }
 
-    impl error::Error for Error {
-        fn description(&self) -> &str {
-            "key values error"
-        }
-    }
+    impl error::Error for Error {}
 
     impl From<io::Error> for Error {
         fn from(err: io::Error) -> Self {
             Error::boxed(err)
-        }
-    }
-
-    impl From<Error> for io::Error {
-        fn from(err: Error) -> Self {
-            io::Error::new(io::ErrorKind::Other, err)
         }
     }
 }

@@ -183,7 +183,9 @@ where
         }
     }
 
-    deserializer.deserialize_bytes(CowBytesVisitor).map(From::from)
+    deserializer
+        .deserialize_bytes(CowBytesVisitor)
+        .map(From::from)
 }
 
 pub mod size_hint {
@@ -1560,7 +1562,7 @@ mod content {
                     other.unexpected(),
                     &"struct variant",
                 )),
-                _ => Err(de::Error::invalid_type(
+                None => Err(de::Error::invalid_type(
                     de::Unexpected::UnitVariant,
                     &"struct variant",
                 )),
@@ -2250,7 +2252,7 @@ mod content {
                     other.unexpected(),
                     &"struct variant",
                 )),
-                _ => Err(de::Error::invalid_type(
+                None => Err(de::Error::invalid_type(
                     de::Unexpected::UnitVariant,
                     &"struct variant",
                 )),
@@ -2472,7 +2474,7 @@ mod content {
         where
             M: MapAccess<'de>,
         {
-            while let Some(_) = access.next_entry::<IgnoredAny, IgnoredAny>()? {}
+            while try!(access.next_entry::<IgnoredAny, IgnoredAny>()).is_some() {}
             Ok(())
         }
     }
@@ -2761,6 +2763,13 @@ where
         }
     }
 
+    fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+    where
+        V: Visitor<'de>,
+    {
+        visitor.visit_unit()
+    }
+
     forward_to_deserialize_other! {
         deserialize_bool()
         deserialize_i8()
@@ -2778,7 +2787,6 @@ where
         deserialize_string()
         deserialize_bytes()
         deserialize_byte_buf()
-        deserialize_unit()
         deserialize_unit_struct(&'static str)
         deserialize_seq()
         deserialize_tuple(usize)

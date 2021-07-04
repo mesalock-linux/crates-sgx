@@ -102,6 +102,7 @@
 //! There is no guarantee about the order that plugins of the same type are
 //! visited by the iterator. They may be visited in any order.
 
+#![doc(html_root_url = "https://docs.rs/inventory/0.1.10")]
 #![cfg_attr(not(inventory_require_std), no_std)]
 
 #[cfg(not(inventory_require_std))]
@@ -117,6 +118,7 @@ pub use ctor::ctor;
 #[doc(hidden)]
 pub use inventory_impl as r#impl;
 
+use core::ops::Deref;
 use core::ptr;
 use core::sync::atomic::{AtomicPtr, Ordering};
 
@@ -173,7 +175,9 @@ impl<T: 'static> Registry<T> {
             // `new` is always a valid Node<T>, and is not yet visible through the registry.
             // `head` is always null or valid &'static Node<T>.
             unsafe { new.as_mut().next = head.as_ref() };
-            let prev = self.head.compare_and_swap(head, new.as_ptr(), Ordering::SeqCst);
+            let prev = self
+                .head
+                .compare_and_swap(head, new.as_ptr(), Ordering::SeqCst);
             if prev == head {
                 return;
             } else {
@@ -229,19 +233,32 @@ pub type iter<T> = private::iter<T>;
 pub use crate::private::*;
 
 const ITER: () = {
+    fn into_iter<T: Collect>() -> Iter<T> {
+        let head = T::registry().head.load(Ordering::SeqCst);
+        Iter {
+            // Head pointer is always null or valid &'static Node<T>.
+            node: unsafe { head.as_ref() },
+        }
+    }
+
     impl<T: Collect> IntoIterator for iter<T> {
         type Item = &'static T;
         type IntoIter = Iter<T>;
 
         fn into_iter(self) -> Self::IntoIter {
-            let head = T::registry().head.load(Ordering::SeqCst);
-            Iter {
-                // Head pointer is always null or valid &'static Node<T>.
-                node: unsafe { head.as_ref() },
-            }
+            into_iter()
         }
     }
 
+    #[doc(hidden)]
+    impl<T: Collect> Deref for iter<T> {
+        type Target = fn() -> Iter<T>;
+        fn deref(&self) -> &Self::Target {
+            &(into_iter as fn() -> Iter<T>)
+        }
+    }
+
+    #[derive(Clone)]
     pub struct Iter<T: 'static> {
         node: Option<&'static Node<T>>,
     }

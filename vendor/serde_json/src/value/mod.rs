@@ -104,7 +104,7 @@ pub use crate::map::Map;
 pub use crate::number::Number;
 
 #[cfg(feature = "raw_value")]
-pub use crate::raw::RawValue;
+pub use crate::raw::{to_raw_value, RawValue};
 
 /// Represents any valid JSON value.
 ///
@@ -179,8 +179,16 @@ impl Debug for Value {
             Value::Bool(v) => formatter.debug_tuple("Bool").field(&v).finish(),
             Value::Number(ref v) => Debug::fmt(v, formatter),
             Value::String(ref v) => formatter.debug_tuple("String").field(v).finish(),
-            Value::Array(ref v) => formatter.debug_tuple("Array").field(v).finish(),
-            Value::Object(ref v) => formatter.debug_tuple("Object").field(v).finish(),
+            Value::Array(ref v) => {
+                formatter.write_str("Array(")?;
+                Debug::fmt(v, formatter)?;
+                formatter.write_str(")")
+            }
+            Value::Object(ref v) => {
+                formatter.write_str("Object(")?;
+                Debug::fmt(v, formatter)?;
+                formatter.write_str(")")
+            }
         }
     }
 }
@@ -743,7 +751,7 @@ impl Value {
     /// assert_eq!(data.pointer("/a/b/c"), None);
     /// ```
     pub fn pointer(&self, pointer: &str) -> Option<&Value> {
-        if pointer == "" {
+        if pointer.is_empty() {
             return Some(self);
         }
         if !pointer.starts_with('/') {
@@ -808,7 +816,7 @@ impl Value {
     /// }
     /// ```
     pub fn pointer_mut(&mut self, pointer: &str) -> Option<&mut Value> {
-        if pointer == "" {
+        if pointer.is_empty() {
             return Some(self);
         }
         if !pointer.starts_with('/') {

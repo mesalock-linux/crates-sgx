@@ -1,17 +1,13 @@
 #![no_std]
 
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-#[macro_use]
-extern crate serde_big_array;
+use serde_derive::{Serialize, Deserialize};
+use serde_big_array::big_array;
 
 const NUMBER: usize = 137;
 
 big_array! {
     BigArray;
-    (NUMBER * NUMBER + 17), NUMBER, 42,
+    NUMBER * NUMBER + 17, NUMBER, 42
 }
 
 #[derive(Serialize, Deserialize)]

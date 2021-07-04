@@ -29,6 +29,7 @@ extern crate sgx_tstd as std;
 pub use rand_core;
 
 mod chacha;
+mod guts;
 
 pub use crate::chacha::{
     ChaCha12Core, ChaCha12Rng, ChaCha20Core, ChaCha20Rng, ChaCha8Core, ChaCha8Rng,

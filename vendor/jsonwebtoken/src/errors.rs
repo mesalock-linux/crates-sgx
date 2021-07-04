@@ -3,9 +3,6 @@ use std::error::Error as StdError;
 use std::fmt;
 use std::result;
 
-use base64;
-use serde_json;
-
 /// A crate private constructor for `Error`.
 pub(crate) fn new_error(kind: ErrorKind) -> Error {
     Error(Box::new(kind))
@@ -43,8 +40,10 @@ pub enum ErrorKind {
     InvalidRsaKey,
     /// When the algorithm from string doesn't match the one passed to `from_str`
     InvalidAlgorithmName,
+    /// When a key is provided with an invalid format
+    InvalidKeyFormat,
 
-    // validation error
+    // Validation errors
     /// When a token’s `exp` claim indicates that it has expired
     ExpiredSignature,
     /// When a token’s `iss` claim does not match the expected issuer
@@ -55,7 +54,8 @@ pub enum ErrorKind {
     InvalidSubject,
     /// When a token’s nbf claim represents a time in the future
     ImmatureSignature,
-    /// When the algorithm in the header doesn't match the one passed to `decode`
+    /// When the algorithm in the header doesn't match the one passed to `decode` or the encoding/decoding key
+    /// used doesn't match the alg requested
     InvalidAlgorithm,
 
     // 3rd party errors
@@ -78,26 +78,6 @@ pub enum ErrorKind {
 }
 
 impl StdError for Error {
-    fn description(&self) -> &str {
-        match *self.0 {
-            ErrorKind::InvalidToken => "invalid token",
-            ErrorKind::InvalidSignature => "invalid signature",
-            ErrorKind::InvalidEcdsaKey => "invalid ECDSA key",
-            ErrorKind::InvalidRsaKey => "invalid RSA key",
-            ErrorKind::ExpiredSignature => "expired signature",
-            ErrorKind::InvalidIssuer => "invalid issuer",
-            ErrorKind::InvalidAudience => "invalid audience",
-            ErrorKind::InvalidSubject => "invalid subject",
-            ErrorKind::ImmatureSignature => "immature signature",
-            ErrorKind::InvalidAlgorithm => "algorithms don't match",
-            ErrorKind::Base64(ref err) => err.description(),
-            ErrorKind::Json(ref err) => err.description(),
-            ErrorKind::Utf8(ref err) => err.description(),
-            ErrorKind::Crypto(ref err) => err.description(),
-            _ => unreachable!(),
-        }
-    }
-
     fn cause(&self) -> Option<&dyn StdError> {
         match *self.0 {
             ErrorKind::InvalidToken => None,
@@ -110,11 +90,13 @@ impl StdError for Error {
             ErrorKind::InvalidSubject => None,
             ErrorKind::ImmatureSignature => None,
             ErrorKind::InvalidAlgorithm => None,
+            ErrorKind::InvalidAlgorithmName => None,
+            ErrorKind::InvalidKeyFormat => None,
             ErrorKind::Base64(ref err) => Some(err),
             ErrorKind::Json(ref err) => Some(err),
             ErrorKind::Utf8(ref err) => Some(err),
             ErrorKind::Crypto(ref err) => Some(err),
-            _ => unreachable!(),
+            ErrorKind::__Nonexhaustive => None,
         }
     }
 }
@@ -122,21 +104,23 @@ impl StdError for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self.0 {
-            ErrorKind::InvalidToken => write!(f, "invalid token"),
-            ErrorKind::InvalidSignature => write!(f, "invalid signature"),
-            ErrorKind::InvalidEcdsaKey => write!(f, "invalid ECDSA key"),
-            ErrorKind::InvalidRsaKey => write!(f, "invalid RSA key"),
-            ErrorKind::ExpiredSignature => write!(f, "expired signature"),
-            ErrorKind::InvalidIssuer => write!(f, "invalid issuer"),
-            ErrorKind::InvalidAudience => write!(f, "invalid audience"),
-            ErrorKind::InvalidSubject => write!(f, "invalid subject"),
-            ErrorKind::ImmatureSignature => write!(f, "immature signature"),
-            ErrorKind::InvalidAlgorithm => write!(f, "algorithms don't match"),
-            ErrorKind::Base64(ref err) => write!(f, "base64 error: {}", err),
+            ErrorKind::InvalidToken
+            | ErrorKind::InvalidSignature
+            | ErrorKind::InvalidEcdsaKey
+            | ErrorKind::InvalidRsaKey
+            | ErrorKind::ExpiredSignature
+            | ErrorKind::InvalidIssuer
+            | ErrorKind::InvalidAudience
+            | ErrorKind::InvalidSubject
+            | ErrorKind::ImmatureSignature
+            | ErrorKind::InvalidAlgorithm
+            | ErrorKind::InvalidKeyFormat
+            | ErrorKind::InvalidAlgorithmName => write!(f, "{:?}", self.0),
             ErrorKind::Json(ref err) => write!(f, "JSON error: {}", err),
             ErrorKind::Utf8(ref err) => write!(f, "UTF-8 error: {}", err),
             ErrorKind::Crypto(ref err) => write!(f, "Crypto error: {}", err),
-            _ => unreachable!(),
+            ErrorKind::Base64(ref err) => write!(f, "Base64 error: {}", err),
+            ErrorKind::__Nonexhaustive => write!(f, "Unknown error"),
         }
     }
 }
@@ -174,5 +158,18 @@ impl From<::ring::error::KeyRejected> for Error {
 impl From<ErrorKind> for Error {
     fn from(kind: ErrorKind) -> Error {
         new_error(kind)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_error_rendering() {
+        assert_eq!(
+            "InvalidAlgorithmName",
+            Error::from(ErrorKind::InvalidAlgorithmName).to_string()
+        );
     }
 }

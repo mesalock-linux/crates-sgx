@@ -20,7 +20,7 @@ maintenance = { status = "passively-maintained" }
 [dependencies]
 half = "1.2.0"
 serde = { git = "https://github.com/mesalock-linux/serde-sgx" }
-sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.3", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 #serde_derive = { version = "1.0.14", default-features = false }

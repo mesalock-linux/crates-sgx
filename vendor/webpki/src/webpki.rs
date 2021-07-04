@@ -14,8 +14,6 @@
 
 //! webpki: Web PKI X.509 Certificate Validation.
 //!
-//! <code>git clone https://github.com/briansmith/webpki</code>
-//!
 //! See `EndEntityCert`'s documentation for a description of the certificate
 //! processing steps necessary for a TLS connection.
 
@@ -32,7 +30,7 @@
     trivial_casts,
     trivial_numeric_casts,
     unsafe_code,
-    unstable_features,
+//    unstable_features,
     unused_extern_crates,
     unused_import_braces,
     unused_results,
@@ -40,7 +38,6 @@
     warnings
 )]
 
-#![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), allow(unstable_features))]
 #![cfg_attr(all(feature = "mesalock_sgx", not(target_env = "sgx")), no_std)]
 #![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
 
@@ -247,7 +244,7 @@ impl<'a> EndEntityCert<'a> {
     ) -> Result<(), Error> {
         signed_data::verify_signature(
             signature_alg,
-            self.inner.spki,
+            self.inner.spki.value(),
             untrusted::Input::from(msg),
             untrusted::Input::from(signature),
         )

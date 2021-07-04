@@ -16,7 +16,7 @@ use std as core;
 use core::fmt;
 #[cfg(all(feature = "mesalock_sgx", target_env = "sgx"))]
 use self::core::fmt;
-use c2_chacha::guts::ChaCha;
+use crate::guts::ChaCha;
 use rand_core::block::{BlockRng, BlockRngCore};
 use rand_core::{CryptoRng, Error, RngCore, SeedableRng};
 
@@ -104,6 +104,8 @@ macro_rules! chacha_impl {
                 $ChaChaXCore { state: ChaCha::new(&seed, &[0u8; 8]) }
             }
         }
+
+        impl CryptoRng for $ChaChaXCore {}
 
         /// A cryptographically secure random number generator that uses the ChaCha algorithm.
         ///

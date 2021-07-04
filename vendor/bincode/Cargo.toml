@@ -1,8 +1,8 @@
 [package]
 name = "bincode"
-version = "1.2.1" # remember to update html_root_url
-authors = ["Ty Overby <ty@pre-alpha.com>", "Francesco Mazzoli <f@mazzo.li>", "David Tolnay <dtolnay@gmail.com>", "Daniel Griffen"]
-exclude = ["logo.png", "tests/*", "examples/*", ".gitignore", ".travis.yml", "/sgx/*"]
+version = "1.3.1" # remember to update html_root_url
+authors = ["Ty Overby <ty@pre-alpha.com>", "Francesco Mazzoli <f@mazzo.li>", "David Tolnay <dtolnay@gmail.com>", "Zoey Riordan <zoey@dos.cafe>"]
+exclude = ["logo.png", "examples/*", ".gitignore", ".travis.yml", "/sgx/*"]
 
 publish =  true
 
@@ -16,9 +16,9 @@ license = "MIT"
 description = "A binary serialization / deserialization strategy that uses Serde for transforming structs into bytes and vice versa!"
 
 [dependencies]
-byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx.git" }
-serde = { git = "https://github.com/mesalock-linux/serde-sgx.git" }
-sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
+serde = { git = "https://github.com/mesalock-linux/serde-sgx" }
+sgx_tstd = { rev = "v1.1.3", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 #serde_bytes = "0.11"

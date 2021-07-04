@@ -105,9 +105,9 @@
 //!
 //! [RFC 2104]: https://tools.ietf.org/html/rfc2104
 //! [code for `ring::pbkdf2`]:
-//!     https://github.com/briansmith/ring/blob/master/src/pbkdf2.rs
+//!     https://github.com/briansmith/ring/blob/main/src/pbkdf2.rs
 //! [code for `ring::hkdf`]:
-//!     https://github.com/briansmith/ring/blob/master/src/hkdf.rs
+//!     https://github.com/briansmith/ring/blob/main/src/hkdf.rs
 
 use crate::{constant_time, digest, error, hkdf, rand};
 
@@ -182,7 +182,9 @@ impl Key {
     /// random value generated from `rng`.
     ///
     /// The key will be `digest_alg.output_len` bytes long, based on the
-    /// recommendation in https://tools.ietf.org/html/rfc2104#section-3.
+    /// recommendation in [RFC 2104 Section 3].
+    ///
+    /// [RFC 2104 Section 3]: https://tools.ietf.org/html/rfc2104#section-3
     pub fn generate(
         algorithm: Algorithm,
         rng: &dyn rand::SecureRandom,
@@ -363,7 +365,7 @@ mod tests {
     // completely wacky.
     #[test]
     pub fn hmac_signing_key_coverage() {
-        let mut rng = rand::SystemRandom::new();
+        let rng = rand::SystemRandom::new();
 
         const HELLO_WORLD_GOOD: &[u8] = b"hello, world";
         const HELLO_WORLD_BAD: &[u8] = b"hello, worle";
@@ -374,7 +376,7 @@ mod tests {
             hmac::HMAC_SHA384,
             hmac::HMAC_SHA512,
         ] {
-            let key = hmac::Key::generate(*algorithm, &mut rng).unwrap();
+            let key = hmac::Key::generate(*algorithm, &rng).unwrap();
             let tag = hmac::sign(&key, HELLO_WORLD_GOOD);
             assert!(hmac::verify(&key, HELLO_WORLD_GOOD, tag.as_ref()).is_ok());
             assert!(hmac::verify(&key, HELLO_WORLD_BAD, tag.as_ref()).is_err())

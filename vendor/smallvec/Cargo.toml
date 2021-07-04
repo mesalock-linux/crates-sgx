@@ -1,8 +1,8 @@
 [package]
 name = "smallvec"
-version = "1.1.0"
+version = "1.6.1"
 edition = "2018"
-authors = ["Simon Sapin <simon.sapin@exyr.org>"]
+authors = ["The Servo Project Developers"]
 license = "MIT/Apache-2.0"
 repository = "https://github.com/servo/rust-smallvec"
 description = "'Small vector' optimization: store up to a small number of items on the stack"
@@ -12,6 +12,7 @@ readme = "README.md"
 documentation = "https://docs.rs/smallvec/"
 
 [features]
+const_generics = []
 write = []
 union = []
 specialization = []
@@ -19,13 +20,9 @@ may_dangle = []
 default = ["mesalock_sgx"]
 mesalock_sgx = ["sgx_tstd"]
 
-[lib]
-name = "smallvec"
-path = "lib.rs"
-
 [dependencies]
 serde = { version = "1", git = "https://github.com/mesalock-linux/serde-sgx", optional = true }
-sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.3", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev_dependencies]
 #bincode = "1.0.1"

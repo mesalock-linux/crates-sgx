@@ -80,9 +80,14 @@
 //! };
 //! ```
 
-#![forbid(unsafe_code)]
 // Quote types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/quote/1.0.7")]
+#![doc(html_root_url = "https://docs.rs/quote/1.0.9")]
+#![allow(
+    clippy::doc_markdown,
+    clippy::missing_errors_doc,
+    clippy::missing_panics_doc,
+    clippy::module_name_repetitions
+)]
 
 #[cfg(all(
     not(all(target_arch = "wasm32", target_os = "unknown")),
@@ -564,7 +569,7 @@ macro_rules! quote {
 /// ```
 ///
 /// If the assertion fails, the user will see an error like the following. The
-/// input span of their type is hightlighted in the error.
+/// input span of their type is highlighted in the error.
 ///
 /// ```text
 /// error[E0277]: the trait bound `*const (): std::marker::Sync` is not satisfied

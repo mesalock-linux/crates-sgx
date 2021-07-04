@@ -37,7 +37,7 @@ serde = { version = "1", git = "https://github.com/mesalock-linux/serde-sgx", op
 num-integer = { git = "https://github.com/mesalock-linux/num-integer-sgx" }
 num-traits = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
 rustc-serialize = { version = "0.3.20", optional = true }
-sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.3", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [target.'cfg(all(target_arch = "wasm32", not(any(target_os = "emscripten", target_os = "wasi"))))'.dependencies]
 #wasm-bindgen = { version = "0.2", optional = true }

@@ -13,7 +13,7 @@
 [package]
 edition = "2018"
 name = "inventory"
-version = "0.1.7"
+version = "0.1.10"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 description = "Typed distributed plugin registration"
 documentation = "https://docs.rs/inventory"
@@ -29,4 +29,4 @@ version = "0.1"
 version = "0.1.1"
 
 [dependencies.inventory-impl]
-version = "=0.1.7"
+version = "=0.1.10"

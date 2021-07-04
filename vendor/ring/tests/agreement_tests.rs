@@ -34,7 +34,7 @@ use ring::{agreement, error, rand, test, test_file};
 use std::prelude::v1::*;
 
 //#[test]
-pub fn agreement_traits<'a>() {
+pub fn agreement_traits() {
     //use alloc::vec::Vec;
 
     let rng = rand::SystemRandom::new();
@@ -60,9 +60,9 @@ pub fn agreement_traits<'a>() {
     // TODO: Test the actual output.
     let _: &dyn core::fmt::Debug = &public_key;
 
-    test::compile_time_assert_clone::<agreement::UnparsedPublicKey<&'a [u8]>>();
-    test::compile_time_assert_copy::<agreement::UnparsedPublicKey<&'a [u8]>>();
-    test::compile_time_assert_sync::<agreement::UnparsedPublicKey<&'a [u8]>>();
+    test::compile_time_assert_clone::<agreement::UnparsedPublicKey<&[u8]>>();
+    test::compile_time_assert_copy::<agreement::UnparsedPublicKey<&[u8]>>();
+    test::compile_time_assert_sync::<agreement::UnparsedPublicKey<&[u8]>>();
 
     test::compile_time_assert_clone::<agreement::UnparsedPublicKey<Vec<u8>>>();
     test::compile_time_assert_sync::<agreement::UnparsedPublicKey<Vec<u8>>>();
@@ -76,6 +76,7 @@ pub fn agreement_traits<'a>() {
     );
 }
 
+//#[allow(clippy::block_in_if_condition_stmt)]
 //#[test]
 pub fn agreement_agree_ephemeral() {
     let rng = rand::SystemRandom::new();
@@ -133,7 +134,7 @@ pub fn agreement_agree_ephemeral() {
             }
         }
 
-        return Ok(());
+        Ok(())
     });
 }
 

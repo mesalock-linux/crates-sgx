@@ -23,16 +23,15 @@
 //! 2018-06-22 Add liballoc components here
 
 #![no_std]
-
 #![allow(non_camel_case_types)]
-
 #![cfg_attr(target_env = "sgx", feature(rustc_private))]
-
 #![feature(alloc_layout_extra)]
 #![feature(ptr_internals)]
 #![feature(dropck_eyepatch)]
 #![feature(allocator_api)]
 #![feature(core_intrinsics)]
+#![feature(nonnull_slice_from_raw_parts)]
+#![feature(slice_ptr_get)]
 
 extern crate alloc;
 

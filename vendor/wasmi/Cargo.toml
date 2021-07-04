@@ -12,14 +12,14 @@ exclude = [ "/res/*", "/tests/*", "/fuzz/*", "/benches/*", "/sgx/*" ]
 
 [dependencies]
 wasmi-validation = { version = "0.3", path = "validation", default-features = false }
-parity-wasm = { version = "0.41.0", git = "https://github.com/mesalock-linux/parity-wasm-sgx.git", default-features = false }
+parity-wasm = { version = "0.41.0", git = "https://github.com/mesalock-linux/parity-wasm-sgx", default-features = false }
 memory_units = "0.3.0"
 libm = { version = "0.1.2", optional = true }
 num-rational = { git = "https://github.com/mesalock-linux/num-rational-sgx" }
 num-traits = { git = "https://github.com/mesalock-linux/num-traits-sgx" }
 serde = { git = "https://github.com/mesalock-linux/serde-sgx", features = ["derive"] }
 typetag = { git = "https://github.com/mesalock-linux/typetag-sgx" }
-sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.3", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 #libc = "0.2.58"
 #errno = { version = "0.2.4", optional = true }
 

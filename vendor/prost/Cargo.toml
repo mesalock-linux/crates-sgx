@@ -44,7 +44,7 @@ mesalock_sgx = ["sgx_tstd"]
 [dependencies]
 bytes = { git = "https://github.com/mesalock-linux/bytes-sgx" }
 prost-derive = { version = "0.6.1", path = "prost-derive", optional = true }
-sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.3", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 #criterion = "0.3"

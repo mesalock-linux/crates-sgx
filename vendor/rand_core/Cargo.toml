@@ -25,9 +25,9 @@ serde1 = ["serde"] # enables serde for BlockRng wrapper
 mesalock_sgx = ["alloc", "sgx_tstd"]
 
 [dependencies]
-serde = { git = "https://github.com/mesalock-linux/serde-sgx.git", features = ["derive"], optional = true }
+serde = { git = "https://github.com/mesalock-linux/serde-sgx", features = ["derive"], optional = true }
 getrandom = { git = "https://github.com/mesalock-linux/getrandom-sgx", optional = true }
-sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.3", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [package.metadata.docs.rs]
 all-features = true

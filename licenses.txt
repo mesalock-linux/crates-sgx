@@ -14,8 +14,8 @@ block-padding: MIT OR Apache-2.0
 byteorder: Unlicense OR MIT
 bytes: MIT
 byte-tools: MIT OR Apache-2.0
-c2-chacha: MIT/Apache-2.0
 cc: MIT/Apache-2.0
+cfg-if-0.1.10: MIT/Apache-2.0
 cfg-if: MIT/Apache-2.0
 chrono: MIT/Apache-2.0
 color_quant: MIT
@@ -77,8 +77,10 @@ num-iter: MIT/Apache-2.0
 num: MIT/Apache-2.0
 num-rational: MIT/Apache-2.0
 num-traits: MIT/Apache-2.0
+once_cell: MIT OR Apache-2.0
 opaque-debug: MIT OR Apache-2.0
 parity-wasm: MIT/Apache-2.0
+pem: MIT
 percent-encoding: MIT/Apache-2.0
 png: MIT OR Apache-2.0
 ppv-lite86: MIT/Apache-2.0
@@ -106,7 +108,7 @@ rustls: Apache-2.0/ISC/MIT
 rusty-machine: MIT
 ryu: Apache-2.0 OR BSL-1.0
 sct: Apache-2.0/ISC/MIT
-serde-big-array: MIT/Apache-2.0
+serde-big-array: MIT OR Apache-2.0
 serde_cbor: MIT/Apache-2.0
 serde_derive: MIT OR Apache-2.0
 serde_json: MIT OR Apache-2.0
@@ -141,11 +143,11 @@ sgx_urts: see license file at sgx_urts/LICENSE
 sha1: BSD-3-Clause
 sha-1: MIT OR Apache-2.0
 sha2: MIT OR Apache-2.0
+simple_asn1: ISC
 slab: MIT
 smallvec: MIT/Apache-2.0
 snap: BSD-3-Clause
 spin: MIT
-stream-cipher: MIT OR Apache-2.0
 syn-0.11.11: MIT/Apache-2.0
 syn-0.15.44: MIT OR Apache-2.0
 syn: MIT OR Apache-2.0
@@ -157,7 +159,7 @@ thread_local: Apache-2.0/MIT
 threadpool: MIT/Apache-2.0
 tiff: MIT
 toml: MIT/Apache-2.0
-typenum: MIT/Apache-2.0
+typenum: MIT OR Apache-2.0
 typetag-impl: MIT OR Apache-2.0
 typetag: MIT OR Apache-2.0
 unicode-bidi: MIT / Apache-2.0

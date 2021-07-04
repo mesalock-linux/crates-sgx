@@ -15,7 +15,7 @@ travis-ci = { repository = "dtolnay/thiserror" }
 
 [dependencies]
 thiserror-impl = { version = "=1.0.9", path = "impl" }
-sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.3", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [features]
 default = ["mesalock_sgx"]

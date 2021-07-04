@@ -25,7 +25,7 @@ travis-ci = { repository = "alexcrichton/toml-rs" }
 [dependencies]
 serde = { git = "https://github.com/mesalock-linux/serde-sgx", default-features = false, features = ["std"] }
 linked-hash-map = { git = "https://github.com/mesalock-linux/linked-hash-map-sgx", optional = true }
-sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.3", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 #serde_derive = "1.0"

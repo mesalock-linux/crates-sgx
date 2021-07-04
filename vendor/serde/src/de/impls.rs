@@ -96,10 +96,13 @@ macro_rules! visit_integer_method {
         {
             match FromPrimitive::$from_method(v) {
                 Some(v) => Ok(v),
-                None => Err(Error::invalid_value(Unexpected::$group(v as $group_ty), &self)),
+                None => Err(Error::invalid_value(
+                    Unexpected::$group(v as $group_ty),
+                    &self,
+                )),
             }
         }
-    }
+    };
 }
 
 macro_rules! visit_float_method {
@@ -111,7 +114,7 @@ macro_rules! visit_float_method {
         {
             Ok(v as Self::Value)
         }
-    }
+    };
 }
 
 macro_rules! impl_deserialize_num {
@@ -1316,7 +1319,7 @@ macro_rules! variant_identifier {
                         formatter.write_str($expecting_message)
                     }
 
-                    fn visit_u32<E>(self, value: u32) -> Result<Self::Value, E>
+                    fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
                     where
                         E: Error,
                     {
@@ -1324,7 +1327,7 @@ macro_rules! variant_identifier {
                             $(
                                 $index => Ok($name_kind :: $variant),
                             )*
-                            _ => Err(Error::invalid_value(Unexpected::Unsigned(value as u64), &self),),
+                            _ => Err(Error::invalid_value(Unexpected::Unsigned(value), &self),),
                         }
                     }
 
@@ -1874,7 +1877,7 @@ impl<'de> Deserialize<'de> for Duration {
         enum Field {
             Secs,
             Nanos,
-        };
+        }
 
         impl<'de> Deserialize<'de> for Field {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -1999,7 +2002,7 @@ impl<'de> Deserialize<'de> for SystemTime {
         enum Field {
             Secs,
             Nanos,
-        };
+        }
 
         impl<'de> Deserialize<'de> for Field {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -2329,7 +2332,7 @@ where
                         formatter.write_str("`Unbounded`, `Included` or `Excluded`")
                     }
 
-                    fn visit_u32<E>(self, value: u32) -> Result<Self::Value, E>
+                    fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
                     where
                         E: Error,
                     {
@@ -2337,10 +2340,7 @@ where
                             0 => Ok(Field::Unbounded),
                             1 => Ok(Field::Included),
                             2 => Ok(Field::Excluded),
-                            _ => Err(Error::invalid_value(
-                                Unexpected::Unsigned(value as u64),
-                                &self,
-                            )),
+                            _ => Err(Error::invalid_value(Unexpected::Unsigned(value), &self)),
                         }
                     }
 
@@ -2515,17 +2515,14 @@ where
                         formatter.write_str("`Ok` or `Err`")
                     }
 
-                    fn visit_u32<E>(self, value: u32) -> Result<Self::Value, E>
+                    fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
                     where
                         E: Error,
                     {
                         match value {
                             0 => Ok(Field::Ok),
                             1 => Ok(Field::Err),
-                            _ => Err(Error::invalid_value(
-                                Unexpected::Unsigned(value as u64),
-                                &self,
-                            )),
+                            _ => Err(Error::invalid_value(Unexpected::Unsigned(value), &self)),
                         }
                     }
 
@@ -2593,7 +2590,6 @@ where
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(feature = "std")]
 impl<'de, T> Deserialize<'de> for Wrapping<T>
 where
     T: Deserialize<'de>,

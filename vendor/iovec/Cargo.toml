@@ -15,4 +15,4 @@ categories = ["network-programming", "api-bindings"]
 exclude = ["/sgx/*"]
 
 [target.'cfg(not(target_env = "sgx"))'.dependencies]
-sgx_libc   = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git" }
+sgx_libc   = { rev = "v1.1.3", git = "https://github.com/apache/teaclave-sgx-sdk.git" }

@@ -1,7 +1,7 @@
 # Serde JSON &emsp; [![Build Status]][travis] [![Latest Version]][crates.io] [![Rustc Version 1.31+]][rustc]
 
-[Build Status]: https://api.travis-ci.org/serde-rs/json.svg?branch=master
-[travis]: https://travis-ci.org/serde-rs/json
+[Build Status]: https://img.shields.io/github/workflow/status/serde-rs/json/CI/master
+[travis]: https://github.com/serde-rs/json/actions?query=branch%3Amaster
 [Latest Version]: https://img.shields.io/crates/v/serde_json.svg
 [crates.io]: https://crates.io/crates/serde\_json
 [Rustc Version 1.31+]: https://img.shields.io/badge/rustc-1.31+-lightgray.svg
@@ -196,6 +196,11 @@ autocomplete field names to prevent typos, which was impossible in the
 when we write `p.phones[0]`, then `p.phones` is guaranteed to be a
 `Vec<String>` so indexing into it makes sense and produces a `String`.
 
+The necessary setup for using Serde's derive macros is explained on the *[Using
+derive]* page of the Serde site.
+
+[Using derive]: https://serde.rs/derive.html
+
 ## Constructing JSON values
 
 Serde JSON provides a [`json!` macro][macro] to build `serde_json::Value`
@@ -313,11 +318,23 @@ Benchmarks live in the [serde-rs/json-benchmark] repo.
 
 ## Getting help
 
-Serde developers live in the #serde channel on
-[`irc.mozilla.org`](https://wiki.mozilla.org/IRC). The #rust channel is also a
-good resource with generally faster response time but less specific knowledge
-about Serde. If IRC is not your thing, we are happy to respond to [GitHub
-issues](https://github.com/serde-rs/json/issues/new) as well.
+Serde is one of the most widely used Rust libraries so any place that Rustaceans
+congregate will be able to help you out. For chat, consider trying the
+[#general] or [#beginners] channels of the unofficial community Discord, the
+[#rust-usage] channel of the official Rust Project Discord, or the
+[#general][zulip] stream in Zulip. For asynchronous, consider the [\[rust\] tag
+on StackOverflow][stackoverflow], the [/r/rust] subreddit which has a pinned
+weekly easy questions post, or the Rust [Discourse forum][discourse]. It's
+acceptable to file a support issue in this repo but they tend not to get as many
+eyes as any of the above and may get closed without a response after some time.
+
+[#general]: https://discord.com/channels/273534239310479360/274215136414400513
+[#beginners]: https://discord.com/channels/273534239310479360/273541522815713281
+[#rust-usage]: https://discord.com/channels/442252698964721669/443150878111694848
+[zulip]: https://rust-lang.zulipchat.com/#narrow/stream/122651-general
+[stackoverflow]: https://stackoverflow.com/questions/tagged/rust
+[/r/rust]: https://www.reddit.com/r/rust
+[discourse]: https://users.rust-lang.org
 
 ## No-std support
 

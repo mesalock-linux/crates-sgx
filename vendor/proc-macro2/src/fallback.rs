@@ -1,4 +1,4 @@
-use crate::parse::{token_stream, Cursor};
+use crate::parse::{self, Cursor};
 use crate::{Delimiter, Spacing, TokenTree};
 #[cfg(span_locations)]
 use std::cell::RefCell;
@@ -35,7 +35,21 @@ pub(crate) struct TokenStream {
 }
 
 #[derive(Debug)]
-pub(crate) struct LexError;
+pub(crate) struct LexError {
+    pub(crate) span: Span,
+}
+
+impl LexError {
+    pub(crate) fn span(&self) -> Span {
+        self.span
+    }
+
+    fn call_site() -> Self {
+        LexError {
+            span: Span::call_site(),
+        }
+    }
+}
 
 impl TokenStream {
     pub fn new() -> TokenStream {
@@ -139,12 +153,13 @@ impl FromStr for TokenStream {
         // Create a dummy file & add it to the source map
         let cursor = get_cursor(src);
 
-        let (rest, tokens) = token_stream(cursor)?;
-        if rest.is_empty() {
-            Ok(tokens)
-        } else {
-            Err(LexError)
-        }
+        parse::token_stream(cursor)
+    }
+}
+
+impl Display for LexError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("cannot parse string into token stream")
     }
 }
 
@@ -157,29 +172,14 @@ impl Display for TokenStream {
             }
             joint = false;
             match tt {
-                TokenTree::Group(tt) => {
-                    let (start, end) = match tt.delimiter() {
-                        Delimiter::Parenthesis => ("(", ")"),
-                        Delimiter::Brace => ("{", "}"),
-                        Delimiter::Bracket => ("[", "]"),
-                        Delimiter::None => ("", ""),
-                    };
-                    if tt.stream().into_iter().next().is_none() {
-                        write!(f, "{} {}", start, end)?
-                    } else {
-                        write!(f, "{} {} {}", start, tt.stream(), end)?
-                    }
-                }
-                TokenTree::Ident(tt) => write!(f, "{}", tt)?,
+                TokenTree::Group(tt) => Display::fmt(tt, f),
+                TokenTree::Ident(tt) => Display::fmt(tt, f),
                 TokenTree::Punct(tt) => {
-                    write!(f, "{}", tt.as_char())?;
-                    match tt.spacing() {
-                        Spacing::Alone => {}
-                        Spacing::Joint => joint = true,
-                    }
+                    joint = tt.spacing() == Spacing::Joint;
+                    Display::fmt(tt, f)
                 }
-                TokenTree::Literal(tt) => write!(f, "{}", tt)?,
-            }
+                TokenTree::Literal(tt) => Display::fmt(tt, f),
+            }?
         }
 
         Ok(())
@@ -426,7 +426,6 @@ impl Span {
         Span { lo: 0, hi: 0 }
     }
 
-    #[cfg(procmacro2_semver_exempt)]
     #[cfg(hygiene)]
     pub fn mixed_site() -> Span {
         Span::call_site()
@@ -437,7 +436,6 @@ impl Span {
         Span::call_site()
     }
 
-    #[cfg(procmacro2_semver_exempt)]
     pub fn resolved_at(&self, _other: Span) -> Span {
         // Stable spans consist only of line/column information, so
         // `resolved_at` and `located_at` only select which span the
@@ -445,7 +443,6 @@ impl Span {
         *self
     }
 
-    #[cfg(procmacro2_semver_exempt)]
     pub fn located_at(&self, other: Span) -> Span {
         other
     }
@@ -591,17 +588,27 @@ impl Group {
 }
 
 impl Display for Group {
+    // We attempt to match libproc_macro's formatting.
+    // Empty parens: ()
+    // Nonempty parens: (...)
+    // Empty brackets: []
+    // Nonempty brackets: [...]
+    // Empty braces: { }
+    // Nonempty braces: { ... }
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let (left, right) = match self.delimiter {
+        let (open, close) = match self.delimiter {
             Delimiter::Parenthesis => ("(", ")"),
-            Delimiter::Brace => ("{", "}"),
+            Delimiter::Brace => ("{ ", "}"),
             Delimiter::Bracket => ("[", "]"),
             Delimiter::None => ("", ""),
         };
 
-        f.write_str(left)?;
+        f.write_str(open)?;
         Display::fmt(&self.stream, f)?;
-        f.write_str(right)?;
+        if self.delimiter == Delimiter::Brace && !self.stream.inner.is_empty() {
+            f.write_str(" ")?;
+        }
+        f.write_str(close)?;
 
         Ok(())
     }
@@ -883,6 +890,20 @@ impl Literal {
 
     pub fn subspan<R: RangeBounds<usize>>(&self, _range: R) -> Option<Span> {
         None
+    }
+}
+
+impl FromStr for Literal {
+    type Err = LexError;
+
+    fn from_str(repr: &str) -> Result<Self, Self::Err> {
+        let cursor = get_cursor(repr);
+        if let Ok((_rest, literal)) = parse::literal(cursor) {
+            if literal.text.len() == repr.len() {
+                return Ok(literal);
+            }
+        }
+        Err(LexError::call_site())
     }
 }
 

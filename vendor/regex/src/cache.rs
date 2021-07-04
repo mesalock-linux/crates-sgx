@@ -41,7 +41,9 @@ mod imp {
 mod imp {
     use std::marker::PhantomData;
     use std::panic::UnwindSafe;
-    use std::sync::Mutex;
+    use std::sync::SgxMutex as Mutex;
+    use std::vec::Vec;
+    use std::boxed::Box;
 
     #[derive(Debug)]
     pub struct Cached<T: Send> {

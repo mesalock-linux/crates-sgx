@@ -20,7 +20,7 @@ exclude = ["tests/images/*", "tests/fuzz_images/*", "/sgx/*"]
 miniz_oxide = { git = "https://github.com/mesalock-linux/miniz_oxide-sgx" }
 byteorder = { git = "https://github.com/mesalock-linux/byteorder-sgx" }
 lzw = { git = "https://github.com/mesalock-linux/lzw-sgx" }
-sgx_tstd = { rev = "v1.1.2", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
+sgx_tstd = { rev = "v1.1.3", git = "https://github.com/apache/teaclave-sgx-sdk.git", optional = true }
 
 [dev-dependencies]
 #tempfile = "3.0"
