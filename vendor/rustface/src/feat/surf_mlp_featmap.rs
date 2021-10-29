@@ -144,9 +144,10 @@ impl SurfMlpFeatureMap {
             math::vector_add(dy, dy, dy, len);
 
             let step = self.width as usize;
+            let grad_y_stop = self.grad_y.len() - step;
             self.img_buf
                 .chunks(step)
-                .zip(self.grad_y[step..].chunks_mut(step))
+                .zip(self.grad_y[step..grad_y_stop].chunks_mut(step))
                 .for_each(|(inputs, outputs)| {
                     let src = inputs.as_ptr();
                     let dest = outputs.as_mut_ptr();

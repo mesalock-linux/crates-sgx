@@ -35,7 +35,7 @@ getrandom: MIT OR Apache-2.0
 ghost: MIT OR Apache-2.0
 gif: MIT/Apache-2.0
 gzip-header: MIT/Apache-2.0
-half: MIT/Apache-2.0
+half: MIT OR Apache-2.0
 hashbrown: Apache-2.0/MIT
 hashbrown_tstd: Apache-2.0/MIT
 heapsize: MIT/Apache-2.0

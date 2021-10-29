@@ -5,6 +5,56 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.8.2] - 2021-10-22 <a name="1.8.2"></a>
+### Fixed
+- Remove cargo resolver=2 from manifest to resolve errors in older versions of Rust that still
+  worked with 1.8.0. Going forward, MSRV increases will be major version increases. Fixes [#48].
+
+## [1.8.1] - 2021-10-21 - **Yanked** <a name="1.8.1"></a>
+### ***Yanked***
+*Not recommended due to introducing compilation error in Rust versions that worked with 1.8.0.*
+### Changed
+- Now uses cargo resolver version 2 to prevent dev-dependencies from enabling `std` feature on
+  optional dependencies.
+
+### Fixed
+- Fixed compile failure when `std` feature is not enabled and `num-traits` is enabled under new
+  resolver. Now properly uses `libm` num-traits feature.
+
+## [1.8.0] - 2021-10-13 <a name="1.8.0"></a>
+### Changed
+- Now always implements `Add`, `Div`, `Mul`, `Neg`, `Rem`, and `Sub` traits. 
+  Previously, these were only implemented under the `num-traits` feature. Keep in mind they still
+  convert to `f32` and back in the implementation.
+- Minimum supported Rust version is now 1.51.
+- Made crate package [REUSE compliant](https://reuse.software/).
+- Docs now use intra-doc links instead of manual (and hard to maintain) links.
+- The following methods on both `f16` and `bf16` are now `const`:
+  - `to_le_bytes`
+  - `to_be_bytes`
+  - `to_ne_bytes`
+  - `from_le_bytes`
+  - `from_be_bytes`
+  - `from_ne_bytes`
+  - `is_normal`
+  - `classify`
+  - `signum`
+
+### Added
+- Added optional implementations of `zerocopy` traits `AsBytes` and `FromBytes`
+  under `zerocopy` cargo feature. By [@samcrow].
+- Implemented the `core::iter::Product` and `core::iter::Sum` traits, with the same caveat as above
+  about converting to `f32` and back under the hood.
+- Added new associated const `NEG_ONE` to both `f16` and `bf16`.
+- Added the following new methods on both `f16` and `bf16`:
+  - `copysign`
+  - `max`
+  - `min`
+  - `clamp`
+
+### Fixed
+- Fixed a number of minor lints discovered due to improved CI.
+
 ## [1.7.1] - 2021-01-17 <a name="1.7.1"></a>
 ### Fixed
 - Docs.rs now generates docs for `bytemuck` and `num-traits` optional features.
@@ -163,6 +213,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 [#23]: https://github.com/starkat99/half-rs/issues/23
 [#24]: https://github.com/starkat99/half-rs/issues/24
 [#37]: https://github.com/starkat99/half-rs/issues/37
+[#48]: https://github.com/starkat99/half-rs/issues/48
 
 [@tspiteri]: https://github.com/tspiteri
 [@PSeitz]: https://github.com/PSeitz
@@ -172,9 +223,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 [@zserik]: https://github.com/zserik
 [@bzm3r]: https://github.com/bzm3r
 [@charles-r-earp]: https://github.com/charles-r-earp
+[@samcrow]: https://github.com/samcrow
 
 
-[Unreleased]: https://github.com/starkat99/half-rs/compare/v1.7.1...HEAD
+[Unreleased]: https://github.com/starkat99/half-rs/compare/v1.8.2...HEAD
+[1.8.2]: https://github.com/starkat99/half-rs/compare/v1.8.1...v1.8.2
+[1.8.1]: https://github.com/starkat99/half-rs/compare/v1.8.0...v1.8.1
+[1.8.0]: https://github.com/starkat99/half-rs/compare/v1.7.1...v1.8.0
 [1.7.1]: https://github.com/starkat99/half-rs/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/starkat99/half-rs/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/starkat99/half-rs/compare/v1.5.0...v1.6.0
