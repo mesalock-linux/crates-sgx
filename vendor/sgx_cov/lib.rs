@@ -168,12 +168,12 @@ pub extern "C" fn llvm_gcda_emit_function(
 #[no_mangle]
 pub extern "C" fn llvm_gcda_start_file(
     raw_file_name: *const c_char,
-    ver: *const u8,
+    ver: u32,
     checksum: u32,
 ) {
     let file_name_str: &CStr = unsafe { CStr::from_ptr(raw_file_name) };
     let file_name = file_name_str.to_str().unwrap();
-    let version = unsafe { slice::from_raw_parts(ver, 4) };
+    let version = ver.to_le_bytes();
 
     let mut prefix = String::from(file_name);
     prefix.truncate(file_name.len() - 5);
@@ -194,7 +194,7 @@ pub extern "C" fn llvm_gcda_start_file(
                 Err(_) => File::create(&new_gcda_name).unwrap(),
             };
             file.write_all(b"adcg").unwrap();
-            file.write_all(version).unwrap();
+            file.write_all(&version).unwrap();
             file.write_all(&checksum.to_le_bytes()).unwrap();
             *fd = file.into_raw_fd();
         }
